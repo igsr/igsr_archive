@@ -1,5 +1,6 @@
 # igsr_archive
-Contains code to perform several operations involving files in the IGSR (1000 genomes) FTP archive
+Contains code to perform several operations involving files in the IGSR (1000 genomes) [FTP archive (ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/)
+
 
 
 
