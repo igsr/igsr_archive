@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 
 import pymysql
+import pdb
 
 class DB(object):
     """
@@ -10,47 +11,40 @@ class DB(object):
     ---------------
     settingf : str, Required
                Path to *.ini file with MySQL server connection settings
+    conn : Connection object
+           Object with connection to MySQL db
+    pwd : srt, Required
+          Password used for MySQL server connection
+    dbname: str, Required
+            Reseqtrack db name
     """
 
-    def __init__(self, settingf):
+    def __init__(self, settingf, pwd, dbname):
 
         # initialise ConfigParser object with connection
         # settings
         parser = ConfigParser()
         parser.read(settingf)
+        self.pwd = pwd
+        self.dbname = dbname
         self.settings = parser
+        self.conn = self.set_conn()
 
-    def mysql_connect(self, pwd, dbname):
+    def set_conn(self):
         """
-        Function that will handle the connection
-        with the MySQL Reseqtrack db
-
-        Parameters
-        ----------
-        pwd : srt, Required
-              Password used for MySQL server connection
-        dbname: str, Required
-                Reseqtrack db name
+        Function that will set the conn
+        class variable
 
         Returns
         -------
         Connection object
-
-        Raises
-        ------
-        NotImplementedError
-            If no sound is set for the animal or passed in as a
-            parameter.
         """
-        try:
-            connection = pymysql.connect(host=self.settings.get('mysql_conn', 'host'),
-                                         user=self.settings.get('mysql_conn', 'user'),
-                                         password=pwd,
-                                         db=dbname,
-                                         port=self.settings.get('mysql_conn', 'user'))
-
-        except pymysql.err.OperationalError:
-            print('Unable to make a connection to the mysql database. Please check your credentials')
+        conn = pymysql.connect(host=self.settings.get('mysql_conn', 'host'),
+                               user=self.settings.get('mysql_conn', 'user'),
+                               password=self.pwd,
+                               db=self.dbname,
+                               port=self.settings.getint('mysql_conn', 'port'))
+        return conn
 
     def load_file(self):
         """
