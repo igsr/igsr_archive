@@ -3,8 +3,27 @@ import logging
 import os
 
 from reseqtrack.db import DB
+from file.file import File
 
 logging.basicConfig(level=logging.DEBUG)
+
+@pytest.fixture
+def db_obj():
+    """
+    Fixture to get a DB object
+    """
+    pwd = os.getenv('PWD')
+    dbname = os.getenv('DBNAME')
+
+    assert dbname, "$DBNAME undefined"
+    assert pwd, "$PWD undefined"
+
+    db = DB(settingf="../../data/settings.ini",
+            pwd=pwd,
+            dbname=dbname)
+
+    return db
+
 
 def test_conn_s():
     log = logging.getLogger('test_conn_s')
@@ -33,3 +52,16 @@ def test_conn_e():
         db = DB(settingf="../../data/settings.ini",
                 pwd="mockpwd",
                 dbname=dbname)
+
+def test_load_f(db_obj):
+    log = logging.getLogger('test_load_f')
+
+    log.debug('Testing \'load_file\' function to load file in DB')
+
+    f = File(
+        path="../../data/test.txt",
+        type="TYPE_F"
+    )
+
+    db_obj.load_file(f)
+

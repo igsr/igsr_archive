@@ -1,6 +1,7 @@
 import os
 import subprocess
 import pdb
+import datetime
 
 class File(object):
     """
@@ -10,6 +11,18 @@ class File(object):
     ---------------
     path : str, Required
            File path
+    type : str, Required
+                Type of the file.
+                i.e. FASTQ, BAM, CRAM
+    host_id : int, Optional
+              Host id. Host is the name
+              of the host which the
+              filesystem is visible
+              to so 1000genomes.ebi.ac.uk
+              for ebi files. Default : 1
+    withdrawn : int, Optional
+                1 if self is withdrawn.
+                0 otherwise. Default: 0
     md5sum : str, Optional
              md5sum of this file
              It will be calculated
@@ -18,10 +31,19 @@ class File(object):
            Size in bytes
            It will calculated
            if not defined
+    created : str, Optional
+              Stringified date representation
+              It will calculated if not defined
+              in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, path, **kwargs):
+    def __init__(self, path, type, host_id=1,
+                 withdrawn=0, **kwargs):
         self.path = path
+        self.type = type
+        self.host_id = host_id
+        self.withdrawn = withdrawn
+
         self.__dict__.update(kwargs)
 
         if not hasattr(self, 'md5sum'):
@@ -29,6 +51,9 @@ class File(object):
 
         if not hasattr(self, 'size'):
             self.size = os.path.getsize(self.path)
+
+        if not hasattr(self, 'created'):
+            self.created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def calc_md5(self):
         """
