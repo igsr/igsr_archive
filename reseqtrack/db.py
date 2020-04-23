@@ -2,6 +2,10 @@ from configparser import ConfigParser
 
 import pymysql
 import pdb
+import logging
+
+# create logger
+db_logger = logging.getLogger(__name__)
 
 class DB(object):
     """
@@ -21,6 +25,8 @@ class DB(object):
 
     def __init__(self, settingf, pwd, dbname):
 
+        db_logger.info('Creating DB object')
+
         # initialise ConfigParser object with connection
         # settings
         parser = ConfigParser()
@@ -39,11 +45,17 @@ class DB(object):
         -------
         Connection object
         """
+
+        db_logger.info('Setting connection...')
+
         conn = pymysql.connect(host=self.settings.get('mysql_conn', 'host'),
                                user=self.settings.get('mysql_conn', 'user'),
                                password=self.pwd,
                                db=self.dbname,
                                port=self.settings.getint('mysql_conn', 'port'))
+
+        db_logger.info('Connection successful!')
+
         return conn
 
     def load_file(self, f, dry=True):
@@ -61,9 +73,14 @@ class DB(object):
         Returns
         -------
         Path to the stored file
+
+        Raises
+        ------
+        pymysql.Error
+            If file could not be loaded
         """
 
-        pdb.set_trace()
+        db_logger.info(f"Loading file: {f.path}")
         # construct INSERT INTO sql statement
         sql_insert_attr = f"INSERT INTO file (file_id, name, md5, type, size, host_id, withdrawn, created) " \
                           f"VALUES (NULL, \'{f.path}\', \'{f.md5sum}\', \'{f.type}\', \'{f.size}\', \'{f.host_id}\', " \
@@ -77,17 +94,17 @@ class DB(object):
                 # Commit your changes in the database
                 self.conn.commit()
             except pymysql.Error as e:
-                print(e[0], e[1])
+                db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
                 self.conn.rollback()
-        #    warnings.warn("File was stored in the DB")
-        #elif dry is True:
-         #   warnings.warn("Insert statement was: {0}".format(sql_insert_attr))
-         #   warnings.warn("The file was not stored in the DB."
-         #                 "Use dry=False to effectively store it")
 
-        return self.path
-        print("h\n")
+        elif dry is True:
+            db_logger.info(f"Insert sql: {sql_insert_attr}")
+            db_logger.info(f"File was not stored in the DB.")
+            db_logger.info(f"Use dry=False to effectively store it")
+
+        return f.path
+
 
 
 

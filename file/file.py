@@ -2,6 +2,11 @@ import os
 import subprocess
 import pdb
 import datetime
+import logging
+
+# create logger
+file_logger = logging.getLogger(__name__)
+
 
 class File(object):
     """
@@ -39,6 +44,9 @@ class File(object):
 
     def __init__(self, path, type, host_id=1,
                  withdrawn=0, **kwargs):
+
+        file_logger.info('Creating File object')
+
         self.path = path
         self.type = type
         self.host_id = host_id

@@ -2,9 +2,15 @@
 
 import argparse
 import os
+import logging
 
 from reseqtrack.db import DB
 from file.file import File
+
+logging.basicConfig(level=logging.DEBUG)
+
+# Create logger
+logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description='Load file/s in a Reseqtrack database')
 
@@ -18,6 +24,8 @@ parser.add_argument('--md5_file', help="File with output from md5sum, in the for
 
 args = parser.parse_args()
 
+logger.info('Running script')
+
 pwd = os.getenv('PWD')
 dbname = os.getenv('DBNAME')
 
@@ -29,7 +37,14 @@ db = DB(settingf=args.settingsf,
         pwd=pwd,
         dbname=dbname)
 
-f = File(
-        path=args.f,
-        type="TYPE_F"
+if args.file:
+    logger.info('File provided')
+
+    f = File(
+            path=args.file,
+            type="TYPE_F"
     )
+
+    db.load_file(f, dry=False)
+
+logger.info('Running completed')
