@@ -93,6 +93,7 @@ class DB(object):
                 cursor.execute(sql_insert_attr)
                 # Commit your changes in the database
                 self.conn.commit()
+                db_logger.info(f"File loaded: {f.path}")
             except pymysql.Error as e:
                 db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
