@@ -5,8 +5,19 @@ import glob
 import pdb
 
 from fire.api import API
+from file.file import File
 
 logging.basicConfig(level=logging.DEBUG)
+
+pwd = os.getenv('FIRE_PASSWORD')
+username = os.getenv('FIRE_USERNAME')
+
+assert pwd, "$FIRE_PWD undefined"
+assert username, "$USERNAME undefined"
+
+api = API(settingsf="../../data/settings.ini",
+          user=username,
+          pwd=pwd)
 
 @pytest.fixture
 def clean_tmp():
@@ -20,56 +31,74 @@ def test_retrieve_object_by_foi(clean_tmp):
     log = logging.getLogger('test_retrieve_object_by_foi')
 
     log.debug('Retrieving (Downloading) a FIRE object by its fireOid')
-    pwd = os.getenv('FIRE_PWD')
-    username = os.getenv('USERNAME')
 
-    assert pwd, "$FIRE_PWD undefined"
-    assert username, "$USERNAME undefined"
+    outfile = api.retrieve_object(fireOid='423ad6c276b440cdaee47ad44fb62d35',
+                                  outfile='../../data/out/test.txt')
 
-    api = API(settingsf="../../data/settings.ini",
-              user=username,
-              pwd=pwd)
-
-    outfile = api.retrieve_object(fireOid='14a851b68de08d0bdcd1069107d9130f',
-                                  outfile='../../data/out/out.pdf')
-
-    assert outfile == "../../data/out/out.pdf"
+    assert outfile == "../../data/out/test.txt"
 
 def test_retrieve_object_by_fpath(clean_tmp):
     log = logging.getLogger('test_retrieve_object_by_fpath')
 
     log.debug('Retrieving (Downloading) a FIRE object by its firePath')
-    pwd = os.getenv('FIRE_PWD')
-    username = os.getenv('USERNAME')
 
-    assert pwd, "$FIRE_PWD undefined"
-    assert username, "$USERNAME undefined"
+    outfile = api.retrieve_object(firePath='/test_dir/test.txt',
+                                  outfile='../../data/out/test.txt')
 
-    api = API(settingsf="../../data/settings.ini",
-              user=username,
-              pwd=pwd)
-
-    outfile = api.retrieve_object(firePath='ftp/data_collections/gambian_genome_variation_project/'
-                                           'release/20200217_biallelic_SNV/'
-                                           'README_gambian_genome_variation_project_biallelic_SNV_INDEL_callset.pdf',
-                                  outfile='../../data/out/out.pdf')
-
-    assert outfile == "../../data/out/out.pdf"
+    assert outfile == "../../data/out/test.txt"
 
 def test_fetch_object_by_foi():
     log = logging.getLogger('test_fetch_object_by_foi')
 
     log.debug('Fetching metadata for a particular FIRE object by its fireOid')
-    pwd = os.getenv('FIRE_PWD')
-    username = os.getenv('USERNAME')
 
-    assert pwd, "$FIRE_PWD undefined"
-    assert username, "$USERNAME undefined"
+    fobject = api.fetch_object(fireOid='423ad6c276b440cdaee47ad44fb62d35')
 
-    api = API(settingsf="../../data/settings.ini",
-              user=username,
-              pwd=pwd)
+    assert fobject.fireOid == '423ad6c276b440cdaee47ad44fb62d35'
+    assert fobject.objectId == 91263
 
-    fobject = api.fetch_object(fireOid='14a851b68de08d0bdcd1069107d9130f')
+def test_fetch_object_by_fpath():
+    log = logging.getLogger('test_fetch_object_by_fpath')
 
-    assert 0
+    log.debug('Fetching metadata for a particular FIRE object by its firePath')
+
+    fobject = api.fetch_object(firePath='/test_dir/test.txt')
+
+    assert fobject.fireOid == '423ad6c276b440cdaee47ad44fb62d35'
+    assert fobject.objectId == 91263
+
+def test_delete_object_by_foi():
+    log = logging.getLogger('test_delete_object_by_foi')
+
+    log.debug('Deleting a FIRE object using its fireOid')
+
+def test_push_object():
+    log = logging.getLogger('test_push_object')
+
+    log.debug('Pushing (upload) a file.file.File object to FIRE')
+
+    # creating File object
+    f = File(
+        path="../../data/test.txt",
+        type="TEST_F",
+        md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
+
+    api.push_object(fileO=f, dry=True)
+
+def test_push_object_w_fpath():
+    log = logging.getLogger('test_push_object_w_fpath')
+
+    log.debug('Pushing (upload) a file.file.File object to FIRE adding a '
+              'virtual FIRE path')
+
+    # creating File object
+    f = File(
+        path="../../data/test.txt",
+        type="TEST_F",
+        md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
+
+    api.push_object(fileO=f, dry=True,
+                    fire_path="test_dir/test.txt")
+
+
+

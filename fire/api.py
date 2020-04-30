@@ -86,8 +86,8 @@ class API(object):
 
             api_logger.info('Retrieving a FIRE object through its FIRE path')
 
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/path/" \
-                  f"{firePath}"
+            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/blob/" \
+                  f"path/{firePath}"
 
         try:
             r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
@@ -105,11 +105,11 @@ class API(object):
 
             return outfile
         except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')  # Python 3.6
+            print(f'HTTP error occurred: {http_err}')
         except Exception as err:
-            print(f'Other error occurred: {err}')  # Python 3.6
+            print(f'Other error occurred: {err}')
 
-    def fetch_object(self, fireOid=None):
+    def fetch_object(self, fireOid=None, firePath=None):
         """
         Function to fetch the metadata associated to a particular
         FIRE object
@@ -118,6 +118,8 @@ class API(object):
         ----------
         fireOid : str
                   FIRE object id. Optional
+        firePath : str
+                   FIRE virtual path. Optional
 
         Returns
         -------
@@ -135,18 +137,24 @@ class API(object):
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
                   f"{fireOid}"
+        elif firePath is not None:
+
+            api_logger.info('Fetching FIRE object\'s metadata through its FIRE path')
+
+            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/path/" \
+                  f"{firePath}"
 
         try:
-            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
+            res = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
 
             # If the response was successful, no Exception will be raised
-            r.raise_for_status()
+            res.raise_for_status()
 
-            json_res = r.json()
+            json_res = res.json()
 
             metadata_dict = {}
             for k, v in json_res.items():
-                if k == "filesystemEntry":
+                if k == "filesystemEntry" and v is not None:
                     for f in v.keys():
                         metadata_dict[f] = v[f]
                 else:
@@ -159,6 +167,105 @@ class API(object):
             return fireObj
 
         except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')  # Python 3.6
+            print(f'HTTP error occurred: {http_err}')
+            print(f'Error message: {res.text}')
         except Exception as err:
-            print(f'Other error occurred: {err}')  # Python 3.6
+            print(f'Other error occurred: {err}')
+            print(f'Error message: {res.text}')
+
+    def push_object(self, fileO, dry=True, fire_path=None):
+        """
+        Function to push (upload) a file.file.File object
+        to FIRE
+
+        Parameters
+        ----------
+        fileO : file.file.File object
+                Object to be uploaded
+        dry : Bool, optional
+              If dry=True then it will not try
+              to push the File object to FIRE. Default True
+        fire_path : str
+                    Virtual path in FIRE to be used for
+                    pushing this File. Optional
+
+        Returns
+        -------
+        fire.object.fObject
+                fObject with metadata on the stored FIRE object
+
+        Raises
+        ------
+        HTTPError
+        """
+
+        api_logger.info(f"Pushing File with path: {fileO.path}")
+
+        files = {'file': open(fileO.path, 'rb')}
+
+        url = f"{self.settings.get('fire', 'root_endpoint')}/objects"
+
+        if dry is False:
+            try:
+                header ={}
+                if fire_path is not None:
+
+                    api_logger.info(f"Virtual FIRE path provided")
+
+                    header = {
+                        "x-fire-path": f"{fire_path}",
+                        "x-fire-size": f"{fileO.size}",
+                        "x-fire-md5": f"{fileO.md5sum}"
+                    }
+                else:
+
+                    api_logger.info(f"Virtual FIRE path not provided")
+
+                    header = {
+                        "x-fire-size": f"{fileO.size}",
+                        "x-fire-md5": f"{fileO.md5sum}"
+                    }
+
+                res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
+
+                res.raise_for_status()
+
+                if res.status_code == 200:
+                    json_res = res.json()
+
+                    metadata_dict = {}
+                    for k, v in json_res.items():
+                        if k == "filesystemEntry" and v is not None:
+                            for f in v.keys():
+                                metadata_dict[f] = v[f]
+                        else:
+                            metadata_dict[k] = v
+
+                    fireObj = fObject(**metadata_dict)
+
+                    return fireObj
+
+            except HTTPError as http_err:
+                print(f'HTTP error occurred: {http_err}')
+                print(f'Error message: {res.text}')
+            except Exception as err:
+                print(f'Other error occurred: {err}')
+                print(f'Error message: {res.text}')
+        elif dry is True:
+            api_logger.info(f"Did not push File with path (dry=True): {fileO.path}")
+            api_logger.info(f"Endpoint for pushing is: {url}")
+            api_logger.info(f"Use dry=False to effectively push it")
+
+    def delete_object(self, fireOid=None, firePath=None):
+        """
+        Function to delete a certain FIRE object
+
+        Parameters
+        ----------
+        fireOid : str
+                  FIRE object id. Optional
+        firePath : str
+                   FIRE virtual path. Optional
+        """
+        pdb.set_trace()
+        print('h')
