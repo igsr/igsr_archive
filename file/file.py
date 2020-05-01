@@ -1,6 +1,7 @@
 import os
 import subprocess
 import pdb
+import os
 import datetime
 import logging
 
@@ -14,9 +15,12 @@ class File(object):
 
     Class variables
     ---------------
+    file_id : int, Optional,
+              Internal DB id if the file is
+              stored in the DB
     path : str, Required
            File path
-    type : str, Required
+    type : str, Optional
                 Type of the file.
                 i.e. FASTQ, BAM, CRAM
     host_id : int, Optional
@@ -42,8 +46,8 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, path, type, host_id=1,
-                 withdrawn=0, **kwargs):
+    def __init__(self, path, type=None, host_id=1,
+                 withdrawn=0, file_id=None, **kwargs):
 
         file_logger.info('Creating File object')
 
@@ -51,17 +55,21 @@ class File(object):
         self.type = type
         self.host_id = host_id
         self.withdrawn = withdrawn
+        self.file_id = file_id
 
         self.__dict__.update(kwargs)
 
-        if not hasattr(self, 'md5sum'):
-            self.md5sum = self.calc_md5()
+        if os.path.isfile(path) == True:
+            # path exists, so check if md5sum, size, and created
+            # are defined.
+            if not hasattr(self, 'md5sum'):
+                self.md5sum = self.calc_md5()
 
-        if not hasattr(self, 'size'):
-            self.size = os.path.getsize(self.path)
+            if not hasattr(self, 'size'):
+                self.size = os.path.getsize(self.path)
 
-        if not hasattr(self, 'created'):
-            self.created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            if not hasattr(self, 'created'):
+                self.created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     def calc_md5(self):
         """

@@ -218,7 +218,6 @@ class API(object):
                         "x-fire-md5": f"{fileO.md5sum}"
                     }
                 else:
-
                     api_logger.info(f"Virtual FIRE path not provided")
 
                     header = {
@@ -227,7 +226,6 @@ class API(object):
                     }
 
                 res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
-
                 res.raise_for_status()
 
                 if res.status_code == 200:
@@ -240,8 +238,9 @@ class API(object):
                                 metadata_dict[f] = v[f]
                         else:
                             metadata_dict[k] = v
-
                     fireObj = fObject(**metadata_dict)
+
+                    api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
 
                     return fireObj
 
@@ -256,7 +255,7 @@ class API(object):
             api_logger.info(f"Endpoint for pushing is: {url}")
             api_logger.info(f"Use dry=False to effectively push it")
 
-    def delete_object(self, fireOid=None, firePath=None):
+    def delete_object(self, fireOid=None, dry=True):
         """
         Function to delete a certain FIRE object
 
@@ -264,8 +263,24 @@ class API(object):
         ----------
         fireOid : str
                   FIRE object id. Optional
-        firePath : str
-                   FIRE virtual path. Optional
+        dry : Bool, optional
+              If dry=True then it will not try
+              to delete the FIRE object. Default True
         """
-        pdb.set_trace()
-        print('h')
+
+        api_logger.info(f"Deleting FIRE object with fireOid: {fireOid}")
+
+        url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+              f"{fireOid}"
+
+        try:
+            res = requests.delete(url, auth=(self.user, self.pwd))
+            res.raise_for_status()
+            api_logger.info(f"FIRE object deleted")
+
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+            print(f'Error message: {res.text}')
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+            print(f'Error message: {res.text}')

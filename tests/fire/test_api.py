@@ -68,11 +68,30 @@ def test_fetch_object_by_fpath():
     assert fobject.objectId == 91263
 
 def test_delete_object_by_foi():
+    """
+    This test will fail if an Exception is raised
+    """
     log = logging.getLogger('test_delete_object_by_foi')
 
     log.debug('Deleting a FIRE object using its fireOid')
 
+    # first, push a test file to FIRE
+    # creating File object
+    f = File(
+        path="../../data/test.txt",
+        type="TEST_F",
+        md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
+
+    fireObj = api.push_object(fileO=f, dry=False,
+                              fire_path="test_dir/test.txt")
+
+    # now, you can delete it by its fireOid
+    api.delete_object(fireOid=fireObj.fireOid, dry=False)
+
 def test_push_object():
+    """
+    This test will fail if an Exception is raised
+    """
     log = logging.getLogger('test_push_object')
 
     log.debug('Pushing (upload) a file.file.File object to FIRE')
@@ -86,6 +105,9 @@ def test_push_object():
     api.push_object(fileO=f, dry=True)
 
 def test_push_object_w_fpath():
+    """
+    This test will fail if an Exception is raised
+    """
     log = logging.getLogger('test_push_object_w_fpath')
 
     log.debug('Pushing (upload) a file.file.File object to FIRE adding a '

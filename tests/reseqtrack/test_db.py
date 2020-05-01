@@ -1,6 +1,7 @@
 import pytest
 import logging
 import os
+import pdb
 
 from reseqtrack.db import DB
 from file.file import File
@@ -63,5 +64,22 @@ def test_load_f(db_obj):
         type="TYPE_F"
     )
 
-    db_obj.load_file(f)
+    db_obj.load_file(f, dry=False)
+
+def test_delete_f(db_obj):
+    log = logging.getLogger('test_delete_f')
+
+    log.debug('Testing \'delete_file\' function to delete a file in the DB')
+
+    f = File(
+        path="../../data/test.txt",
+        type="TYPE_F"
+    )
+
+    # Load file in db before deleting it
+    db_obj.load_file(f, dry=False)
+
+    # Now, delete it
+    db_obj.delete_file(f, dry=False)
+
 

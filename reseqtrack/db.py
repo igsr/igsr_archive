@@ -68,7 +68,7 @@ class DB(object):
         f : File object
             File that will be stored in this DB
         dry : Bool, Optional
-              If dry=True then it will not store the file in the DB. Default True
+              If dry=True then it will not try to store the file in the DB. Default True
 
         Returns
         -------
@@ -104,9 +104,55 @@ class DB(object):
             db_logger.info(f"File was not stored in the DB.")
             db_logger.info(f"Use dry=False to effectively store it")
 
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
+
         return f.path
 
+    def delete_file(self, f, dry=True):
+        """
+        Function to delete a File object
+        from self.dbname
 
+        Parameters
+        ----------
+        f : File object
+            File to be deleted from the DB
+        dry : Bool, Optional
+              If dry=True then it will not delete the file
+              from the self.dbname. Default True
+
+        Raises
+        ------
+        pymysql.Error
+        If there was some kind of error
+        """
+
+        db_logger.info(f"Deleting file: {f.path}")
+
+        # construct DELETE sql statement
+        delete_sql = f"DELETE from file where name='{f.path}'"
+
+        if dry is False:
+            try:
+                cursor = self.conn.cursor()
+                # Execute the SQL command
+                cursor.execute(delete_sql)
+                # Commit your changes in the database
+                self.conn.commit()
+                db_logger.info(f"File deleted")
+            except pymysql.Error as e:
+                db_logger.error("Exception occurred", exc_info=True)
+                # Rollback in case there is any error
+                self.conn.rollback()
+
+        elif dry is True:
+            db_logger.info(f"Delete sql: {delete_sql}")
+            db_logger.info(f"File was not deleted from the DB.")
+            db_logger.info(f"Use dry=False to effectively delete it")
+
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
 
 
 

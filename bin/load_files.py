@@ -5,6 +5,7 @@ import os
 import logging
 import re
 import pdb
+from utils import str2bool
 
 from reseqtrack.db import DB
 from file.file import File
@@ -60,7 +61,7 @@ if args.file:
             type=args.type
     )
 
-    db.load_file(f, dry=args.dry)
+    db.load_file(f, dry=str2bool(args.dry))
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
 
@@ -71,7 +72,7 @@ elif args.list_file:
             type=args.type
         )
 
-        db.load_file(f, dry=args.dry)
+        db.load_file(f, dry=str2bool(args.dry))
 elif args.md5_file:
     logger.info('File with <md5sum> <paths> provided using --md5_file option')
 
@@ -84,6 +85,6 @@ elif args.md5_file:
             md5sum=md5sum
         )
 
-        db.load_file(f, dry=args.dry)
+        db.load_file(f, dry=str2bool(args.dry))
 
 logger.info('Running completed')
