@@ -18,7 +18,7 @@ class File(object):
     file_id : int, Optional,
               Internal DB id if the file is
               stored in the DB
-    path : str, Required
+    name : str, Required
            File path
     type : str, Optional
                 Type of the file.
@@ -32,7 +32,7 @@ class File(object):
     withdrawn : int, Optional
                 1 if self is withdrawn.
                 0 otherwise. Default: 0
-    md5sum : str, Optional
+    md5  : str, Optional
              md5sum of this file
              It will be calculated
              if not defined
@@ -46,27 +46,28 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, path, type=None, host_id=1,
-                 withdrawn=0, file_id=None, **kwargs):
+    def __init__(self, name, host_id=1,
+                 withdrawn=0, **kwargs):
 
         file_logger.info('Creating File object')
 
-        self.path = path
-        self.type = type
+        self.name = name
         self.host_id = host_id
         self.withdrawn = withdrawn
-        self.file_id = file_id
 
-        self.__dict__.update(kwargs)
+        allowed_keys = ['name', 'type', 'host_id', 'withdrawn', 'file_id',
+                        'md5', 'size', 'created', 'updated']
 
-        if os.path.isfile(path) == True:
+        self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
+
+        if os.path.isfile(name) == True:
             # path exists, so check if md5sum, size, and created
             # are defined.
-            if not hasattr(self, 'md5sum'):
-                self.md5sum = self.calc_md5()
+            if not hasattr(self, 'md5'):
+                self.md5 = self.calc_md5()
 
             if not hasattr(self, 'size'):
-                self.size = os.path.getsize(self.path)
+                self.size = os.path.getsize(self.name)
 
             if not hasattr(self, 'created'):
                 self.created = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -79,7 +80,7 @@ class File(object):
         -------
         md5sum string
         """
-        command = "md5 -r %s" % self.path
+        command = "md5 -r %s" % self.name
 
         p = subprocess.Popen(command,
                              stdout=subprocess.PIPE,

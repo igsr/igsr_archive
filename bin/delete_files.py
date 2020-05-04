@@ -3,7 +3,6 @@
 import argparse
 import os
 import logging
-import re
 import pdb
 from utils import str2bool
 
@@ -21,7 +20,7 @@ parser.add_argument('-s', '--settingsf', required=True,
                     help="Path to .ini file with settings")
 
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to delete the file without "
-                                                 "effectively doing it. True: Perform a dry-run.")
+                                                "effectively doing it. True: Perform a dry-run")
 parser.add_argument('-f', '--file', help="Path to file to be deleted")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
                                                                            " a list of file "
@@ -43,11 +42,10 @@ db = DB(settingf=args.settingsf,
         dbname=dbname)
 
 if args.file:
-    pdb.set_trace()
     logger.info('File provided using -f, --file option')
 
     f = File(
-            path=args.file
+        name=args.file
     )
 
     db.delete_file(f, dry=str2bool(args.dry))
@@ -57,7 +55,7 @@ elif args.list_file:
     for path in args.list_file:
         path = path.rstrip("\n")
         f = File(
-            path=path,
+            name=path,
         )
 
         db.delete_file(f, dry=str2bool(args.dry))

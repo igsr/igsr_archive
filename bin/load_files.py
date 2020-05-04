@@ -57,8 +57,8 @@ if args.file:
     logger.info('File provided using -f, --file option')
 
     f = File(
-            path=args.file,
-            type=args.type
+        name=args.file,
+        type=args.type
     )
 
     db.load_file(f, dry=str2bool(args.dry))
@@ -68,7 +68,7 @@ elif args.list_file:
     for path in args.list_file:
         path = path.rstrip("\n")
         f = File(
-            path=path,
+            name=path,
             type=args.type
         )
 
@@ -80,7 +80,7 @@ elif args.md5_file:
         line = line.rstrip("\n")
         md5sum, path = re.split(' +', line)
         f = File(
-            path=path,
+            name=path,
             type=args.type,
             md5sum=md5sum
         )

@@ -13,7 +13,8 @@ def db_obj():
     """
     Fixture to get a DB object
     """
-    pwd = os.getenv('PWD')
+
+    pwd = os.getenv('DBPWD')
     dbname = os.getenv('DBNAME')
 
     assert dbname, "$DBNAME undefined"
@@ -30,7 +31,7 @@ def test_conn_s():
     log = logging.getLogger('test_conn_s')
     log.debug('Testing connection with valid credentials and DB name')
 
-    pwd = os.getenv('PWD')
+    pwd = os.getenv('DBPWD')
     dbname = os.getenv('DBNAME')
 
     assert dbname, "$DBNAME undefined"
@@ -60,7 +61,7 @@ def test_load_f(db_obj):
     log.debug('Testing \'load_file\' function to load file in DB')
 
     f = File(
-        path="../../data/test.txt",
+        name="../../data/test.txt",
         type="TYPE_F"
     )
 
@@ -72,7 +73,7 @@ def test_delete_f(db_obj):
     log.debug('Testing \'delete_file\' function to delete a file in the DB')
 
     f = File(
-        path="../../data/test.txt",
+        name="../../data/test.txt",
         type="TYPE_F"
     )
 
@@ -82,4 +83,25 @@ def test_delete_f(db_obj):
     # Now, delete it
     db_obj.delete_file(f, dry=False)
 
+def test_fetch_f_exists(db_obj):
+    log = logging.getLogger('test_fetch_f_exists')
 
+    log.debug('Testing \'fetch_file\' function to fetch an existing'
+              'file from the DB')
+
+    # path provided here points to an existing file
+    f = db_obj.fetch_file('/nfs/1000g-archive/vol1/ftp/current.tree')
+
+    assert f.name == '/nfs/1000g-archive/vol1/ftp/current.tree'
+
+
+def test_fetch_f_not_exists(db_obj):
+    log = logging.getLogger('test_fetch_f_not_exists')
+
+    log.debug('Testing \'fetch_file\' function to fetch a non-existing'
+              'file from the DB')
+
+    # path provided here points to an existing file
+    f = db_obj.fetch_file('mock_file.txt')
+
+    assert f == None

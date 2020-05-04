@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from file.file import File
 
 import pymysql
 import pdb
@@ -153,6 +154,43 @@ class DB(object):
 
         else:
             raise Exception(f"dry option: {dry} not recognized")
+
+    def fetch_file(self, path):
+        """
+        Function to fetch a file from DB
+
+        Parameters
+        ----------
+        path : str
+               Path of file to be retrieved
+
+        Returns
+        -------
+        file.file.File object retrieved from DB
+        None if no file was retrieved
+        """
+
+        db_logger.info(f"Fetching file with path: {path}")
+
+        query = "SELECT * FROM file WHERE name like %s"
+
+        try:
+            cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+            cursor.execute(query, ['%' + path])
+            result_set = cursor.fetchall()
+            if not result_set:
+                db_logger.info(f"No file retrieved from DB using using path:{path}")
+                return None
+            for row in result_set:
+                f = File(**row)
+                return f
+            cursor.close()
+            self.db.commit()
+        except pymysql.Error as e:
+            db_logger.error("Exception occurred", exc_info=True)
+            # Rollback in case there is any error
+            self.conn.rollback()
+
 
 
 
