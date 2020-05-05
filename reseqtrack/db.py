@@ -61,8 +61,8 @@ class DB(object):
 
     def load_file(self, f, dry=True):
         """
-        Function to load a File object
-        in self.dbname
+        Function to load an entry in the
+        table 'file' of self.dbname
 
         Parameters
         ----------
@@ -81,10 +81,10 @@ class DB(object):
             If file could not be loaded
         """
 
-        db_logger.info(f"Loading file: {f.path}")
+        db_logger.info(f"Loading file: {f.name}")
         # construct INSERT INTO sql statement
         sql_insert_attr = f"INSERT INTO file (file_id, name, md5, type, size, host_id, withdrawn, created) " \
-                          f"VALUES (NULL, \'{f.path}\', \'{f.md5sum}\', \'{f.type}\', \'{f.size}\', \'{f.host_id}\', " \
+                          f"VALUES (NULL, \'{f.name}\', \'{f.md5}\', \'{f.type}\', \'{f.size}\', \'{f.host_id}\', " \
                           f"\'{f.withdrawn}\', \'{f.created}\')"
 
         if dry is False:
@@ -94,12 +94,11 @@ class DB(object):
                 cursor.execute(sql_insert_attr)
                 # Commit your changes in the database
                 self.conn.commit()
-                db_logger.info(f"File loaded: {f.path}")
+                db_logger.info(f"File loaded: {f.name}")
             except pymysql.Error as e:
                 db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
                 self.conn.rollback()
-
         elif dry is True:
             db_logger.info(f"Insert sql: {sql_insert_attr}")
             db_logger.info(f"File was not stored in the DB.")
@@ -108,12 +107,12 @@ class DB(object):
         else:
             raise Exception(f"dry option: {dry} not recognized")
 
-        return f.path
+        return f.name
 
     def delete_file(self, f, dry=True):
         """
-        Function to delete a File object
-        from self.dbname
+        Function to delete a certain entry
+        from the 'file' table in self.dbname
 
         Parameters
         ----------
@@ -146,6 +145,7 @@ class DB(object):
                 db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
                 self.conn.rollback()
+                raise Exception()
 
         elif dry is True:
             db_logger.info(f"Delete sql: {delete_sql}")
@@ -155,14 +155,17 @@ class DB(object):
         else:
             raise Exception(f"dry option: {dry} not recognized")
 
-    def fetch_file(self, path):
+    def fetch_file(self, path=None, basename=None):
         """
-        Function to fetch a file from DB
+        Function to fetch a certain entry from the table 'file' in
+        self.dbname
 
         Parameters
         ----------
-        path : str
+        path : str, Optional
                Path of file to be retrieved
+        basename : str, Optional
+                   Basename of file to be retrieved
 
         Returns
         -------
@@ -170,13 +173,20 @@ class DB(object):
         None if no file was retrieved
         """
 
-        db_logger.info(f"Fetching file with path: {path}")
+        cursor = self.conn.cursor(pymysql.cursors.DictCursor)
 
-        query = "SELECT * FROM file WHERE name like %s"
+        if path is not None:
+            db_logger.info(f"Fetching file with path: {path}")
+
+            query = "SELECT * FROM file WHERE name like %s"
+            cursor.execute(query, ['%' + path])
+
+        elif basename is not None:
+            db_logger.info(f"Fetching file with basename: {basename}")
+            query = "SELECT * FROM file WHERE name like %s"
+            cursor.execute(query, ['%' + basename])
 
         try:
-            cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-            cursor.execute(query, ['%' + path])
             result_set = cursor.fetchall()
             if not result_set:
                 db_logger.info(f"No file retrieved from DB using using path:{path}")
@@ -191,10 +201,35 @@ class DB(object):
             # Rollback in case there is any error
             self.conn.rollback()
 
+    def update_file(self, attr_name, value, name):
+        """
+        Update a certain attribute in an entry from the 'file' table in
+        self.dbname
 
+        Parameters
+        ----------
+        attr_name : str
+                    Attribute name to modify
+        value : str
+                New value for 'attr_name'
+        name : str
+               'name' (path) of entry that
+               will be updated
+        """
+        # construct query
+        update_sql = f"UPDATE file SET {attr_name}={value} WHERE name={name}"
 
-
-
+        try:
+            cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+            # Execute the SQL command
+            cursor.execute(update_sql)
+            cursor.close()
+            # Commit your changes in the database
+            self.db.commit()
+        except pymysql.Error as exc:
+            db_logger.error("Exception occurred", exc_info=True)
+            # Rollback in case there is any error
+            self.conn.rollback()
 
 
 

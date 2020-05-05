@@ -26,18 +26,28 @@ parser.add_argument('--dest', help="Final path of file. It will update the path 
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
                                                                            " a list of target and destination "
                                                                            "paths, one in each line")
+parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provided then it will try to guess"
+                                        "the password from the $DBPWD env variable")
+parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
+                                           "the dbname from the $DBNAME env variable")
+
 args = parser.parse_args()
 
 logger.info('Running script')
 
-pwd = os.getenv('PASSWORD')
-dbname = os.getenv('DBNAME')
+pwd = args.pwd
+if args.pwd is None:
+    pwd = os.getenv('DBPWD')
+
+dbname = args.dbname
+if args.dbname is None:
+    dbname = os.getenv('DBNAME')
 
 assert dbname, "$DBNAME undefined"
-assert pwd, "$PASSWORD undefined"
+assert pwd, "$DBPWD undefined"
 
-# tuple (origin, dest) for files to be archived
-files = ()
+# list of tuples (origin, dest) for files to be archived
+files = []
 
 origin_seen = False
 if args.origin:
@@ -52,7 +62,7 @@ elif args.list_file:
         line = line.rstrip("\n")
         try:
             origin, dest = line.split("\t")
-            files = (origin, dest)
+            files.append((origin, dest))
         except Exception:
             raise Exception("Format of file provided with --list_file, -l option needs to be:"
                             "<origin>\\t<dest>")
@@ -61,22 +71,17 @@ elif args.list_file:
 
 if origin_seen is True:
     logger.info('--origin and --dest args defined')
-    files = (args.origin, args.dest)
-
-# establish connection with DB
-pwd = os.getenv('DBPWD')
-dbname = os.getenv('DBNAME')
-
-assert dbname, "$DBNAME undefined"
-assert pwd, "$PWD undefined"
+    files.append((args.origin, args.dest))
 
 db = DB(settingf=args.settingsf,
         pwd=pwd,
         dbname=dbname)
 
-
-
 for tup in files:
+    # check if origin exists in db
+    assert db.fetch_file(tup[0]) is not None, f"File with path {tup[0]} does not exist in the DB." \
+                                              f"You need to load it first in order to proceed"
+
 
 
 

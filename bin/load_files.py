@@ -37,54 +37,72 @@ parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File
 parser.add_argument('--md5_file', type=argparse.FileType('r'), help="File with output from md5sum, in the format:"
                                                                     " <md5checkum>\t<filepath>")
 
+parser.add_argument('--unique', default=True, help="Check if a file with the same name (and not path) does"
+                                                   "already exist in the DB. True: Will not load the file"
+                                                   "if name already exists")
+parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provided then it will try to guess"
+                                        "the password from the $PASSWORD env variable")
+parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
+                                           "the dbname from the $DBNAME env variable")
+
 
 args = parser.parse_args()
 
 logger.info('Running script')
 
-pwd = os.getenv('PWD')
-dbname = os.getenv('DBNAME')
+pwd = args.pwd
+if args.pwd is None:
+    pwd = os.getenv('DBPWD')
+
+dbname = args.dbname
+if args.dbname is None:
+    dbname = os.getenv('DBNAME')
 
 assert dbname, "$DBNAME undefined"
-assert pwd, "$PWD undefined"
+assert pwd, "$DBPWD undefined"
 
 # Class to connect with Reseqtrack DB
 db = DB(settingf=args.settingsf,
         pwd=pwd,
         dbname=dbname)
 
+# list with paths to be loaded
+files = []
+
 if args.file:
     logger.info('File provided using -f, --file option')
 
-    f = File(
-        name=args.file,
-        type=args.type
-    )
+    f = File(name=args.file,
+             type=args.type)
+    files.append(f)
 
-    db.load_file(f, dry=str2bool(args.dry))
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
 
     for path in args.list_file:
         path = path.rstrip("\n")
-        f = File(
-            name=path,
-            type=args.type
-        )
-
-        db.load_file(f, dry=str2bool(args.dry))
+        f = File(name=path,
+                 type=args.type)
+        files.append(f)
 elif args.md5_file:
     logger.info('File with <md5sum> <paths> provided using --md5_file option')
 
     for line in args.md5_file:
         line = line.rstrip("\n")
         md5sum, path = re.split(' +', line)
-        f = File(
-            name=path,
-            type=args.type,
-            md5sum=md5sum
-        )
+        f = File(name=path,
+                 type=args.type,
+                 md5sum=md5sum)
+        files.append(f)
 
-        db.load_file(f, dry=str2bool(args.dry))
+for f in files:
+    if str2bool(args.unique) is True:
+        # get basename and check if it already exists in DB
+        basename = os.path.basename(f.name)
+        rf = db.fetch_file(basename=basename)
+        assert rf is None, f"A file with the name '{basename}' already exists in the DB. You need to change filename " \
+                           f"'{basename}' so it is unique."
+
+    db.load_file(f, dry=str2bool(args.dry))
 
 logger.info('Running completed')
