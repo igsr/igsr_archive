@@ -4,6 +4,7 @@ from file.file import File
 import pymysql
 import pdb
 import logging
+import datetime
 
 # create logger
 db_logger = logging.getLogger(__name__)
@@ -100,7 +101,7 @@ class DB(object):
                 # Rollback in case there is any error
                 self.conn.rollback()
         elif dry is True:
-            db_logger.info(f"Insert sql: {sql_insert_attr}")
+            db_logger.info(f"INSERT sql: {sql_insert_attr}")
             db_logger.info(f"File was not stored in the DB.")
             db_logger.info(f"Use dry=False to effectively store it")
 
@@ -128,10 +129,10 @@ class DB(object):
         If there was some kind of error
         """
 
-        db_logger.info(f"Deleting file: {f.path}")
+        db_logger.info(f"Deleting file: {f.name}")
 
         # construct DELETE sql statement
-        delete_sql = f"DELETE from file where name='{f.path}'"
+        delete_sql = f"DELETE from file where name='{f.name}'"
 
         if dry is False:
             try:
@@ -148,7 +149,7 @@ class DB(object):
                 raise Exception()
 
         elif dry is True:
-            db_logger.info(f"Delete sql: {delete_sql}")
+            db_logger.info(f"DELETE sql: {delete_sql}")
             db_logger.info(f"File was not deleted from the DB.")
             db_logger.info(f"Use dry=False to effectively delete it")
 
@@ -195,13 +196,13 @@ class DB(object):
                 f = File(**row)
                 return f
             cursor.close()
-            self.db.commit()
+            self.conn.commit()
         except pymysql.Error as e:
             db_logger.error("Exception occurred", exc_info=True)
             # Rollback in case there is any error
             self.conn.rollback()
 
-    def update_file(self, attr_name, value, name):
+    def update_file(self, attr_name, value, name, dry=True):
         """
         Update a certain attribute in an entry from the 'file' table in
         self.dbname
@@ -215,21 +216,37 @@ class DB(object):
         name : str
                'name' (path) of entry that
                will be updated
+        dry : Bool, Optional
+              If dry=True then it will not delete the file
+              from the self.dbname. Default True
         """
-        # construct query
-        update_sql = f"UPDATE file SET {attr_name}={value} WHERE name={name}"
+        db_logger.info(f"Updating file entry with name: {name}")
 
-        try:
-            cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-            # Execute the SQL command
-            cursor.execute(update_sql)
-            cursor.close()
-            # Commit your changes in the database
-            self.db.commit()
-        except pymysql.Error as exc:
-            db_logger.error("Exception occurred", exc_info=True)
-            # Rollback in case there is any error
-            self.conn.rollback()
+        now = datetime.datetime.now()
+        now_str = now.strftime('%Y-%m-%d %H:%M:%S')
+
+        # construct query
+        update_sql = f"UPDATE file SET {attr_name}='{value}', updated='{now_str}' WHERE name='{name}'"
+
+        if dry is False:
+            try:
+                cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+                # Execute the SQL command
+                cursor.execute(update_sql)
+                cursor.close()
+                # Commit your changes in the database
+                self.conn.commit()
+            except pymysql.Error as exc:
+                db_logger.error("Exception occurred", exc_info=True)
+                # Rollback in case there is any error
+                self.conn.rollback()
+        elif dry is True:
+            db_logger.info(f"UPDATE sql: {update_sql}")
+            db_logger.info(f"DB Entry was not updated")
+            db_logger.info(f"Use dry=False to update it")
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
+
 
 
 

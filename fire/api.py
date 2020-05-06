@@ -22,10 +22,10 @@ class API(object):
                Path to *.ini file with MySQL server connection settings
     pwd : str, Required
           Password for API
-    user : str, Required
-           Username for API
+    user : str,
+           Username for API. Obtained from settings.ini
     """
-    def __init__(self, settingsf, user, pwd):
+    def __init__(self, settingsf, pwd):
 
         api_logger.info('Creating an API object')
 
@@ -34,7 +34,7 @@ class API(object):
         parser = ConfigParser()
         parser.read(settingsf)
         self.settings = parser
-        self.user = user
+        self.user = self.settings.get('fire', 'user')
         self.pwd = pwd
 
     def get_filename_from_cd(self, cd):
@@ -199,15 +199,15 @@ class API(object):
         HTTPError
         """
 
-        api_logger.info(f"Pushing File with path: {fileO.path}")
+        api_logger.info(f"Pushing File with path: {fileO.name}")
 
-        files = {'file': open(fileO.path, 'rb')}
+        files = {'file': open(fileO.name, 'rb')}
 
         url = f"{self.settings.get('fire', 'root_endpoint')}/objects"
 
         if dry is False:
             try:
-                header ={}
+                header = {}
                 if fire_path is not None:
 
                     api_logger.info(f"Virtual FIRE path provided")
@@ -215,14 +215,14 @@ class API(object):
                     header = {
                         "x-fire-path": f"{fire_path}",
                         "x-fire-size": f"{fileO.size}",
-                        "x-fire-md5": f"{fileO.md5sum}"
+                        "x-fire-md5": f"{fileO.md5}"
                     }
                 else:
                     api_logger.info(f"Virtual FIRE path not provided")
 
                     header = {
                         "x-fire-size": f"{fileO.size}",
-                        "x-fire-md5": f"{fileO.md5sum}"
+                        "x-fire-md5": f"{fileO.md5}"
                     }
 
                 res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
@@ -251,7 +251,7 @@ class API(object):
                 print(f'Other error occurred: {err}')
                 print(f'Error message: {res.text}')
         elif dry is True:
-            api_logger.info(f"Did not push File with path (dry=True): {fileO.path}")
+            api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
             api_logger.info(f"Use dry=False to effectively push it")
 

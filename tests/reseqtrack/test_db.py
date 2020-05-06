@@ -69,25 +69,29 @@ def test_load_f(db_obj):
 
 def test_update_f(db_obj):
     log = logging.getLogger('test_update_f')
-
+    pdb.set_trace()
     log.debug("Testing \'update_file\' function to update an entry "
               "in the \'file\' table of the DB")
 
     # First, load file entry in the database
     f = File(
         name="../../data/test.txt",
-        type="TYPE_F"
-    )
+        type="TYPE_F")
 
     db_obj.load_file(f, dry=False)
-
-    print("hello\n")
 
     # Now, modify the file path for
     # entry in the 'file' table
     db_obj.update_file(attr_name='name',
                        value='../../data/test1.txt',
-                       name='../../data/test.txt')
+                       name='../../data/test.txt',
+                       dry=False)
+
+    # Now, finally delete the file entry from the DB
+    f1 = File(
+        name="../../data/test1.txt",
+        type="TYPE_F")
+    db_obj.delete_file(f1, dry=False)
 
 def test_delete_f(db_obj):
     log = logging.getLogger('test_delete_f')

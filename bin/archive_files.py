@@ -4,7 +4,7 @@ import logging
 import pdb
 from utils import str2bool
 from reseqtrack.db import DB
-
+from fire.api import API
 from file.file import File
 
 logging.basicConfig(level=logging.DEBUG)
@@ -26,25 +26,32 @@ parser.add_argument('--dest', help="Final path of file. It will update the path 
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
                                                                            " a list of target and destination "
                                                                            "paths, one in each line")
-parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provided then it will try to guess"
-                                        "the password from the $DBPWD env variable")
-parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
-                                           "the dbname from the $DBNAME env variable")
+parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
+                                    "the password from the $DBPWD env variable")
+parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
+                                     "the dbname from the $DBNAME env variable")
+parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess"
+                                     "the FIRE pwd from the $FIRE_PWD env variable")
 
 args = parser.parse_args()
 
 logger.info('Running script')
 
-pwd = args.pwd
-if args.pwd is None:
-    pwd = os.getenv('DBPWD')
+dbpwd = args.dbpwd
+if args.dbpwd is None:
+    dbpwd = os.getenv('DBPWD')
 
 dbname = args.dbname
 if args.dbname is None:
     dbname = os.getenv('DBNAME')
 
+firepwd = args.firepwd
+if args.firepwd is None:
+    firepwd = os.getenv('FIRE_PWD')
+
+assert firepwd, "$FIRE_PWD undefined"
 assert dbname, "$DBNAME undefined"
-assert pwd, "$DBPWD undefined"
+assert dbpwd, "$DBPWD undefined"
 
 # list of tuples (origin, dest) for files to be archived
 files = []
@@ -66,23 +73,42 @@ elif args.list_file:
         except Exception:
             raise Exception("Format of file provided with --list_file, -l option needs to be:"
                             "<origin>\\t<dest>")
-        print("h\n")
-
 
 if origin_seen is True:
     logger.info('--origin and --dest args defined')
     files.append((args.origin, args.dest))
 
+# connection to Reseqtrack DB
 db = DB(settingf=args.settingsf,
-        pwd=pwd,
+        pwd=dbpwd,
         dbname=dbname)
 
+pdb.set_trace()
+# connection to FIRE api
+api = API(settingsf=args.settingsf,
+          pwd=firepwd)
+
 for tup in files:
-    # check if origin exists in db
-    assert db.fetch_file(tup[0]) is not None, f"File with path {tup[0]} does not exist in the DB." \
-                                              f"You need to load it first in order to proceed"
+    # check if 'origin' exists in db and fetch the file
+    origin_f = db.fetch_file(path=tup[0])
+    assert origin_f is not None, f"File entry with path {tup[0]} does not exist in the DB."\
+                                 f"You need to load it first in order to proceed"
 
+    # now, check if 'dest' exists in db
+    assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
+                                               f"It will not continue"
 
+    # push the file to FIRE where tup[1] will the path in the FIRE
+    # filesystem
+    api.push_object(fileO=origin_f,
+                    dry=str2bool(args.dry),
+                    fire_path=tup[1])
+
+    # now, modify the file entry in the db and update its name (path)
+    db.update_file(attr_name='name',
+                   value=tup[1],
+                   name=tup[0],
+                   dry=str2bool(args.dry))
 
 
 

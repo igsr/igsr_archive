@@ -10,13 +10,10 @@ from file.file import File
 logging.basicConfig(level=logging.DEBUG)
 
 pwd = os.getenv('FIRE_PASSWORD')
-username = os.getenv('FIRE_USERNAME')
 
 assert pwd, "$FIRE_PWD undefined"
-assert username, "$USERNAME undefined"
 
 api = API(settingsf="../../data/settings.ini",
-          user=username,
           pwd=pwd)
 
 @pytest.fixture
