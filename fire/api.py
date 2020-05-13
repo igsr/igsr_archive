@@ -112,7 +112,7 @@ class API(object):
     def fetch_object(self, fireOid=None, firePath=None):
         """
         Function to fetch the metadata associated to a particular
-        FIRE object
+        FIRE object without downloading the archived object
 
         Parameters
         ----------
@@ -125,6 +125,7 @@ class API(object):
         -------
         fire.object.fObject
             Object with metadata
+        None if object does not exist in FIRE
 
         Raises
         ------
@@ -160,9 +161,10 @@ class API(object):
                 else:
                     metadata_dict[k] = v
 
+            fireObj = None
             fireObj = fObject(**metadata_dict)
 
-            api_logger.info('Created fire.object.Object')
+            api_logger.info('Fetched FIRE object')
 
             return fireObj
 

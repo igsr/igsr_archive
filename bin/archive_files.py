@@ -91,8 +91,12 @@ api = API(settingsf=args.settingsf,
 for tup in files:
     # check if 'origin' exists in db and fetch the file
     origin_f = db.fetch_file(path=tup[0])
-    assert origin_f is not None, f"File entry with path {tup[0]} does not exist in the DB."\
+    assert origin_f is not None, f"File entry with path {tup[0]} does not exist in the DB. "\
                                  f"You need to load it first in order to proceed"
+
+    # check if 'origin' already exists in FIRE
+    if api.fetch_object(firePath=tup[0]) is not None:
+        logger.info(f"File provided {tup[0]} is in FIRE, it will be moved to {tup[1]}")
 
     # now, check if 'dest' exists in db
     assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
