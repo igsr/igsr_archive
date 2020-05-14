@@ -95,18 +95,23 @@ for tup in files:
                                  f"You need to load it first in order to proceed"
 
     # check if 'origin' already exists in FIRE
-    if api.fetch_object(firePath=tup[0]) is not None:
+    origin_fobj = api.fetch_object(firePath=tup[0])
+    if origin_fobj is not None:
         logger.info(f"File provided {tup[0]} is in FIRE, it will be moved to {tup[1]}")
-
-    # now, check if 'dest' exists in db
-    assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
+        api.update_object(attr_name='firePath',
+                          value=tup[1],
+                          fireOid=origin_fobj.fireOid)
+                TODO: add dry option
+    else:
+        # now, check if 'dest' exists in db
+        assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
                                                f"It will not continue"
 
-    # push the file to FIRE where tup[1] will the path in the FIRE
-    # filesystem
-    api.push_object(fileO=origin_f,
-                    dry=str2bool(args.dry),
-                    fire_path=tup[1])
+        # push the file to FIRE where tup[1] will the path in the FIRE
+        # filesystem
+        api.push_object(fileO=origin_f,
+                        dry=str2bool(args.dry),
+                        fire_path=tup[1])
 
     # now, modify the file entry in the db and update its name (path)
     db.update_file(attr_name='name',

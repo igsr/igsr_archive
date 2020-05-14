@@ -150,19 +150,10 @@ class API(object):
 
             # If the response was successful, no Exception will be raised
             res.raise_for_status()
-
             json_res = res.json()
 
-            metadata_dict = {}
-            for k, v in json_res.items():
-                if k == "filesystemEntry" and v is not None:
-                    for f in v.keys():
-                        metadata_dict[f] = v[f]
-                else:
-                    metadata_dict[k] = v
-
             fireObj = None
-            fireObj = fObject(**metadata_dict)
+            fireObj = self.__parse_json_response(json_res)
 
             api_logger.info('Fetched FIRE object')
 
@@ -175,7 +166,35 @@ class API(object):
             print(f'Other error occurred: {err}')
             print(f'Error message: {res.text}')
 
-    def push_object(self, fileO, dry=True, fire_path=None):
+    def __parse_json_response(self, json_res):
+        """
+        Private function to parse JSON API response
+        and will instantiate a fire.object.fObject object
+
+        Parameters
+        ----------
+        json_res : json response generated
+                   by the Requests library
+
+        Returns
+        -------
+        fire.object
+        """
+
+        metadata_dict = {}
+        for k, v in json_res.items():
+            if k == "filesystemEntry" and v is not None:
+                for f in v.keys():
+                    metadata_dict[f] = v[f]
+            else:
+                metadata_dict[k] = v
+
+        fireObj = fObject(**metadata_dict)
+
+        return fireObj
+
+
+    def push_object(self, fileO, dry=True, publish=True, fire_path=None):
         """
         Function to push (upload) a file.file.File object
         to FIRE
@@ -187,9 +206,12 @@ class API(object):
         dry : Bool, optional
               If dry=True then it will not try
               to push the File object to FIRE. Default True
-        fire_path : str
+        pubish : Bool, optional
+                 If publish=True then the pushed object will
+                 be published on upload. Default True
+        fire_path : str, optional
                     Virtual path in FIRE to be used for
-                    pushing this File. Optional
+                    pushing this File.
 
         Returns
         -------
@@ -209,39 +231,23 @@ class API(object):
 
         if dry is False:
             try:
-                header = {}
+                header = {"x-fire-size": f"{fileO.size}",
+                          "x-fire-md5": f"{fileO.md5}"}
+
                 if fire_path is not None:
-
                     api_logger.info(f"Virtual FIRE path provided")
+                    header['x-fire-path'] = f"{fire_path}"
 
-                    header = {
-                        "x-fire-path": f"{fire_path}",
-                        "x-fire-size": f"{fileO.size}",
-                        "x-fire-md5": f"{fileO.md5}"
-                    }
-                else:
-                    api_logger.info(f"Virtual FIRE path not provided")
-
-                    header = {
-                        "x-fire-size": f"{fileO.size}",
-                        "x-fire-md5": f"{fileO.md5}"
-                    }
+                if publish is True:
+                    api_logger.info(f"Pushed object will be published")
+                    header['x-fire-publish'] = "true"
 
                 res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
                 res.raise_for_status()
 
                 if res.status_code == 200:
                     json_res = res.json()
-
-                    metadata_dict = {}
-                    for k, v in json_res.items():
-                        if k == "filesystemEntry" and v is not None:
-                            for f in v.keys():
-                                metadata_dict[f] = v[f]
-                        else:
-                            metadata_dict[k] = v
-                    fireObj = fObject(**metadata_dict)
-
+                    fireObj = self.__parse_json_response(json_res)
                     api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
 
                     return fireObj
@@ -256,6 +262,75 @@ class API(object):
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
             api_logger.info(f"Use dry=False to effectively push it")
+
+    def update_object(self, attr_name, value, fireOid=None, firePath=None):
+        """
+        Function to update a certain 'attr_name' of an archived
+        FIRE object
+        
+        Parameters
+        ----------
+        attr_name : str
+                    Attribute name to modify. Required
+                    Valid attribute names are: 'firePath'
+        value : str
+                New value for 'attr_name'. Required
+        fireOid : str
+                  FIRE object id that will be modified.
+                  Optional
+        firePath : str
+                   FIRE virtual path that will be modified.
+                   Optional
+
+        Returns
+        -------
+        fire.object.fObject with updated 'attr_name'
+
+        Raises
+        ------
+        HTTPError
+        """
+
+        fireObj = None
+
+        if fireOid is not None:
+            api_logger.info(f"fireOid provided. Fetching FIRE object that will be modified")
+            fireObj = self.fetch_object(fireOid=fireOid)
+        elif firePath is not None:
+            api_logger.info(f"firePath provided. Fetching FIRE object that will be modified")
+            fireObj = self.fetch_object(firePath=firePath)
+        elif firePath is None and fireOid is None:
+            raise Exception("Either 'firePath' or 'fireOid' need to be "
+                            "defined")
+
+        res = None
+        if attr_name is 'firePath':
+            api_logger.info(f"firePath will be modified")
+
+            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+                  f"{fireOid}/firePath"
+
+            header = {"x-fire-path": f"{value}"}
+
+            try:
+                res = requests.put(url, auth=(self.user, self.pwd), headers=header)
+
+                res.raise_for_status()
+                if res.status_code == 200:
+                    json_res = res.json()
+                    fireObj = self.__parse_json_response(json_res)
+
+                    api_logger.info(f"Done firePath update")
+                    return fireObj
+
+            except HTTPError as http_err:
+                print(f'HTTP error occurred: {http_err}')
+                print(f'Error message: {res.text}')
+            except Exception as err:
+                print(f'Other error occurred: {err}')
+                print(f'Error message: {res.text}')
+
+
 
     def delete_object(self, fireOid=None, dry=True):
         """

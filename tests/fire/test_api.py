@@ -161,6 +161,25 @@ def test_push_object_w_fpath(del_obj):
 
     del_obj.append(fobj.fireOid)
 
+def test_update_object(loaded_obj, del_obj):
+    """
+    This test will test the 'update_object' function
+    to update the FIRE path of an archived object
+    """
+
+    log = logging.getLogger('test_update_object')
+
+    log.debug('Updating FIRE path of an archived'
+              ' object')
+
+    updated_obj = api.update_object(attr_name='firePath',
+                                    value='test_dir1/test.txt',
+                                    fireOid=loaded_obj.fireOid)
+
+    # check that FIRE path has been modified
+    assert updated_obj.path == "/test_dir1/test.txt"
+
+    del_obj.append(loaded_obj.fireOid)
 
 
 
