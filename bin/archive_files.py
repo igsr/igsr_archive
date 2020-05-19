@@ -5,7 +5,6 @@ import pdb
 from utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
-from file.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,6 +25,7 @@ parser.add_argument('--dest', help="Final path of file. It will update the path 
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
                                                                            " a list of target and destination "
                                                                            "paths, one in each line")
+parser.add_argument('--type',  help="New file type used in the Reseqtrack DB for archiving the files")
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
@@ -83,11 +83,10 @@ db = DB(settingf=args.settingsf,
         pwd=dbpwd,
         dbname=dbname)
 
-pdb.set_trace()
 # connection to FIRE api
 api = API(settingsf=args.settingsf,
           pwd=firepwd)
-
+pdb.set_trace()
 for tup in files:
     # check if 'origin' exists in db and fetch the file
     origin_f = db.fetch_file(path=tup[0])
@@ -100,8 +99,8 @@ for tup in files:
         logger.info(f"File provided {tup[0]} is in FIRE, it will be moved to {tup[1]}")
         api.update_object(attr_name='firePath',
                           value=tup[1],
-                          fireOid=origin_fobj.fireOid)
-                TODO: add dry option
+                          fireOid=origin_fobj.fireOid,
+                          dry=str2bool(args.dry))
     else:
         # now, check if 'dest' exists in db
         assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
@@ -118,6 +117,15 @@ for tup in files:
                    value=tup[1],
                    name=tup[0],
                    dry=str2bool(args.dry))
+
+    if args.type:
+        logger.info(f"--type option provided. Its value will be used for updating"
+                    f" the file type in {args.dbname}")
+
+        db.update_file(attr_name='type',
+                       value=args.type,
+                       name=tup[1],
+                       dry=str2bool(args.dry))
 
 
 

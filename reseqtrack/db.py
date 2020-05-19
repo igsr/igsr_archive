@@ -5,6 +5,7 @@ import pymysql
 import pdb
 import logging
 import datetime
+import sys
 
 # create logger
 db_logger = logging.getLogger(__name__)
@@ -146,7 +147,7 @@ class DB(object):
                 db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
                 self.conn.rollback()
-                raise Exception()
+                sys.exit(1)
 
         elif dry is True:
             db_logger.info(f"DELETE sql: {delete_sql}")

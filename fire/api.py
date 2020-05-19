@@ -1,6 +1,7 @@
 import logging
 import requests
 import pdb
+import sys
 import re
 
 from requests.exceptions import HTTPError
@@ -144,12 +145,22 @@ class API(object):
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/path/" \
                   f"{firePath}"
+        else:
+            print("Could not fetch the object. Please provide either a fireOid or a firePath")
+            sys.exit(1)
 
+        res = None
         try:
             res = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
-
             # If the response was successful, no Exception will be raised
             res.raise_for_status()
+        except HTTPError as http_err:
+            print(f'HTTP error occurred: {http_err}')
+            print(f'Error message: {res.text}')
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+            print(f'Error message: {res.text}')
+        else:
             json_res = res.json()
 
             fireObj = None
@@ -158,13 +169,6 @@ class API(object):
             api_logger.info('Fetched FIRE object')
 
             return fireObj
-
-        except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
-            print(f'Error message: {res.text}')
-        except Exception as err:
-            print(f'Other error occurred: {err}')
-            print(f'Error message: {res.text}')
 
     def __parse_json_response(self, json_res):
         """
@@ -192,7 +196,6 @@ class API(object):
         fireObj = fObject(**metadata_dict)
 
         return fireObj
-
 
     def push_object(self, fileO, dry=True, publish=True, fire_path=None):
         """
@@ -244,26 +247,25 @@ class API(object):
 
                 res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
                 res.raise_for_status()
-
-                if res.status_code == 200:
-                    json_res = res.json()
-                    fireObj = self.__parse_json_response(json_res)
-                    api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
-
-                    return fireObj
-
             except HTTPError as http_err:
                 print(f'HTTP error occurred: {http_err}')
                 print(f'Error message: {res.text}')
             except Exception as err:
                 print(f'Other error occurred: {err}')
                 print(f'Error message: {res.text}')
+            else:
+                if res.status_code == 200:
+                    json_res = res.json()
+                    fireObj = self.__parse_json_response(json_res)
+                    api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
+
+                    return fireObj
         elif dry is True:
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
             api_logger.info(f"Use dry=False to effectively push it")
 
-    def update_object(self, attr_name, value, fireOid=None, firePath=None):
+    def update_object(self, attr_name, value, dry=True, fireOid=None, firePath=None):
         """
         Function to update a certain 'attr_name' of an archived
         FIRE object
@@ -275,6 +277,9 @@ class API(object):
                     Valid attribute names are: 'firePath'
         value : str
                 New value for 'attr_name'. Required
+        dry : Bool, optional
+              If dry=True then it will not try
+              to update the archived FIRE object. Default True
         fireOid : str
                   FIRE object id that will be modified.
                   Optional
@@ -312,24 +317,29 @@ class API(object):
 
             header = {"x-fire-path": f"{value}"}
 
-            try:
-                res = requests.put(url, auth=(self.user, self.pwd), headers=header)
-
-                res.raise_for_status()
-                if res.status_code == 200:
-                    json_res = res.json()
-                    fireObj = self.__parse_json_response(json_res)
-
-                    api_logger.info(f"Done firePath update")
-                    return fireObj
-
-            except HTTPError as http_err:
-                print(f'HTTP error occurred: {http_err}')
-                print(f'Error message: {res.text}')
-            except Exception as err:
-                print(f'Other error occurred: {err}')
-                print(f'Error message: {res.text}')
-
+            if dry is False:
+                try:
+                    res = requests.put(url, auth=(self.user, self.pwd), headers=header)
+                    res.raise_for_status()
+                except HTTPError as http_err:
+                    print(f'HTTP error occurred: {http_err}')
+                    print(f'Error message: {res.text}')
+                except Exception as err:
+                    print(f'Other error occurred: {err}')
+                    print(f'Error message: {res.text}')
+                else:
+                    if res.status_code == 200:
+                        json_res = res.json()
+                        fireObj = self.__parse_json_response(json_res)
+                        api_logger.info(f"Done firePath update")
+                        return fireObj
+            elif dry is True:
+                api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be updated")
+                api_logger.info(f"FIRE object attribute {attr_name} is going to be updated with value {value}")
+                api_logger.info(f"FIRE object was not updated")
+                api_logger.info(f"Use dry=False to update it")
+            else:
+                raise Exception(f"dry option: {dry} not recognized")
 
 
     def delete_object(self, fireOid=None, dry=True):
@@ -354,7 +364,6 @@ class API(object):
             res = requests.delete(url, auth=(self.user, self.pwd))
             res.raise_for_status()
             api_logger.info(f"FIRE object deleted")
-
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
             print(f'Error message: {res.text}')
