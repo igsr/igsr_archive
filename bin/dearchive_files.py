@@ -99,5 +99,6 @@ for path in files:
                                                " not match. Can't continue"
         logger.info("md5sums match. Will continue dearchiving FIRE object")
 
-        api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
+    # delete FIRE object
+    api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
 
