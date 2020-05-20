@@ -360,13 +360,20 @@ class API(object):
         url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
               f"{fireOid}"
 
-        try:
-            res = requests.delete(url, auth=(self.user, self.pwd))
-            res.raise_for_status()
-            api_logger.info(f"FIRE object deleted")
-        except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
-            print(f'Error message: {res.text}')
-        except Exception as err:
-            print(f'Other error occurred: {err}')
-            print(f'Error message: {res.text}')
+        if dry is False:
+            try:
+                res = requests.delete(url, auth=(self.user, self.pwd))
+                res.raise_for_status()
+                api_logger.info(f"FIRE object deleted")
+            except HTTPError as http_err:
+                print(f'HTTP error occurred: {http_err}')
+                print(f'Error message: {res.text}')
+            except Exception as err:
+                print(f'Other error occurred: {err}')
+                print(f'Error message: {res.text}')
+        elif dry is True:
+            api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be deleted")
+            api_logger.info(f"FIRE object was not deleted")
+            api_logger.info(f"Use dry=False to deleted it")
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
