@@ -35,7 +35,7 @@ parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File
                                                                            " a list of file "
                                                                            "paths, one in each line")
 parser.add_argument('--md5_file', type=argparse.FileType('r'), help="File with output from md5sum, in the format:"
-                                                                    " <md5checkum>\t<filepath>")
+                                                                    " <md5checksum>\t<filepath>")
 
 parser.add_argument('--unique', default=True, help="Check if a file with the same name (and not path) does"
                                                    "already exist in the DB. True: Will not load the file"
