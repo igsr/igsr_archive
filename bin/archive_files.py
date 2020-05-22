@@ -2,6 +2,7 @@ import argparse
 import os
 import logging
 import pdb
+import sys
 from utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
@@ -11,8 +12,11 @@ logging.basicConfig(level=logging.DEBUG)
 # Create logger
 logger = logging.getLogger(__name__)
 
-parser = argparse.ArgumentParser(description='Archive files in the FIRE archiving system so they can be'
-                                             'accessed in the public FTP')
+parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
+                                              'This script can be used for archiving files in the public '\
+                                              'IGSR FTP, it also can be used for moving files within the FTP. '\
+                                              'Once a certain file is archived using this script, it will be '\
+                                              'accessible from our IGSR public FTP.')
 
 parser.add_argument('-s', '--settingsf', required=True,
                     help="Path to .ini file with settings")
@@ -49,9 +53,17 @@ firepwd = args.firepwd
 if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
 
-assert firepwd, "$FIRE_PWD undefined"
-assert dbname, "$DBNAME undefined"
-assert dbpwd, "$DBPWD undefined"
+if dbname is None:
+    raise Exception("$DBNAME undefined. You need either to pass the name of the "
+                    "RESEQTRACK database using the --dbname option or set a $DBNAME "
+                    "environment variable before running this script!")
+if dbpwd is None:
+    raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
+                    "server containing the RESEQTRACK database using the --dbpwd option or set a $DBPWD environment "
+                    "variable before running this script!")
+if firepwd is None:
+    raise Exception("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
+                    " or set a $FIRE_PWD environment variable before running this script!")
 
 # list of tuples (origin, dest) for files to be archived
 files = []
@@ -77,6 +89,12 @@ elif args.list_file:
 if origin_seen is True:
     logger.info('--origin and --dest args defined')
     files.append((args.origin, args.dest))
+
+# check if user has passed any file
+if len(files) == 0:
+    logger.info('No file/s provided. Nothing to be done...')
+    sys.exit(0)
+
 
 # connection to Reseqtrack DB
 db = DB(settingf=args.settingsf,

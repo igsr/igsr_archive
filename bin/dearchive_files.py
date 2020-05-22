@@ -12,8 +12,10 @@ logging.basicConfig(level=logging.DEBUG)
 # Create logger
 logger = logging.getLogger(__name__)
 
-parser = argparse.ArgumentParser(description='Dearchive files from the FIRE archiving system. Dearchive file will be moved'
-                                             'to the desired directory')
+parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. removing) a file or a list of files from '\
+                                             'our public FTP. This script will download the file to be dearchived to '\
+                                             'a desired location before dearchiving from FIRE and will also delete the '\
+                                             'entry in the `file` table from the `RESEQTRACK` database.')
 
 parser.add_argument('-s', '--settingsf', required=True,
                     help="Path to .ini file with settings")
@@ -22,7 +24,7 @@ parser.add_argument('--dry', default=True,
                          "effectively doing it. True: Perform a dry-run")
 parser.add_argument('--md5check', default=True,
                     help="Check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE")
-parser.add_argument('--file', help="Path to file to be dearchived. It must exists in the g1k_archive_staging_track DB")
+parser.add_argument('-f', '--file', help="Path to file to be dearchived. It must exists in the g1k_archive_staging_track DB")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing the paths of the files to"
                                                                            "be dearchived")
 parser.add_argument('-d', '--directory', required=True,

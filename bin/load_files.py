@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 import logging
 import re
 import pdb
@@ -31,15 +32,14 @@ parser.add_argument('-t', '--type', required=True, help="This should be a string
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to load the file without "
                                                  "effectively loading it. True: Perform a dry-run.")
 parser.add_argument('-f', '--file', help="Path to file to be stored")
-parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
-                                                                           " a list of file "
-                                                                           "paths, one in each line")
+parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing a list of file "
+                                                                           "paths to be loaded, one in each line")
 parser.add_argument('--md5_file', type=argparse.FileType('r'), help="File with output from md5sum, in the format:"
                                                                     " <md5checksum>\t<filepath>")
 
-parser.add_argument('--unique', default=True, help="Check if a file with the same name (and not path) does"
-                                                   "already exist in the DB. True: Will not load the file"
-                                                   "if name already exists")
+parser.add_argument('--unique', default=True, help="Check if a file with either the same basename (or path) does "
+                                                   "already exist in the DB. True: Will not load the file "
+                                                   "if name or path already exists")
 parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                         "the password from the $PASSWORD env variable")
 parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
@@ -58,8 +58,14 @@ dbname = args.dbname
 if args.dbname is None:
     dbname = os.getenv('DBNAME')
 
-assert dbname, "$DBNAME undefined"
-assert pwd, "$DBPWD undefined"
+if dbname is None:
+    raise Exception("$DBNAME undefined. You need either to pass the name of the "
+                    "RESEQTRACK database using the --dbname option or set a $DBNAME "
+                    "environment variable before running this script!")
+if pwd is None:
+    raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
+                    "server containing the RESEQTRACK database using the --pwd option or set a $DBPWD environment "
+                    "variable before running this script!")
 
 # Class to connect with Reseqtrack DB
 db = DB(settingf=args.settingsf,
@@ -94,13 +100,17 @@ elif args.md5_file:
                  type=args.type,
                  md5sum=md5sum)
         files.append(f)
+else:
+    raise Exception("You need to provide the file/s to be loaded using either "
+                    "the -f, -l or --md5_file options")
+    sys.exit(1)
 
 for f in files:
     if str2bool(args.unique) is True:
         # get basename and check if it already exists in DB
         basename = os.path.basename(f.name)
         rf = db.fetch_file(basename=basename)
-        assert rf is None, f"A file with the name '{basename}' already exists in the DB. You need to change filename " \
+        assert rf is None, f"A file with the name '{basename}' already exists in the DB. You need to change the name " \
                            f"'{basename}' so it is unique."
 
     db.load_file(f, dry=str2bool(args.dry))
