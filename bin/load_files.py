@@ -108,7 +108,7 @@ elif args.md5_file:
         md5sum, path = (cols[0], cols[1])
         f = File(name=path,
                  type=args.type,
-                 md5sum=md5sum)
+                 md5=md5sum)
         files.append(f)
 else:
     raise Exception("You need to provide the file/s to be loaded using either "

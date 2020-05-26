@@ -86,6 +86,8 @@ class File(object):
         -------
         md5sum string
         """
+        file_logger.info(f"Calculating md5 checksum with file: {self.name}")
+
         # check if either md5 or md5sum are installed
         # and adjust md5 the command
         command = None
@@ -109,6 +111,8 @@ class File(object):
 
         if stderr:
             print(stderr)
+
+        file_logger.info(f"Done")
 
         return md5sum
 
