@@ -104,7 +104,7 @@ class DB(object):
         elif dry is True:
             db_logger.info(f"INSERT sql: {sql_insert_attr}")
             db_logger.info(f"File was not stored in the DB.")
-            db_logger.info(f"Use dry=False to effectively store it")
+            db_logger.info(f"Use --dry False to effectively store it")
 
         else:
             raise Exception(f"dry option: {dry} not recognized")
@@ -152,7 +152,7 @@ class DB(object):
         elif dry is True:
             db_logger.info(f"DELETE sql: {delete_sql}")
             db_logger.info(f"File was not deleted from the DB.")
-            db_logger.info(f"Use dry=False to effectively delete it")
+            db_logger.info(f"Use --dry False to effectively delete it")
 
         else:
             raise Exception(f"dry option: {dry} not recognized")
@@ -245,7 +245,7 @@ class DB(object):
         elif dry is True:
             db_logger.info(f"UPDATE sql: {update_sql}")
             db_logger.info(f"DB Entry was not updated")
-            db_logger.info(f"Use dry=False to update it")
+            db_logger.info(f"Use --dry False to update it")
         else:
             raise Exception(f"dry option: {dry} not recognized")
 

@@ -262,7 +262,7 @@ class API(object):
         elif dry is True:
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
-            api_logger.info(f"Use dry=False to effectively push it")
+            api_logger.info(f"Use --dry False to effectively push it")
 
     def update_object(self, attr_name, value, dry=True, fireOid=None, firePath=None):
         """
@@ -336,7 +336,7 @@ class API(object):
                 api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be updated")
                 api_logger.info(f"FIRE object attribute {attr_name} is going to be updated with value {value}")
                 api_logger.info(f"FIRE object was not updated")
-                api_logger.info(f"Use dry=False to update it")
+                api_logger.info(f"Use --dry False to update it")
             else:
                 raise Exception(f"dry option: {dry} not recognized")
 
@@ -373,6 +373,6 @@ class API(object):
         elif dry is True:
             api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be deleted")
             api_logger.info(f"FIRE object was not deleted")
-            api_logger.info(f"Use dry=False to deleted it")
+            api_logger.info(f"Use --dry False to deleted it")
         else:
             raise Exception(f"dry option: {dry} not recognized")
