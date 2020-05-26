@@ -116,7 +116,7 @@ else:
 
 for f in files:
     if f.check_if_exists() is False:
-        print("Wrong file path")
+        print(f"Wrong file path: {f.name}")
         sys.exit(1)
     if str2bool(args.unique) is True:
         # get basename and check if it already exists in DB
