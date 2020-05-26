@@ -1,5 +1,9 @@
 README.md
 setup.py
+bin/archive_files.py
+bin/dearchive_files.py
+bin/delete_files.py
+bin/fetch_fire_object.py
 bin/load_files.py
 file/__init__.py
 file/file.py

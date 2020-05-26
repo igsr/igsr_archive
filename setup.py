@@ -111,7 +111,8 @@ setup(
     # entry_points={
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
-    scripts=['bin/load_files.py'],
+    scripts=['bin/load_files.py', 'bin/archive_files.py', 'bin/dearchive_files.py',
+             'bin/fetch_fire_object.py', 'bin/delete_files.py'],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,

@@ -21,7 +21,11 @@ Description:
         * updating records in the FTP
         * Recording FTP changes in our tracking database
         
+        ## Installation
         
+        ## Documentation
+        
+        Go to https://igsr-archive.readthedocs.io/en/latest/
 Platform: UNKNOWN
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python

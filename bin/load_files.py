@@ -30,7 +30,7 @@ parser.add_argument('-f', '--file', help="Path to file to be stored")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing a list of file "
                                                                            "paths to be loaded, one in each line")
 parser.add_argument('--md5_file', type=argparse.FileType('r'), help="File with output from md5sum, in the format:"
-                                                                    " <md5checksum>\t<filepath>")
+                                                                    " <md5checksum>  <filepath>")
 
 parser.add_argument('--unique', default=True, help="Check if a file with either the same basename (or path) does "
                                                    "already exist in the DB. True: Will not load the file "
@@ -101,7 +101,11 @@ elif args.md5_file:
 
     for line in args.md5_file:
         line = line.rstrip("\n")
-        md5sum, path = re.split(' +', line)
+        cols = re.split(' +', line)
+        if len (cols) != 2:
+            raise Exception("Incorrect number of columns in file used for --md5_file. "
+                            "Check format")
+        md5sum, path = (cols[0], cols[1])
         f = File(name=path,
                  type=args.type,
                  md5sum=md5sum)

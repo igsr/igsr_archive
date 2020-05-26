@@ -12,6 +12,21 @@ Welcome to igsr_archive's documentation!
 
 Installation
 ============
+
+1 ) clone this repo::
+
+   git clone https://github.com/igsr/igsr_archive.git
+
+2 ) cd into directory where repo has been cloned::
+
+   cd igsr_archive
+
+3 ) Finally::
+
+   pip install -e .
+
+And you	are ready to go!
+
 Usage
 =====
 Settings file

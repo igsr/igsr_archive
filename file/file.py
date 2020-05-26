@@ -49,7 +49,7 @@ class File(object):
     def __init__(self, name, host_id=1,
                  withdrawn=0, **kwargs):
 
-        file_logger.info('Creating File object')
+        file_logger.debug('Creating File object')
 
         self.name = name
         self.host_id = host_id
