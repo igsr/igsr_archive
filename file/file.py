@@ -4,6 +4,7 @@ import pdb
 import os
 import datetime
 import logging
+from utils import is_tool
 
 # create logger
 file_logger = logging.getLogger(__name__)
@@ -85,7 +86,17 @@ class File(object):
         -------
         md5sum string
         """
-        command = "md5 -r %s" % self.name
+        # check if either md5 or md5sum are installed
+        # and adjust md5 the command
+        command = None
+        if is_tool('md5'):
+            command = "md5 -r %s" % self.name
+        elif is_tool('md5sum'):
+            command = f"md5sum {self.name}"
+
+        if command is None:
+            raise Exception("No executable for calculating the md5 checksum was found. Do you have md5 or md5sum"
+                            "on your PATH?")
 
         p = subprocess.Popen(command,
                              stdout=subprocess.PIPE,

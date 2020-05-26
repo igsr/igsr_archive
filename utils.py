@@ -9,4 +9,18 @@ def str2bool(v):
     elif v.lower() in ('no', 'false', 'False', 'f', 'n', '0'):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise Exception('Boolean value expected.')
+
+def is_tool(name):
+    """
+    Check whether `name` is on PATH and marked as executable.
+
+    Returns
+    -------
+    True if `name` exists
+    """
+
+    # from whichcraft import which
+    from shutil import which
+
+    return which(name) is not None

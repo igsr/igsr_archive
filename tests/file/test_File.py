@@ -13,7 +13,7 @@ def test_f_w_md5():
     f = File(
         name="../../data/test.txt",
         type="TEST_F",
-        md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
+        md5="f5aa4f4f1380b71acc56750e9f8ff825")
 
     assert f.md5 == "f5aa4f4f1380b71acc56750e9f8ff825"
 
