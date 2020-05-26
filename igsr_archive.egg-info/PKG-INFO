@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 1.2
 Name: igsr-archive
 Version: 0.1.0
 Summary: Contains code to perform several operations involving files in the IGSR (1000 genomes) FTP archive.
@@ -10,9 +10,6 @@ Description:
         # igsr_archive
         Contains code to perform several operations involving files in the IGSR (1000 genomes) FTP archive: ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/
         
-        
-        
-        
         Basic functionality that this repo provides is:
         
         * adding files on the FTP
@@ -22,6 +19,16 @@ Description:
         * Recording FTP changes in our tracking database
         
         ## Installation
+        
+        1. clone this repo
+        
+            `git clone https://github.com/igsr/igsr_archive.git`
+        
+        1. `cd igsr_archive`
+        
+        1. `pip install -e .`
+        
+        And you are ready to go!
         
         ## Documentation
         
@@ -34,4 +41,3 @@ Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: Implementation :: CPython
 Classifier: Programming Language :: Python :: Implementation :: PyPy
 Requires-Python: >=3.6.0
-Description-Content-Type: text/markdown
