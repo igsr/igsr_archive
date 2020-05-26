@@ -113,9 +113,11 @@ elif args.md5_file:
 else:
     raise Exception("You need to provide the file/s to be loaded using either "
                     "the -f, -l or --md5_file options")
-    sys.exit(1)
 
 for f in files:
+    if f.check_if_exists() is False:
+        print("Wrong file path")
+        sys.exit(1)
     if str2bool(args.unique) is True:
         # get basename and check if it already exists in DB
         basename = os.path.basename(f.name)
