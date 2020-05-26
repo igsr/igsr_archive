@@ -68,7 +68,7 @@ You can provide the script a list of files (one file per line) to be loaded. For
 - ``--pwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the files will not be loaded into the database. You need to run
-``load_files.py`` with the option ``--dry False`` to load it.
+``load_files.py`` with the option ``--dry False`` to load them.
 
 **Note:** md5 checksum will be calculated for each file and these md5 checksums will be loaded in the file
 table of the database
@@ -90,7 +90,7 @@ loaded. An example command line using this option is::
 - ``--pwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the files will not be loaded into the database. You need to run
-``load_files.py`` with the option ``--dry False`` to load it.
+``load_files.py`` with the option ``--dry False`` to load them.
 
 Errors
 ^^^^^^
@@ -242,5 +242,4 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`

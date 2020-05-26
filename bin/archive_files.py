@@ -7,11 +7,6 @@ from utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
 
-logging.basicConfig(level=logging.DEBUG)
-
-# Create logger
-logger = logging.getLogger(__name__)
-
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
                                               'This script can be used for archiving files in the public '\
                                               'IGSR FTP, it also can be used for moving files within the FTP. '\
@@ -35,9 +30,21 @@ parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided 
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
                                      "the dbname from the $DBNAME env variable")
 parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess"
-                                     "the FIRE pwd from the $FIRE_PWD env variable")
+                                      "the FIRE pwd from the $FIRE_PWD env variable")
+parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 
 args = parser.parse_args()
+
+# logging
+loglevel = args.log
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
+
+logging.basicConfig(level=numeric_level)
+
+# Create logger
+logger = logging.getLogger(__name__)
 
 logger.info('Running script')
 

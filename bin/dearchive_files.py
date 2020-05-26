@@ -7,11 +7,6 @@ from reseqtrack.db import DB
 from fire.api import API
 from file.file import File
 
-logging.basicConfig(level=logging.DEBUG)
-
-# Create logger
-logger = logging.getLogger(__name__)
-
 parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. removing) a file or a list of files from '\
                                              'our public FTP. This script will download the file to be dearchived to '\
                                              'a desired location before dearchiving from FIRE and will also delete the '\
@@ -35,8 +30,20 @@ parser.add_argument('--dbname', help="Database name. If not provided then it wil
                                      "the dbname from the $DBNAME env variable")
 parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess"
                                       "the FIRE pwd from the $FIRE_PWD env variable")
+parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 
 args = parser.parse_args()
+
+# logging
+loglevel = args.log
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
+
+logging.basicConfig(level=numeric_level)
+
+# Create logger
+logger = logging.getLogger(__name__)
 
 logger.info('Running script')
 

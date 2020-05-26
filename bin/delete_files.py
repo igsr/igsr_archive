@@ -9,11 +9,6 @@ from utils import str2bool
 from reseqtrack.db import DB
 from file.file import File
 
-logging.basicConfig(level=logging.DEBUG)
-
-# Create logger
-logger = logging.getLogger(__name__)
-
 parser = argparse.ArgumentParser(description='Delete file/s from a Reseqtrack database')
 
 parser.add_argument('-s', '--settingsf', required=True,
@@ -28,8 +23,20 @@ parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provi
                                         "the password from the $PASSWORD env variable")
 parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
                                            "the dbname from the $DBNAME env variable")
+parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 
 args = parser.parse_args()
+
+# logging
+loglevel = args.log
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
+
+logging.basicConfig(level=numeric_level)
+
+# Create logger
+logger = logging.getLogger(__name__)
 
 logger.info('Running script')
 

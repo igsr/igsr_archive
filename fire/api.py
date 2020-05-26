@@ -11,7 +11,6 @@ from fire.object import fObject
 # create logger
 api_logger = logging.getLogger(__name__)
 
-
 class API(object):
     """
     Class to deal with the queries to the FIRE API for
@@ -28,7 +27,7 @@ class API(object):
     """
     def __init__(self, settingsf, pwd):
 
-        api_logger.info('Creating an API object')
+        api_logger.debug('Creating an API object')
 
         # initialise ConfigParser object with connection
         # settings
@@ -79,13 +78,13 @@ class API(object):
         # construct url
         if fireOid is not None:
 
-            api_logger.info('Retrieving a FIRE object through its FIRE object id')
+            api_logger.debug('Retrieving a FIRE object through its FIRE object id')
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/blob/" \
                   f"{fireOid}"
         elif firePath is not None:
 
-            api_logger.info('Retrieving a FIRE object through its FIRE path')
+            api_logger.debug('Retrieving a FIRE object through its FIRE path')
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/blob/" \
                   f"path/{firePath}"
@@ -102,7 +101,7 @@ class API(object):
             # If the response was successful, no Exception will be raised
             r.raise_for_status()
 
-            api_logger.info('Retrieved object')
+            api_logger.debug('Retrieved object')
 
             return outfile
         except HTTPError as http_err:
@@ -135,13 +134,13 @@ class API(object):
 
         if fireOid is not None:
 
-            api_logger.info('Fetching FIRE object\'s metadata through its FIRE object id')
+            api_logger.debug('Fetching FIRE object\'s metadata through its FIRE object id')
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
                   f"{fireOid}"
         elif firePath is not None:
 
-            api_logger.info('Fetching FIRE object\'s metadata through its FIRE path')
+            api_logger.debug('Fetching FIRE object\'s metadata through its FIRE path')
 
             url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/path/" \
                   f"{firePath}"
@@ -166,7 +165,7 @@ class API(object):
             fireObj = None
             fireObj = self.__parse_json_response(json_res)
 
-            api_logger.info('Fetched FIRE object')
+            api_logger.debug('Fetched FIRE object')
 
             return fireObj
 

@@ -28,7 +28,7 @@ class DB(object):
 
     def __init__(self, settingf, pwd, dbname):
 
-        db_logger.info('Creating DB object')
+        db_logger.debug('Creating DB object')
 
         # initialise ConfigParser object with connection
         # settings
@@ -49,7 +49,7 @@ class DB(object):
         Connection object
         """
 
-        db_logger.info('Setting connection...')
+        db_logger.debug('Setting connection...')
 
         conn = pymysql.connect(host=self.settings.get('mysql_conn', 'host'),
                                user=self.settings.get('mysql_conn', 'user'),
@@ -57,7 +57,7 @@ class DB(object):
                                db=self.dbname,
                                port=self.settings.getint('mysql_conn', 'port'))
 
-        db_logger.info('Connection successful!')
+        db_logger.debug('Connection successful!')
 
         return conn
 
@@ -178,20 +178,20 @@ class DB(object):
         cursor = self.conn.cursor(pymysql.cursors.DictCursor)
 
         if path is not None:
-            db_logger.info(f"Fetching file with path: {path}")
+            db_logger.debug(f"Fetching file with path: {path}")
 
             query = "SELECT * FROM file WHERE name like %s"
             cursor.execute(query, ['%' + path])
 
         elif basename is not None:
-            db_logger.info(f"Fetching file with basename: {basename}")
+            db_logger.debug(f"Fetching file with basename: {basename}")
             query = "SELECT * FROM file WHERE name like %s"
             cursor.execute(query, ['%' + basename])
 
         try:
             result_set = cursor.fetchall()
             if not result_set:
-                db_logger.info(f"No file retrieved from DB using using path:{path}")
+                db_logger.debug(f"No file retrieved from DB using using path:{path}")
                 return None
             for row in result_set:
                 f = File(**row)
