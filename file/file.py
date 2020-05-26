@@ -104,13 +104,12 @@ class File(object):
     def check_if_exists(self):
         """
         Function to check if a file with self.name
-        exists
+        (absolute or relative) exists
 
         Returns
         -------
         True if file exists. False otherwise
         """
-
         return os.path.isfile(self.name)
 
 

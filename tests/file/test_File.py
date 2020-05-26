@@ -66,7 +66,8 @@ def test_check_if_exists():
     log.debug('Testing function for checking if a file exists')
 
     f = File(
-        name="../../data/test.txt",
+#        name="../../data/test.txt",
+        name="test.txt",
         type="TYPE_F"
     )
 
