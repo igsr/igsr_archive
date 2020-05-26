@@ -61,6 +61,11 @@ class File(object):
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
         if os.path.isfile(name) == True:
+
+            file_logger.debug(f"Found a file with name: {name}")
+
+            # Mutate name to absolute path
+            self.name =os.path.abspath(name)
             # path exists, so check if md5sum, size, and created
             # are defined.
             if not hasattr(self, 'md5'):
@@ -95,6 +100,19 @@ class File(object):
             print(stderr)
 
         return md5sum
+
+    def check_if_exists(self):
+        """
+        Function to check if a file with self.name
+        exists
+
+        Returns
+        -------
+        True if file exists. False otherwise
+        """
+
+        return os.path.isfile(self.name)
+
 
     # object introspection
     def __str__(self):

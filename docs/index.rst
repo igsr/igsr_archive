@@ -13,6 +13,8 @@ Welcome to igsr_archive's documentation!
 Installation
 ============
 
+This codebase requires Python (3.6.0 or later)
+
 1 ) clone this repo::
 
    git clone https://github.com/igsr/igsr_archive.git
