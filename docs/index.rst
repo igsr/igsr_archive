@@ -173,9 +173,8 @@ For this, use the ``--origin`` and ``--dest`` options like this::
  archive_files.py --settings settings.ini --origin /path/to/file.txt --dest /dir_in_ftp/file.txt \
  --dbname $DBNAME --firepwd $FIREPWD
 
-- ``--origin`` path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK`` \
-               database. If this path points to a file that is already archived in the FTP, then this file will be
-               moved to the path specified by the ``--dest`` option
+- ``--origin`` path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK``
+  database. If this path points to a file that is already archived in the FTP, then this file will be moved to the path specified by the ``--dest`` option
 - ``--dest`` destination path in the public FTP for the archived file
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
