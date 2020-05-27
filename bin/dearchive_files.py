@@ -85,17 +85,17 @@ elif args.list_file:
         files.append(line)
 
 for path in files:
-    dearch_f = db.fetch_file(path=path)
-    assert dearch_f is not None, f"File entry with path {path} does not exist in the DB. " \
+    abs_path = os.path.abspath(path)
+    dearch_f = db.fetch_file(path=abs_path)
+    assert dearch_f is not None, f"File entry with path {abs_path} does not exist in the DB. " \
                                  f"Can't proceed"
     # check if 'path' exists in FIRE
-    dearch_fobj = api.fetch_object(firePath=path)
-    assert dearch_fobj is not None, f"File entry with firePath {path} is not archived in FIRE. " \
+    dearch_fobj = api.fetch_object(firePath=abs_path)
+    assert dearch_fobj is not None, f"File entry with firePath {abs_path} is not archived in FIRE. " \
                                     f"Can't proceed"
     # download the file
     # construct path to store the dearchived file
-    pdb.set_trace()
-    basename = os.path.basename(path)
+    basename = os.path.basename(abs_path)
     downloaded_path = f"{args.directory}/{basename}"
     api.retrieve_object(fireOid=dearch_fobj.fireOid,
                         outfile=downloaded_path)

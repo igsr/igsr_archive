@@ -113,15 +113,17 @@ api = API(settingsf=args.settingsf,
           pwd=firepwd)
 pdb.set_trace()
 for tup in files:
+    abs_path = os.path.abspath(tup[0])
+
     # check if 'origin' exists in db and fetch the file
-    origin_f = db.fetch_file(path=tup[0])
-    assert origin_f is not None, f"File entry with path {tup[0]} does not exist in the DB. "\
+    origin_f = db.fetch_file(path=abs_path)
+    assert origin_f is not None, f"File entry with path {abs_path} does not exist in the DB. "\
                                  f"You need to load it first in order to proceed"
 
     # check if 'origin' already exists in FIRE
-    origin_fobj = api.fetch_object(firePath=tup[0])
+    origin_fobj = api.fetch_object(firePath=abs_path)
     if origin_fobj is not None:
-        logger.info(f"File provided {tup[0]} is in FIRE, it will be moved to {tup[1]}")
+        logger.info(f"File provided {abs_path} is in FIRE, it will be moved to {tup[1]}")
         api.update_object(attr_name='firePath',
                           value=tup[1],
                           fireOid=origin_fobj.fireOid,
@@ -140,7 +142,7 @@ for tup in files:
     # now, modify the file entry in the db and update its name (path)
     db.update_file(attr_name='name',
                    value=tup[1],
-                   name=tup[0],
+                   name=abs_path,
                    dry=str2bool(args.dry))
 
     if args.type:

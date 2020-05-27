@@ -9,7 +9,7 @@ from file.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
-pwd = os.getenv('FIRE_PASSWORD')
+pwd = os.getenv('FIRE_PWD')
 
 assert pwd, "$FIRE_PWD undefined"
 
@@ -160,6 +160,28 @@ def test_push_object_w_fpath(del_obj):
                            fire_path="test_dir/test.txt")
 
     del_obj.append(fobj.fireOid)
+
+def test_push_comp_object_w_fpath(del_obj):
+    """
+    Test used to check if 'push_object' works
+    also with a *.gz compressed file
+    """
+    log = logging.getLogger('test_push_comp_object_w_fpath')
+
+    log.debug('Pushing (upload) a compressed file.file.File object to FIRE adding a '
+              'virtual FIRE path')
+
+    # creating File object
+    f = File(
+        name="../../data/test.txt.gz",
+        type="TEST_F",
+        md5sum="a32c5f11391b49b0788def64d28f8807")
+
+    fobj = api.push_object(fileO=f, dry=False,
+                           fire_path="test_dir/test.txt.gz")
+
+    del_obj.append(fobj.fireOid)
+
 
 def test_update_object(loaded_obj, del_obj):
     """
