@@ -13,7 +13,8 @@ Welcome to igsr_archive's documentation!
 Installation
 ============
 
-This codebase requires Python (3.6.0 or later)
+This codebase requires Python (3.6.0 or later) and is used to, among other things, interact programmatically
+with the FIle REplication (FIRE) archive implemented in the EMBL-EBI.
 
 1 ) clone this repo::
 
@@ -49,7 +50,10 @@ Where the ``[mysql_conn]`` section contains the parameters for connecting the MY
 created with the `RESEQTRACK <https://github.com/EMBL-EBI-GCA/reseqtrack/tree/master/sql>`_ schema and the ``[fire]``
 section contains the FIRE API connection details. If you still do not have a FIRE user and password you
 will need to contact ``fire@ebi.ac.uk`` first to get them as these are needed for connecting the
-FIRE API
+FIRE API.
+
+**Note:** FIRE provides a testing and a production environment. Each will differ in the ``user``, ``root_endpoint`` and ``password``
+used for connecting the API. Modify ``settings.ini`` depending on the environment you want to use.
 
 Load files
 ----------
