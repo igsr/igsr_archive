@@ -24,9 +24,3 @@ def is_tool(name):
     from shutil import which
 
     return which(name) is not None
-
-def remove_backslashes(path):
-    """
-    Remove double backslashes
-
-    """

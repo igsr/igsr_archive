@@ -45,12 +45,16 @@ Below is the template of a configuration file::
  root_endpoint = http://hh.fire-test.sdo.ebi.ac.uk/fire
  user = g1k-test-ernesto
  version = v1.1
+ [ftp]
+ staging_mount=/nfs/1000g-work/G1K/archive_staging/ftp
+ ftp_mount=/nfs/1000g-archive
 
 Where the ``[mysql_conn]`` section contains the parameters for connecting the MYSQL server containing the database
 created with the `RESEQTRACK <https://github.com/EMBL-EBI-GCA/reseqtrack/tree/master/sql>`_ schema and the ``[fire]``
 section contains the FIRE API connection details. If you still do not have a FIRE user and password you
 will need to contact ``fire@ebi.ac.uk`` first to get them as these are needed for connecting the
-FIRE API.
+FIRE API. The ``[ftp]`` section contains the staging area directory (see below why this area is important) and also
+the directory where the FTP server is mounted.
 
 **Note:** FIRE provides a testing and a production environment. Each will differ in the ``user``, ``root_endpoint`` and ``password``
 used for connecting the API. Modify ``settings.ini`` depending on the environment you want to use.
@@ -158,26 +162,31 @@ By default, the script will perform a dry run and the files will not be removed 
 Archive files
 -------------
 The script for interacting with the FIle REplication (FIRE) archive is named ``archive_files.py``.
-This script can be used for archiving files in the public IGSR FTP, it also can be used for moving files
-within the FTP. Once a certain file is archived using this script, it will be accessible from our IGSR public FTP.
+This script can be used for archiving files in the public IGSR FTP. Once a certain file is archived using
+this script, it will be accessible from our IGSR public FTP at http://ftp.1000genomes.ebi.ac.uk/vol1/
 
 Prerequisites
 ^^^^^^^^^^^^^
-The files to be archived need to be tracked in the ``file`` table of the ``RESEQTRACK`` database. For this you
-need to load them first using the ``load_files.py`` script explained in the previous section.
+* The file/s to be archived in the FTP need to be tracked in the ``file`` table of the ``RESEQTRACK`` database. For this you need to
+  load them first using the ``load_files.py`` script explained in the previous section
+* The file/s to be archived in the FTP need to be in the staging area (``/nfs/1000g-work/G1K/archive_staging/ftp``).
+  This area can be changed by modifying the ``staging_mount`` parameter of the ``[ftp]`` section in the ``settings.ini`` file
 
-1) Archive/move a single file
+**Note:** The path of the file to be archived within the staging area will be duplicated in the FTP. So for example, if
+we want to archive ``test.txt`` so it can accessed from ``http://ftp.1000genomes.ebi.ac.uk/vol1/test_dir/subtest_dir/test.txt``
+we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/ftp/test_dir/subtest_dir/``
 
-For this, use the ``--origin`` and ``--dest`` options like this::
+1) Archive a single file
 
- archive_files.py --settings settings.ini --origin /path/to/file.txt --dest /dir_in_ftp/file.txt \
- --dbname $DBNAME --firepwd $FIREPWD
+For this, use the ``-f``/``--file`` option like this::
 
-- ``--origin`` path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK``
-  database. If this path points to a file that is already archived in the FTP, then this file will be moved to the path specified by the ``--dest`` option
-- ``--dest`` destination path in the public FTP for the archived file
+ archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/ftp/file.txt --dbname $DBNAME
+ --firepwd $FIREPWD --dbpwd $DBPWD
+
+- ``-f/--file`` is the path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK`` database
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
+- ``--dbpwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the file will not be archived in the FTP. You need to run
 ``archive_files.py`` with the option ``--dry False`` to archive them.
@@ -185,23 +194,15 @@ By default, the script will perform a dry run and the file will not be archived 
 **Note:** Use the ``--type`` option if you want to update the ``type`` column from the ``file`` table of the ``RESEQTRACK``
 database for the archived file. If you do not specify a type then it will preserve the type that was present previously.
 
-2) Archive/move a list of files
+2) Archive a list of files
 
-You can provide the script a list of files (one file per line) to be archived/moved. This list needs to have the format::
+You can provide the script a list of files (one file per line) to be archived. This list needs to have the format::
 
- </path/to/file.txt>\t</dir_in_ftp/file.txt>
+  archive_files.py --settings settings.ini --list_file file_list.txt --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
-Where the first column is the path to the file to be archived and the second column is the path in the public FTP for
-the archived file. If path in the first column points to a file that is already archived in the FTP, then this file
-will be moved to the path specified in the second column.
-
-To use the ``archive_files.py`` script with a list of files you need to write::
-
-  archive_files.py --settings settings.ini --list_file file_list.txt --dbname $DBNAME --firepwd $FIREPWD
-
-- ``file_list.txt`` is the 2-columns file mentioned above.
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
+- ``--dbpwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the files will not be archived in the FTP. You need to run
 ``archive_files.py`` with the option ``--dry False`` to archive them.
@@ -231,13 +232,15 @@ delete the entry in the ``file`` table from the ``RESEQTRACK`` database.
 
 Enter the following command::
 
- dearchive_files.py --settings settings.ini --file /ftp/path/file --directory /dir/to/put/file --dbname $DBNAME \
- --firepwd $FIREPWD
+ dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/path/file --directory /dir/to/put/file --dbname $DBNAME \
+ --firepwd $FIREPWD --dbpwd $DBPWD
 
-- ``--file`` is the path to the file to be dearchived
+- ``--file`` is the path to the file to be dearchived. ``/nfs/1000g-archive`` is the directory containing the IGSR FTP in our filesystem.
+  This directory can be changed by modifying the ``ftp_mount`` parameter of the ``ftp`` section in the ``settings.ini`` file
 - ``--directory`` is the directory used to store the file to be dearchived
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
+- ``--dbpwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the file will not be dearchived from the FTP. You need to run
 ``dearchive_files.py`` with the option ``--dry False`` to dearchive it.
@@ -248,15 +251,27 @@ You can provide the script a list of files (one file per line) to be dearchived.
 ``-l``/``--list_file`` option::
 
  dearchive_files.py --settings settings.ini --list_file file_list.txt --directory /dir/to/put/file --dbname $DBNAME \
- --firepwd $FIREPWD
+ --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--list_file`` is the list of files to be dearchived
 - ``--directory`` is the directory used to store the files to be dearchived
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
+- ``--dbpwd`` is the password for connecting the MYSQL server
 
 By default, the script will perform a dry run and the files will not be dearchived from the FTP. You need to run
 ``dearchive_files.py`` with the option ``--dry False`` to dearchive them.
+
+Move files
+----------
+The script for moving a file/s from one directory in the IGSR public FTP to a different directory is ``move_files.py``.
+
+1) Move a single file
+
+For this, use the ``--origin`` and ``--dest`` options like this::
+
+ move_files.py --settings settings.ini --origin /nfs/1000g-archive/dir1/test.txt --dest /nfs/1000g-archive/dir2/test.txt \
+  --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
 Indices and tables
 ==================
