@@ -180,8 +180,8 @@ class DB(object):
         if path is not None:
             db_logger.debug(f"Fetching file with path: {path}")
 
-            query = "SELECT * FROM file WHERE name like %s"
-            cursor.execute(query, ['%' + path])
+            query = "SELECT * FROM file WHERE name = %s"
+            cursor.execute(query, [path])
 
         elif basename is not None:
             db_logger.debug(f"Fetching file with basename: {basename}")

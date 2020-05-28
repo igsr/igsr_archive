@@ -151,8 +151,6 @@ class API(object):
         res = None
         try:
             res = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
-            # If the response was successful, no Exception will be raised
-            res.raise_for_status()
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
             print(f'Error message: {res.text}')
@@ -163,11 +161,13 @@ class API(object):
             json_res = res.json()
 
             fireObj = None
-            fireObj = self.__parse_json_response(json_res)
-
-            api_logger.debug('Fetched FIRE object')
-
-            return fireObj
+            if json_res['statusCode'] == 404:
+                api_logger.info('No FIRE object found')
+                return fireObj
+            else:
+                fireObj = self.__parse_json_response(json_res)
+                api_logger.info('Fetched FIRE object')
+                return fireObj
 
     def __parse_json_response(self, json_res):
         """

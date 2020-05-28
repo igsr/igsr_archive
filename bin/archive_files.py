@@ -111,8 +111,9 @@ db = DB(settingf=args.settingsf,
 # connection to FIRE api
 api = API(settingsf=args.settingsf,
           pwd=firepwd)
-pdb.set_trace()
+
 for tup in files:
+    pdb.set_trace()
     abs_path = os.path.abspath(tup[0])
 
     # check if 'origin' exists in db and fetch the file
