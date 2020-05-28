@@ -1,11 +1,13 @@
 import argparse
 import os
+import re
 import logging
 import pdb
 from utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
 from file.file import File
+from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. removing) a file or a list of files from '\
                                              'our public FTP. This script will download the file to be dearchived to '\
@@ -63,6 +65,13 @@ assert firepwd, "$FIRE_PWD undefined"
 assert dbname, "$DBNAME undefined"
 assert dbpwd, "$DBPWD undefined"
 
+if not os.path.isfile(args.settingsf):
+    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+
+# Parse config file
+settingsO = ConfigParser()
+settingsO.read(args.settingsf)
+
 # connection to Reseqtrack DB
 db = DB(settingf=args.settingsf,
         pwd=dbpwd,
@@ -86,17 +95,18 @@ elif args.list_file:
 
 for path in files:
     abs_path = os.path.abspath(path)
+    fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', abs_path)
     dearch_f = db.fetch_file(path=abs_path)
     assert dearch_f is not None, f"File entry with path {abs_path} does not exist in the DB. " \
                                  f"Can't proceed"
     # check if 'path' exists in FIRE
-    dearch_fobj = api.fetch_object(firePath=abs_path)
-    assert dearch_fobj is not None, f"File entry with firePath {abs_path} is not archived in FIRE. " \
+    dearch_fobj = api.fetch_object(firePath=fire_path)
+    assert dearch_fobj is not None, f"File entry with firePath {fire_path} is not archived in FIRE. " \
                                     f"Can't proceed"
     # download the file
     # construct path to store the dearchived file
     basename = os.path.basename(abs_path)
-    downloaded_path = f"{args.directory}/{basename}"
+    downloaded_path = os.path.join(args.directory, basename)
     api.retrieve_object(fireOid=dearch_fobj.fireOid,
                         outfile=downloaded_path)
 
@@ -110,4 +120,6 @@ for path in files:
 
     # delete FIRE object
     api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
+    # finally, delete dearchived file from RESEQTRACK DB
+    db.delete_file(dearch_f, dry=str2bool(args.dry))
 

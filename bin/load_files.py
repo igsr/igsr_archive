@@ -73,6 +73,9 @@ if pwd is None:
                     "server containing the RESEQTRACK database using the --pwd option or set a $DBPWD environment "
                     "variable before running this script!")
 
+if not os.path.isfile(args.settingsf):
+    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+
 # Class to connect with Reseqtrack DB
 db = DB(settingf=args.settingsf,
         pwd=pwd,

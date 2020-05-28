@@ -29,6 +29,9 @@ if args.firepwd is None:
 
 assert firepwd, "$FIRE_PWD undefined"
 
+if not os.path.isfile(args.settingsf):
+    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+
 # connection to FIRE api
 api = API(settingsf=args.settingsf,
           pwd=firepwd)

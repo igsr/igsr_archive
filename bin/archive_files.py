@@ -3,27 +3,28 @@ import os
 import logging
 import pdb
 import sys
+import re
 from utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
+from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
-                                              'This script can be used for archiving files in the public '\
-                                              'IGSR FTP, it also can be used for moving files within the FTP. '\
-                                              'Once a certain file is archived using this script, it will be '\
-                                              'accessible from our IGSR public FTP.')
+                                             'This script can be used for archiving files in the public '\
+                                             'IGSR FTP. Once a certain file is archived using this script, it will be '\
+                                             'accessible from our IGSR public FTP.')
 
 parser.add_argument('-s', '--settingsf', required=True,
                     help="Path to .ini file with settings")
 
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to archive the file without "
                                                 "effectively doing it. True: Perform a dry-run")
-parser.add_argument('--origin', help="Path to file to be archived. It must exists in the g1k_archive_staging_track DB")
-parser.add_argument('--dest', help="Final path of file. It will update the path in the g1k_archive_staging_track DB")
-
-parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing"
-                                                                           " a list of target and destination "
-                                                                           "paths, one in each line")
+parser.add_argument('-f', '--file', help="Path to file to be archived in FIRE. This script assumes that file"
+                                         "is placed in the staging area of our filesystem ")
+parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing a list of files "
+                                                                           "to archive (one per line). Each of "
+                                                                           "the files need to be placed in the"
+                                                                           " staging area of our filesystem")
 parser.add_argument('--type',  help="New file type used in the Reseqtrack DB for archiving the files")
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
@@ -47,6 +48,13 @@ logging.basicConfig(level=numeric_level)
 logger = logging.getLogger(__name__)
 
 logger.info('Running script')
+
+if not os.path.isfile(args.settingsf):
+    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+
+# Parse config file
+settingsO = ConfigParser()
+settingsO.read(args.settingsf)
 
 dbpwd = args.dbpwd
 if args.dbpwd is None:
@@ -75,33 +83,22 @@ if firepwd is None:
 # list of tuples (origin, dest) for files to be archived
 files = []
 
-origin_seen = False
-if args.origin:
-    origin_seen = True
-    assert args.dest, "--origin arg defined, --dest arg also needs to be defined"
-elif args.dest:
-    assert args.origin, "--dest arg defined, --origin arg also needs to be defined"
+if args.file:
+    logger.info('File provided using -f, --file option')
+    abs_path = os.path.abspath(args.file)
+    files.append(abs_path)
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
 
     for line in args.list_file:
         line = line.rstrip("\n")
-        try:
-            origin, dest = line.split("\t")
-            files.append((origin, dest))
-        except Exception:
-            raise Exception("Format of file provided with --list_file, -l option needs to be:"
-                            "<origin>\\t<dest>")
-
-if origin_seen is True:
-    logger.info('--origin and --dest args defined')
-    files.append((args.origin, args.dest))
+        abs_path = os.path.abspath(line)
+        files.append(abs_path)
 
 # check if user has passed any file
 if len(files) == 0:
     logger.info('No file/s provided. Nothing to be done...')
     sys.exit(0)
-
 
 # connection to Reseqtrack DB
 db = DB(settingf=args.settingsf,
@@ -112,38 +109,35 @@ db = DB(settingf=args.settingsf,
 api = API(settingsf=args.settingsf,
           pwd=firepwd)
 
-for tup in files:
-    pdb.set_trace()
-    abs_path = os.path.abspath(tup[0])
+for f in files:
+    # check if path exists
+    if not os.path.isfile(f):
+        raise Exception(f"File path to be archived: {f} does not exist. Can't continue!")
+    # check if staging mount point exists in file path to be archived
+    if not settingsO.get('ftp', 'staging_mount') in f:
+        raise Exception(f"File to be archived: {f} is not placed in the staging area:"
+                        f" {settingsO.get('ftp', 'staging_mount')}.\nYou need to move it first. Can't continue!")
+    fire_path = re.sub(settingsO.get('ftp', 'staging_mount')+"/", '', f)
+    ftp_path = os.path.join(settingsO.get('ftp', 'ftp_mount'), fire_path)
 
-    # check if 'origin' exists in db and fetch the file
-    origin_f = db.fetch_file(path=abs_path)
-    assert origin_f is not None, f"File entry with path {abs_path} does not exist in the DB. "\
-                                 f"You need to load it first in order to proceed"
+    # check if 'f' exists in db and fetch the file
+    f_obj = db.fetch_file(path=f)
+    assert f_obj is not None, f"File entry with path {f} does not exist in the DB. "\
+                              f"You need to load it first in order to proceed"
+    # now, check if 'dest' exists in db
+    assert db.fetch_file(path=ftp_path) is None, f"File entry with path {ftp_path} already exists in the FTP archive."\
+                                                 f"It will not continue trying to archive this file"
 
-    # check if 'origin' already exists in FIRE
-    origin_fobj = api.fetch_object(firePath=abs_path)
-    if origin_fobj is not None:
-        logger.info(f"File provided {abs_path} is in FIRE, it will be moved to {tup[1]}")
-        api.update_object(attr_name='firePath',
-                          value=tup[1],
-                          fireOid=origin_fobj.fireOid,
-                          dry=str2bool(args.dry))
-    else:
-        # now, check if 'dest' exists in db
-        assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
-                                                   f"It will not continue"
-
-        # push the file to FIRE where tup[1] will the path in the FIRE
-        # filesystem
-        api.push_object(fileO=origin_f,
-                        dry=str2bool(args.dry),
-                        fire_path=tup[1])
+    # push the file to FIRE where fire_path will the path in the FIRE
+    # filesystem
+    api.push_object(fileO=f_obj,
+                    dry=str2bool(args.dry),
+                    fire_path=fire_path)
 
     # now, modify the file entry in the db and update its name (path)
     db.update_file(attr_name='name',
-                   value=tup[1],
-                   name=abs_path,
+                   value=ftp_path,
+                   name=f,
                    dry=str2bool(args.dry))
 
     if args.type:
@@ -152,8 +146,5 @@ for tup in files:
 
         db.update_file(attr_name='type',
                        value=args.type,
-                       name=tup[1],
+                       name=ftp_path,
                        dry=str2bool(args.dry))
-
-
-

@@ -161,7 +161,7 @@ class API(object):
             json_res = res.json()
 
             fireObj = None
-            if json_res['statusCode'] == 404:
+            if res.status_code == 404:
                 api_logger.info('No FIRE object found')
                 return fireObj
             else:
