@@ -46,8 +46,8 @@ Below is the template of a configuration file::
  user = g1k-test-ernesto
  version = v1.1
  [ftp]
- staging_mount=/nfs/1000g-work/G1K/archive_staging/ftp
- ftp_mount=/nfs/1000g-archive
+ staging_mount=/nfs/1000g-work/G1K/archive_staging
+ ftp_mount=/nfs/1000g-archive/vol1
 
 Where the ``[mysql_conn]`` section contains the parameters for connecting the MYSQL server containing the database
 created with the `RESEQTRACK <https://github.com/EMBL-EBI-GCA/reseqtrack/tree/master/sql>`_ schema and the ``[fire]``
@@ -169,18 +169,18 @@ Prerequisites
 ^^^^^^^^^^^^^
 * The file/s to be archived in the FTP need to be tracked in the ``file`` table of the ``RESEQTRACK`` database. For this you need to
   load them first using the ``load_files.py`` script explained in the previous section
-* The file/s to be archived in the FTP need to be in the staging area (``/nfs/1000g-work/G1K/archive_staging/ftp``).
+* The file/s to be archived in the FTP need to be in the staging area (``/nfs/1000g-work/G1K/archive_staging``).
   This area can be changed by modifying the ``staging_mount`` parameter of the ``[ftp]`` section in the ``settings.ini`` file
 
 **Note:** The path of the file to be archived within the staging area will be duplicated in the FTP. So for example, if
 we want to archive ``test.txt`` so it can accessed from ``http://ftp.1000genomes.ebi.ac.uk/vol1/test_dir/subtest_dir/test.txt``
-we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/ftp/test_dir/subtest_dir/``
+we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/test_dir/subtest_dir/``
 
 1) Archive a single file
 
 For this, use the ``-f``/``--file`` option like this::
 
- archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/ftp/file.txt --dbname $DBNAME
+ archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/file.txt --dbname $DBNAME
  --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``-f/--file`` is the path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK`` database
@@ -232,10 +232,10 @@ delete the entry in the ``file`` table from the ``RESEQTRACK`` database.
 
 Enter the following command::
 
- dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/path/file --directory /dir/to/put/file --dbname $DBNAME \
+ dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/vol1/path/file --directory /dir/to/put/file --dbname $DBNAME \
  --firepwd $FIREPWD --dbpwd $DBPWD
 
-- ``--file`` is the path to the file to be dearchived. ``/nfs/1000g-archive`` is the directory containing the IGSR FTP in our filesystem.
+- ``--file`` is the path to the file to be dearchived. ``/nfs/1000g-archive/vol1`` is the directory containing the IGSR FTP in our filesystem.
   This directory can be changed by modifying the ``ftp_mount`` parameter of the ``ftp`` section in the ``settings.ini`` file
 - ``--directory`` is the directory used to store the file to be dearchived
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
@@ -271,7 +271,7 @@ Also, this script will update the path metadata in the ``RESEQTRACK`` database f
 
 For this, use the ``--origin`` and ``--dest`` options like this::
 
- move_files.py --settings settings.ini --origin /nfs/1000g-archive/dir1/test.txt --dest /nfs/1000g-archive/dir2/test.txt \
+ move_files.py --settings settings.ini --origin /nfs/1000g-archive/vol1/dir1/test.txt --dest /nfs/1000g-archive/vol1/dir2/test.txt \
   --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--origin`` is the current path in the FTP filesystem that has the file you want to move
