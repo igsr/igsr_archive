@@ -265,6 +265,7 @@ By default, the script will perform a dry run and the files will not be dearchiv
 Move files
 ----------
 The script for moving a file/s from one directory in the IGSR public FTP to a different directory is ``move_files.py``.
+Also, this script will update the path metadata in the ``RESEQTRACK`` database for the file that wants to be moved.
 
 1) Move a single file
 
@@ -272,6 +273,31 @@ For this, use the ``--origin`` and ``--dest`` options like this::
 
  move_files.py --settings settings.ini --origin /nfs/1000g-archive/dir1/test.txt --dest /nfs/1000g-archive/dir2/test.txt \
   --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
+
+- ``--origin`` is the current path in the FTP filesystem that has the file you want to move
+- ``--dest`` is the desired path to which the file will be moved
+- ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
+- ``--firepwd`` is the password for connecting the FIRE API
+- ``--dbpwd`` is the password for connecting the MYSQL server
+
+By default, the script will perform a dry run and the file will not be moved. You need to run
+``move_files.py`` with the option ``--dry False`` to move it.
+
+2) Move a list of files
+
+You can provide the script a list of the files to be moved. This can be done by creating a 2-columns file::
+
+ <origin>\t<dest>
+
+Where, for each line, the first column will contain the current path in the FTP filesystem that has the file you want to move
+and the second column is the desired path to which the file will be moved.
+
+The script will be run by doing::
+
+ move_files.py --settings settings.ini --list_file file_list.txt --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
+
+By default, the script will perform a dry run and the files will not be moved. You need to run
+``move_files.py`` with the option ``--dry False`` to move them.
 
 Indices and tables
 ==================
