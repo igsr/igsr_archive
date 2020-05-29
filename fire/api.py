@@ -1,11 +1,13 @@
 import logging
-import requests
-import pdb
-import sys
 import re
-
-from requests.exceptions import HTTPError
+import sys
+import pdb
+import json
+from subprocess import Popen, PIPE
 from configparser import ConfigParser
+
+import requests
+from requests.exceptions import HTTPError
 from fire.object import fObject
 
 # create logger
@@ -199,7 +201,9 @@ class API(object):
     def push_object(self, fileO, dry=True, publish=True, fire_path=None):
         """
         Function to push (upload) a file.file.File object
-        to FIRE
+        to FIRE. This function currently uses 'curl'.
+        As the standars 'requests' module throws memory errors
+        when trying to upload large files
 
         Parameters
         ----------
@@ -227,38 +231,30 @@ class API(object):
 
         api_logger.info(f"Pushing File with path: {fileO.name}")
 
-        files = {'file': open(fileO.name, 'rb')}
-
-        url = f"{self.settings.get('fire', 'root_endpoint')}/objects"
+        url = f"curl {self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects" \
+              f" -u {self.user}:{self.pwd}"
 
         if dry is False:
-            try:
-                header = {"x-fire-size": f"{fileO.size}",
-                          "x-fire-md5": f"{fileO.md5}"}
+            url = url+f" -F file=@{fileO.name} -H 'x-fire-md5: {fileO.md5}' -H 'x-fire-size: {fileO.size}' "
 
-                if fire_path is not None:
-                    api_logger.info(f"Virtual FIRE path provided")
-                    header['x-fire-path'] = f"{fire_path}"
+            if fire_path is not None:
+                api_logger.info(f"Virtual FIRE path provided")
+                url = url+f"-H 'x-fire-path: {fire_path}' "
+            if publish is True:
+                api_logger.info(f"Pushed object will be published")
+                url = url+"-H 'x-fire-publish: true'"
 
-                if publish is True:
-                    api_logger.info(f"Pushed object will be published")
-                    header['x-fire-publish'] = "true"
+            p = Popen(url, stdout=PIPE, stderr=PIPE, shell=True)
+            stdout, stderr = p.communicate()
 
-                res = requests.post(url, auth=(self.user, self.pwd), files=files, headers=header)
-                res.raise_for_status()
-            except HTTPError as http_err:
-                print(f'HTTP error occurred: {http_err}')
-                print(f'Error message: {res.text}')
-            except Exception as err:
-                print(f'Other error occurred: {err}')
-                print(f'Error message: {res.text}')
+            d = json.loads(stdout)
+            if "statusCode" in d.keys():
+                err = f"{d['statusMessage']}\n{d['detail']}"
+                raise HTTPError(err)
             else:
-                if res.status_code == 200:
-                    json_res = res.json()
-                    fireObj = self.__parse_json_response(json_res)
-                    api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
-
-                    return fireObj
+                fireObj = self.__parse_json_response(d)
+                api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
+                return fireObj
         elif dry is True:
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
@@ -296,7 +292,6 @@ class API(object):
         """
 
         fireObj = None
-
         if fireOid is not None:
             api_logger.info(f"fireOid provided. Fetching FIRE object that will be modified")
             fireObj = self.fetch_object(fireOid=fireOid)
@@ -315,7 +310,6 @@ class API(object):
                   f"{fireOid}/firePath"
 
             header = {"x-fire-path": f"{value}"}
-
             if dry is False:
                 try:
                     res = requests.put(url, auth=(self.user, self.pwd), headers=header)

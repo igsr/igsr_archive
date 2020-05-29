@@ -196,10 +196,11 @@ def test_update_object(loaded_obj, del_obj):
 
     updated_obj = api.update_object(attr_name='firePath',
                                     value='test_dir1/test.txt',
-                                    fireOid=loaded_obj.fireOid)
+                                    fireOid=loaded_obj.fireOid,
+                                    dry=False)
 
     # check that FIRE path has been modified
-    assert updated_obj.path == "/test_dir1/test.txt"
+    assert updated_obj.path == "test_dir1/test.txt"
 
     del_obj.append(loaded_obj.fireOid)
 
