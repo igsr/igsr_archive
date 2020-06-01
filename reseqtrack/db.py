@@ -233,6 +233,9 @@ class DB(object):
             try:
                 db_logger.info(f"UPDATE sql: {update_sql}")
                 cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+                # if the connection was lost, then it reconnects
+                self.conn.ping(reconnect=True)
+
                 # Execute the SQL command
                 cursor.execute(update_sql)
                 cursor.close()

@@ -246,7 +246,12 @@ class API(object):
 
             p = Popen(url, stdout=PIPE, stderr=PIPE, shell=True)
             stdout, stderr = p.communicate()
+            res = stdout.decode("utf-8")
 
+            api_logger.debug(f"API response:{res}")
+            # FIRE api is down
+            if res == "Service Unavailable":
+                raise HTTPError("FIRE Service Unavailable")
             d = json.loads(stdout)
             if "statusCode" in d.keys():
                 err = f"{d['statusMessage']}\n{d['detail']}"

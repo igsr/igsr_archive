@@ -69,7 +69,7 @@ def test_load_f(db_obj):
 
 def test_update_f(db_obj):
     log = logging.getLogger('test_update_f')
-    pdb.set_trace()
+
     log.debug("Testing \'update_file\' function to update an entry "
               "in the \'file\' table of the DB")
 
