@@ -1,8 +1,8 @@
-Metadata-Version: 1.2
+Metadata-Version: 2.1
 Name: igsr-archive
-Version: 0.1.0
+Version: 0.1.1
 Summary: Contains code to perform several operations involving files in the IGSR (1000 genomes) FTP archive.
-Home-page: https://github.com/igsr/igsr_archive
+Home-page: https://github.com/igsr/igsr_archive/archive/0.1.1.tar.gz
 Author: Ernesto Lowy
 Author-email: ernestolowy@gmail.com
 License: MIT
@@ -20,13 +20,9 @@ Description:
         
         ## Installation
         
-        1. clone this repo
+        * Use pip for installing:
         
-            `git clone https://github.com/igsr/igsr_archive.git`
-        
-        1. `cd igsr_archive`
-        
-        1. `pip install -e .`
+          `pip install igsr_archive`
         
         And you are ready to go!
         
@@ -41,3 +37,4 @@ Classifier: Programming Language :: Python :: 3.6
 Classifier: Programming Language :: Python :: Implementation :: CPython
 Classifier: Programming Language :: Python :: Implementation :: PyPy
 Requires-Python: >=3.6.0
+Description-Content-Type: text/markdown

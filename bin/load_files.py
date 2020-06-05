@@ -5,8 +5,7 @@ import os
 import sys
 import logging
 import re
-import pdb
-from utils import str2bool
+from utils.utils import str2bool
 
 from reseqtrack.db import DB
 from file.file import File

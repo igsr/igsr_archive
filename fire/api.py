@@ -1,11 +1,10 @@
 import logging
 import re
 import sys
-import pdb
 import json
 from subprocess import Popen, PIPE
 from configparser import ConfigParser
-from utils import is_tool
+from utils.utils import is_tool
 
 import requests
 from requests.exceptions import HTTPError

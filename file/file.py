@@ -1,10 +1,8 @@
-import os
 import subprocess
-import pdb
 import os
 import datetime
 import logging
-from utils import is_tool
+from utils.utils import is_tool
 
 # create logger
 file_logger = logging.getLogger(__name__)

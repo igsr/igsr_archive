@@ -2,8 +2,7 @@ import argparse
 import os
 import re
 import logging
-import pdb
-from utils import str2bool
+from utils.utils import str2bool
 from reseqtrack.db import DB
 from fire.api import API
 from file.file import File

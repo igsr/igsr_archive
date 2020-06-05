@@ -1,4 +1,5 @@
 README.md
+setup.cfg
 setup.py
 bin/archive_files.py
 bin/dearchive_files.py
@@ -17,3 +18,5 @@ igsr_archive.egg-info/requires.txt
 igsr_archive.egg-info/top_level.txt
 reseqtrack/__init__.py
 reseqtrack/db.py
+utils/__init__.py
+utils/utils.py
