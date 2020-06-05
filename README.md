@@ -11,13 +11,9 @@ Basic functionality that this repo provides is:
 
 ## Installation
 
-1. clone this repo
+* Use pip for installing:
 
-    `git clone https://github.com/igsr/igsr_archive.git`
-
-1. `cd igsr_archive`
-
-1. `pip install -e .`
+  `pip install igsr_archive`
 
 And you are ready to go!
 

@@ -2,7 +2,6 @@ from configparser import ConfigParser
 from file.file import File
 
 import pymysql
-import pdb
 import logging
 import datetime
 import sys

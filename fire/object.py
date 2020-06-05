@@ -1,5 +1,4 @@
 import logging
-import pdb
 
 # create logger
 object_logger = logging.getLogger(__name__)
