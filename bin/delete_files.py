@@ -3,10 +3,10 @@
 import argparse
 import os
 import logging
-from utils.utils import str2bool
+from igsr_archive.utils import str2bool
 
-from reseqtrack.db import DB
-from file.file import File
+from igsr_archive.db import DB
+from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Delete file/s from a Reseqtrack database')
 

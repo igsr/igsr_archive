@@ -2,10 +2,10 @@ import argparse
 import os
 import re
 import logging
-from utils.utils import str2bool
-from reseqtrack.db import DB
-from fire.api import API
-from file.file import File
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.api import API
+from igsr_archive.file import File
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. removing) a file or a list of files from '\

@@ -3,9 +3,9 @@ import os
 import logging
 import sys
 import re
-from utils.utils import str2bool
-from reseqtrack.db import DB
-from fire.api import API
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.api import API
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\

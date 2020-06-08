@@ -1,8 +1,9 @@
 import subprocess
 import os
+import pdb
 import datetime
 import logging
-from utils.utils import is_tool
+from igsr_archive.utils import is_tool
 
 # create logger
 file_logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ class File(object):
 
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
-        if os.path.isfile(name) == True:
+        if os.path.isfile(name):
 
             file_logger.debug(f"Found a file with name: {name}")
 

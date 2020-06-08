@@ -3,8 +3,8 @@ import logging
 import os
 import pdb
 
-from reseqtrack.db import DB
-from file.file import File
+from igsr_archive.db import DB
+from igsr_archive.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -20,11 +20,24 @@ def db_obj():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingf="../../data/settings.ini",
+    db = DB(settingf="../data/settings.ini",
             pwd=pwd,
             dbname=dbname)
 
     return db
+
+@pytest.fixture
+def del_obj(db_obj):
+
+    fileList = []
+    yield fileList
+
+    log = logging.getLogger('del_f')
+    log.debug('Delete File from DB')
+
+    for fO in fileList:
+        db_obj.delete_file(fO,
+                           dry=False)
 
 
 def test_conn_s():
@@ -37,7 +50,7 @@ def test_conn_s():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingf="../../data/settings.ini",
+    db = DB(settingf="../data/settings.ini",
             pwd=pwd,
             dbname=dbname)
 
@@ -51,23 +64,27 @@ def test_conn_e():
     assert dbname, "$DBNAME undefined"
 
     with pytest.raises(Exception) as e_info:
-        db = DB(settingf="../../data/settings.ini",
+        db = DB(settingf="../data/settings.ini",
                 pwd="mockpwd",
                 dbname=dbname)
 
-def test_load_f(db_obj):
+def test_load_f(db_obj, del_obj):
     log = logging.getLogger('test_load_f')
 
     log.debug('Testing \'load_file\' function to load file entry in DB')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
     )
 
     db_obj.load_file(f, dry=False)
 
-def test_update_f(db_obj):
+    del_obj.append(f)
+
+
+
+def test_update_f(db_obj, del_obj):
     log = logging.getLogger('test_update_f')
 
     log.debug("Testing \'update_file\' function to update an entry "
@@ -75,7 +92,7 @@ def test_update_f(db_obj):
 
     # First, load file entry in the database
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F")
 
     db_obj.load_file(f, dry=False)
@@ -83,15 +100,15 @@ def test_update_f(db_obj):
     # Now, modify the file path for
     # entry in the 'file' table
     db_obj.update_file(attr_name='name',
-                       value='../../data/test1.txt',
-                       name='../../data/test.txt',
+                       value='../data/test1.txt',
+                       name='../data/test.txt',
                        dry=False)
 
-    # Now, finally delete the file entry from the DB
     f1 = File(
-        name="../../data/test1.txt",
+        name="../data/test1.txt",
         type="TYPE_F")
-    db_obj.delete_file(f1, dry=False)
+
+    del_obj.append(f1)
 
 def test_delete_f(db_obj):
     log = logging.getLogger('test_delete_f')
@@ -99,7 +116,7 @@ def test_delete_f(db_obj):
     log.debug('Testing \'delete_file\' function to delete a file entry in the DB')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
     )
 
@@ -109,16 +126,26 @@ def test_delete_f(db_obj):
     # Now, delete it
     db_obj.delete_file(f, dry=False)
 
-def test_fetch_f_exists_w_path(db_obj):
+def test_fetch_f_exists_w_path(db_obj, del_obj):
     log = logging.getLogger('test_fetch_f_exists_w_path')
 
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its path')
 
-    # path provided here points to an existing file
-    f = db_obj.fetch_file(path='/nfs/1000g-archive/vol1/ftp/current.tree')
+    rel_path = "../data/test.txt"
+    # First, load file entry in the database
+    f = File(
+        name=rel_path,
+        type="TYPE_F")
 
-    assert f.name == '/nfs/1000g-archive/vol1/ftp/current.tree'
+    db_obj.load_file(f, dry=False)
+
+    # path provided here points to the loaded file
+    rf = db_obj.fetch_file(path=rel_path)
+
+    del_obj.append(rf)
+
+    assert rf.name == os.path.abspath(rel_path)
 
 
 def test_fetch_f_not_exists_w_path(db_obj):
@@ -132,16 +159,27 @@ def test_fetch_f_not_exists_w_path(db_obj):
 
     assert f == None
 
-def test_fetch_f_exists_w_basename(db_obj):
+def test_fetch_f_exists_w_basename(db_obj, del_obj):
     log = logging.getLogger('test_fetch_f_exists_w_basename')
 
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its basename')
 
-    # path provided here points to an existing file
-    f = db_obj.fetch_file(basename='current.tree')
+    rel_path = "../data/test.txt"
 
-    assert f.name == '/nfs/1000g-archive/vol1/ftp/current.tree'
+    # First, load file entry in the database
+    f = File(
+        name=rel_path,
+        type="TYPE_F")
+
+    db_obj.load_file(f, dry=False)
+
+    # path provided here points to an existing file
+    f = db_obj.fetch_file(basename='test.txt')
+
+    del_obj.append(f)
+
+    assert f.name == os.path.abspath(rel_path)
 
 def test_fetch_f_not_exists_w_basename(db_obj):
     log = logging.getLogger('test_fetch_f_not_exists_w_basename')

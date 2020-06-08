@@ -1,8 +1,7 @@
-import pytest
 import logging
 import datetime
 
-from file.file import File
+from igsr_archive.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -11,7 +10,7 @@ def test_f_w_md5():
     log.debug('Instantiation with md5sum')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TEST_F",
         md5="f5aa4f4f1380b71acc56750e9f8ff825")
 
@@ -22,7 +21,7 @@ def test_f_wo_md5():
     log.debug('Instantiation without md5sum')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
     )
 
@@ -33,7 +32,7 @@ def test_f_w_size():
     log.debug('Instantiation with file size')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F",
         size=17)
 
@@ -44,7 +43,7 @@ def test_f_wo_size():
     log.debug('Instantiation without file size')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
         )
 
@@ -55,7 +54,7 @@ def test_f_wo_creation_date():
     log.debug('Instantiation without creation date')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
     )
 
@@ -66,7 +65,7 @@ def test_check_if_exists():
     log.debug('Testing function for checking if a file exists')
 
     f = File(
-        name="../../data/test.txt",
+        name="../data/test.txt",
         type="TYPE_F"
     )
 

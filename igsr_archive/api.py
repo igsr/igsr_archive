@@ -1,14 +1,15 @@
 import logging
 import re
+import pdb
 import sys
 import json
 from subprocess import Popen, PIPE
 from configparser import ConfigParser
-from utils.utils import is_tool
+from igsr_archive.utils import is_tool
 
 import requests
 from requests.exceptions import HTTPError
-from fire.object import fObject
+from igsr_archive.object import fObject
 
 # create logger
 api_logger = logging.getLogger(__name__)
@@ -231,7 +232,7 @@ class API(object):
 
         api_logger.info(f"Pushing File with path: {fileO.name}")
 
-        if not is_tool("cur"):
+        if is_tool("curl") is False:
             raise Exception("The 'curl' program was not found in this system. Can't continue!...")
 
         url = f"curl {self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects" \

@@ -1,9 +1,10 @@
 from configparser import ConfigParser
-from file.file import File
+from igsr_archive.file import File
 
 import pymysql
 import logging
 import datetime
+import os
 import sys
 
 # create logger
@@ -179,8 +180,10 @@ class DB(object):
         if path is not None:
             db_logger.debug(f"Fetching file with path: {path}")
 
+            abs_path = os.path.abspath(path)
+
             query = "SELECT * FROM file WHERE name = %s"
-            cursor.execute(query, [path])
+            cursor.execute(query, [abs_path])
 
         elif basename is not None:
             db_logger.debug(f"Fetching file with basename: {basename}")

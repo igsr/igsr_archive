@@ -1,8 +1,7 @@
 import argparse
 import logging
-import pdb
 import os
-from fire.api import API
+from igsr_archive.api import API
 
 logging.basicConfig(level=logging.DEBUG)
 
