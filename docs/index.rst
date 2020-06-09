@@ -26,19 +26,9 @@ Installation
 This codebase requires Python (3.6.0 or later) and is used to, among other things, interact programmatically
 with the FIle REplication (FIRE) archive implemented in the EMBL-EBI.
 
-To install this project:
+To install this project::
 
-1 ) clone the ``igsr-archive`` repo::
-
-   git clone https://github.com/igsr/igsr_archive.git
-
-2 ) cd into directory where repo has been cloned::
-
-   cd igsr_archive
-
-3 ) Finally::
-
-   pip install -e .
+   pip install igsr_archive
 
 And you	are ready to go!
 
