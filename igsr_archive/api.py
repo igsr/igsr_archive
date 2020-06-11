@@ -238,6 +238,7 @@ class API(object):
         url = f"curl {self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects" \
               f" -u {self.user}:{self.pwd}"
 
+        fire_obj = None
         if dry is False:
             url = url+f" -F file=@{fileO.name} -H 'x-fire-md5: {fileO.md5}' -H 'x-fire-size: {fileO.size}' "
 
@@ -261,9 +262,9 @@ class API(object):
                 err = f"{d['statusMessage']}\n{d['detail']}"
                 raise HTTPError(err)
             else:
-                fireObj = self.__parse_json_response(d)
-                api_logger.info(f"File object pushed with fireOid: {fireObj.fireOid}")
-                return fireObj
+                fire_obj = self.__parse_json_response(d)
+                api_logger.info(f"File object pushed with fireOid: {fire_obj.fireOid}")
+                return fire_obj
         elif dry is True:
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")

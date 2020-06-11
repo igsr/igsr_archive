@@ -13,7 +13,7 @@ Basic functionality that this repo provides is:
 
 * Use pip for installing:
 
-  `pip install igsr_archive`
+  `pip install igsr-archive`
 
 And you are ready to go!
 

@@ -5,6 +5,7 @@ import os
 import logging
 import sys
 import re
+import pdb
 from igsr_archive.utils import str2bool
 from igsr_archive.db import DB
 from igsr_archive.api import API
@@ -131,21 +132,29 @@ for f in files:
 
     # push the file to FIRE where fire_path will the path in the FIRE
     # filesystem
-    api.push_object(fileO=f_obj,
-                    dry=str2bool(args.dry),
-                    fire_path=fire_path)
+    fireObj = api.push_object(fileO=f_obj,
+                              dry=str2bool(args.dry),
+                              fire_path=fire_path)
 
     # now, modify the file entry in the db and update its name (path)
-    db.update_file(attr_name='name',
-                   value=ftp_path,
-                   name=f,
-                   dry=str2bool(args.dry))
+    ret_db_code = db.update_file(attr_name='name',
+                                 value=ftp_path,
+                                 name=f,
+                                 dry=str2bool(args.dry))
 
     if args.type:
         logger.info(f"--type option provided. Its value will be used for updating"
                     f" the file type in {args.dbname}")
 
-        db.update_file(attr_name='type',
-                       value=args.type,
-                       name=ftp_path,
-                       dry=str2bool(args.dry))
+        ret_db_code = db.update_file(attr_name='type',
+                                     value=args.type,
+                                     name=ftp_path,
+                                     dry=str2bool(args.dry))
+
+    # Finally, delete the file that has been pushed
+    if str2bool(args.dry) is False:
+        if ret_db_code == 0 and fireObj is not None:
+            logger.info(f"File successfully pushed and correctly updated in the DB")
+            logger.info(f"File {f} will be removed")
+            os.remove(f)
+

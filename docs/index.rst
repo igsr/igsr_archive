@@ -28,7 +28,7 @@ with the FIle REplication (FIRE) archive implemented in the EMBL-EBI.
 
 To install this project::
 
-   pip install igsr_archive
+   pip install igsr-archive
 
 And you	are ready to go!
 
