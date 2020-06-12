@@ -95,6 +95,12 @@ elif args.list_file:
 
     for path in args.list_file:
         path = path.rstrip("\n")
+        cols = re.split(' +', path)
+        if len(cols)>1:
+            raise Exception(f"Path provided {path} is not correct. "
+                            f"Check format")
+
+        path = path.rstrip("\n")
         f = File(name=path,
                  type=args.type)
         files.append(f)
@@ -106,7 +112,8 @@ elif args.md5_file:
         cols = re.split(' +', line)
         if len (cols) != 2:
             raise Exception("Incorrect number of columns in file used for --md5_file. "
-                            "Check format")
+                            "Check format. It should be: <md5sum>  <path>. First and second column should be"
+                            "separated by exactly 2 whitespaces.")
         md5sum, path = (cols[0], cols[1])
         f = File(name=path,
                  type=args.type,

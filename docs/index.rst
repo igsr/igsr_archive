@@ -104,7 +104,7 @@ table of the database
 
 Use the ``--md5_file`` option with a file with the following format::
 
- <md5>\t<path_to_file>
+ <md5>  <path_to_file>
 
 
 Each of the lines in the file will contain the pre-calculated md5 checksum and the path to the file to be
@@ -176,7 +176,9 @@ Prerequisites
 
 **Note:** The path of the file that is placed in the staging area will be duplicated in the FTP area. So for example, if
 we want to archive ``test.txt`` so it can accessed from ``http://ftp.1000genomes.ebi.ac.uk/vol1/test_dir/subtest_dir/test.txt``,
-we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/test_dir/subtest_dir/``
+we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/test_dir/subtest_dir/``.
+
+**Important:** Once the file has been correctly archived in the FTP, it will be removed from the staging area.
 
 1) Archive a single file
 

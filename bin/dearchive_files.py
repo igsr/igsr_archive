@@ -121,6 +121,6 @@ for path in files:
 
     # delete FIRE object
     api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
-    # finally, delete dearchived file from RESEQTRACK DB
+    # finally, delete de-archived file from RESEQTRACK DB
     db.delete_file(dearch_f, dry=str2bool(args.dry))
 
