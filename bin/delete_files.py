@@ -2,7 +2,9 @@
 
 import argparse
 import os
+import re
 import logging
+import pdb
 from igsr_archive.utils import str2bool
 
 from igsr_archive.db import DB
@@ -75,11 +77,16 @@ elif args.list_file:
 
     for path in args.list_file:
         path = path.rstrip("\n")
-        f = File(
-            name=path,
-        )
+        cols = re.split(' +', path)
+        if len(cols) > 1:
+            raise Exception("Incorrect number of columns in file used for --list_file. "
+                            "Check format. File should have a different path per line with no whitespaces "
+                            "in the path.")
+        rf = db.fetch_file(path=path)
+        if rf is None:
+            raise Exception(f"No file retrieved from DB using path: {path}")
 
-        db.delete_file(f, dry=str2bool(args.dry))
+        db.delete_file(rf, dry=str2bool(args.dry))
 else:
     logger.info('No file/s provided using the -f or -l options. Nothing to be done...')
 

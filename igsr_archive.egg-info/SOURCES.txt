@@ -6,6 +6,7 @@ bin/dearchive_files.py
 bin/delete_files.py
 bin/fetch_fire_object.py
 bin/load_files.py
+bin/move_files.py
 igsr_archive/__init__.py
 igsr_archive/api.py
 igsr_archive/db.py
