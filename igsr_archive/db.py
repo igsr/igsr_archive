@@ -76,7 +76,9 @@ class DB(object):
 
         Returns
         -------
-        Path to the stored file
+        int: Return code
+             0 : Success
+             1 : False
 
         Raises
         ------
@@ -98,15 +100,17 @@ class DB(object):
                 # Commit your changes in the database
                 self.conn.commit()
                 db_logger.info(f"File loaded: {f.name}")
+                return 0
             except pymysql.Error as e:
                 db_logger.error("Exception occurred", exc_info=True)
                 # Rollback in case there is any error
                 self.conn.rollback()
+                return 1
         elif dry is True:
             db_logger.info(f"INSERT sql: {sql_insert_attr}")
             db_logger.info(f"File was not stored in the DB.")
             db_logger.info(f"Use --dry False to effectively store it")
-
+            return 0
         else:
             raise Exception(f"dry option: {dry} not recognized")
 
@@ -260,6 +264,7 @@ class DB(object):
             db_logger.info(f"UPDATE sql: {update_sql}")
             db_logger.info(f"DB Entry was not updated")
             db_logger.info(f"Use --dry False to update it")
+            return 0
         else:
             raise Exception(f"dry option: {dry} not recognized")
 

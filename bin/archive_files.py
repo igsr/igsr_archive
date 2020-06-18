@@ -9,6 +9,7 @@ import pdb
 from igsr_archive.utils import str2bool
 from igsr_archive.db import DB
 from igsr_archive.api import API
+from igsr_archive.file import File
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
@@ -28,6 +29,9 @@ parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File
                                                                            "the files need to be placed in the"
                                                                            " staging area of our filesystem")
 parser.add_argument('--type',  help="New file type used in the Reseqtrack DB for archiving the files")
+parser.add_argument('--update_existing', default=False, help="If True, then update a file that is already archived "
+                                                             "in the FTP with the new file that is placed in the "
+                                                             "staging area")
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
@@ -112,6 +116,8 @@ api = API(settingsf=args.settingsf,
           pwd=firepwd)
 
 for f in files:
+    fireObj = None
+
     # check if path exists
     if not os.path.isfile(f):
         raise Exception(f"File path to be archived: {f} does not exist. Can't continue!")
@@ -123,38 +129,88 @@ for f in files:
     ftp_path = os.path.join(settingsO.get('ftp', 'ftp_mount'), fire_path)
 
     # check if 'f' exists in db and fetch the file
-    f_obj = db.fetch_file(path=f)
-    assert f_obj is not None, f"File entry with path {f} does not exist in the DB. "\
-                              f"You need to load it first in order to proceed"
-    # now, check if 'dest' exists in db
-    assert db.fetch_file(path=ftp_path) is None, f"File entry with path {ftp_path} already exists in the FTP archive."\
-                                                 f"It will not continue trying to archive this file"
+    f_indb_o = db.fetch_file(path=f)
 
-    # push the file to FIRE where fire_path will the path in the FIRE
-    # filesystem
-    fireObj = api.push_object(fileO=f_obj,
-                              dry=str2bool(args.dry),
-                              fire_path=fire_path)
+    # check if this file is already in the ftp
+    f_inftp_o = db.fetch_file(path=ftp_path)
 
-    # now, modify the file entry in the db and update its name (path)
-    ret_db_code = db.update_file(attr_name='name',
-                                 value=ftp_path,
-                                 name=f,
-                                 dry=str2bool(args.dry))
+    pdb.set_trace()
+    if f_indb_o is None and f_inftp_o is not None:
+        if str2bool(args.update_existing) is True:
+            # 'f' that is in the staging area does not exist in DB, but it does exist in the FTP
+            # This means that user wants to update a file that is already in te FTP.
+            logger.info(f"It seems that file: {f} is already archived and --update_existing is True")
+            logger.info(f"Archived file will be updated with new file")
 
-    if args.type:
-        logger.info(f"--type option provided. Its value will be used for updating"
-                    f" the file type in {args.dbname}")
+            # First, retrieve the FIRE object
+            dearch_fobj = api.fetch_object(firePath=fire_path)
 
-        ret_db_code = db.update_file(attr_name='type',
-                                     value=args.type,
-                                     name=ftp_path,
+            assert dearch_fobj is not None, f"Object with FIRE path: {fire_path} was not retrieved"
+
+            # delete the FIRE object
+            api.delete_object(fireOid=dearch_fobj.fireOid,
+                              dry=str2bool(args.dry))
+
+            # Create File object pointing to the file placed in the staging area
+            f_in_staging = File(name=f)
+
+            # now update the metadata for f_inftp_o
+            status_code = db.update_file(attr_name='md5',
+                                         value=f_in_staging.md5,
+                                         name=ftp_path,
+                                         dry=str2bool(args.dry))
+            assert status_code == 0, "Something went wrong when updating the 'md5' field of the entry in the 'File'" \
+                                     "table of the the DB"
+
+            status_code = db.update_file(attr_name='size',
+                                         value=f_in_staging.size,
+                                         name=ftp_path,
+                                         dry=str2bool(args.dry))
+            assert status_code == 0, "Something went wrong when updating the 'size' field of the entry in the 'File'" \
+                                     "table of the the DB"
+
+            # Now, push the new file
+            # push the file to FIRE where fire_path will the path in the FIRE
+            # filesystem
+            fireObj = api.push_object(fileO=f_in_staging,
+                                      dry=str2bool(args.dry),
+                                      fire_path=fire_path)
+        elif str2bool(args.update_existing) is False:
+            logger.info(f"It seems that file: {f} is already archived and --update_existing is False")
+            logger.info(f"Archived file will not be updated with new file")
+    elif f_indb_o is not None and f_inftp_o is None:
+        # 'f' does not exist in the FTP, archive it as a new file
+    
+        # push the file to FIRE where fire_path will the path in the FIRE
+        # filesystem
+        fireObj = api.push_object(fileO=f_indb_o,
+                                  dry=str2bool(args.dry),
+                                  fire_path=fire_path)
+
+        # now, modify the file entry in the db and update its name (path)
+        ret_db_code = db.update_file(attr_name='name',
+                                     value=ftp_path,
+                                     name=f,
                                      dry=str2bool(args.dry))
+    elif f_indb_o is None and f_inftp_o is None:
+        # 'f' does not exist neither the DB nor the FTP. Raise exception
+        raise Exception(f"File entry with path {f} does not exist in the DB. "
+                        f"You need to load it first in order to proceed")
 
-    # Finally, delete the file that has been pushed
-    if str2bool(args.dry) is False:
-        if ret_db_code == 0 and fireObj is not None:
-            logger.info(f"File successfully pushed and correctly updated in the DB")
-            logger.info(f"File {f} will be removed")
-            os.remove(f)
+if args.type:
+    logger.info(f"--type option provided. Its value will be used for updating"
+                f" the file type in {args.dbname}")
 
+    status_code = db.update_file(attr_name='type',
+                                 value=args.type,
+                                 name=ftp_path,
+                                 dry=str2bool(args.dry))
+    assert status_code == 0, "Something went wrong when updating the 'type' field of the entry in the 'File'" \
+                             "table of the the DB"
+
+# Finally, delete the file that has been pushed
+if str2bool(args.dry) is False:
+    if fireObj is not None:
+        logger.info(f"File successfully pushed and correctly updated in the DB")
+        logger.info(f"File {f} will be removed")
+        os.remove(f)
