@@ -134,7 +134,6 @@ for f in files:
     # check if this file is already in the ftp
     f_inftp_o = db.fetch_file(path=ftp_path)
 
-    pdb.set_trace()
     if f_indb_o is None and f_inftp_o is not None:
         if str2bool(args.update_existing) is True:
             # 'f' that is in the staging area does not exist in DB, but it does exist in the FTP
@@ -197,20 +196,20 @@ for f in files:
         raise Exception(f"File entry with path {f} does not exist in the DB. "
                         f"You need to load it first in order to proceed")
 
-if args.type:
-    logger.info(f"--type option provided. Its value will be used for updating"
-                f" the file type in {args.dbname}")
+    if args.type:
+        logger.info(f"--type option provided. Its value will be used for updating"
+                    f" the file type in {args.dbname}")
 
-    status_code = db.update_file(attr_name='type',
-                                 value=args.type,
-                                 name=ftp_path,
-                                 dry=str2bool(args.dry))
-    assert status_code == 0, "Something went wrong when updating the 'type' field of the entry in the 'File'" \
-                             "table of the the DB"
+        status_code = db.update_file(attr_name='type',
+                                     value=args.type,
+                                     name=ftp_path,
+                                     dry=str2bool(args.dry))
+        assert status_code == 0, "Something went wrong when updating the 'type' field of the entry in the 'File'" \
+                                 "table of the the DB"
 
-# Finally, delete the file that has been pushed
-if str2bool(args.dry) is False:
-    if fireObj is not None:
-        logger.info(f"File successfully pushed and correctly updated in the DB")
-        logger.info(f"File {f} will be removed")
-        os.remove(f)
+    # Finally, delete the file that has been pushed
+    if str2bool(args.dry) is False:
+        if fireObj is not None:
+            logger.info(f"File successfully pushed and correctly updated in the DB")
+            logger.info(f"File {f} will be removed")
+            os.remove(f)

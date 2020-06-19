@@ -69,6 +69,10 @@ assert dbpwd, "$DBPWD undefined"
 if not os.path.isfile(args.settingsf):
     raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
 
+if not os.path.isdir(args.directory):
+    raise Exception(f"{args.directory} does not exist. Can't continue!")
+
+
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settingsf)
