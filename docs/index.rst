@@ -174,9 +174,13 @@ Prerequisites
   (``/nfs/1000g-work/G1K/archive_staging``). To modify this area, change the ``staging_mount`` parameter from the
   ``[ftp]`` section in the ``settings.ini`` file.
 
-**Note:** The path of the file that is placed in the staging area will be duplicated in the FTP area. So for example, if
+**Note 1:** The path of the file that is placed in the staging area will be duplicated in the FTP area. So for example, if
 we want to archive ``test.txt`` so it can accessed from ``http://ftp.1000genomes.ebi.ac.uk/vol1/test_dir/subtest_dir/test.txt``,
 we need to put ``test.txt`` in ``/nfs/1000g-work/G1K/archive_staging/test_dir/subtest_dir/``.
+
+**Note 2:** If you want to modify a file that is already archived in the FTP, use the option ``--update_existing True``.
+The file/s that will replace the archived file/s need to be placed in the staging area but it is not necessary
+to pre-load them in the ``RESEQTRACK`` database.
 
 **Important:** Once the file has been correctly archived in the FTP, it will be removed from the staging area.
 
