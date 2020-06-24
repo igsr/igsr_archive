@@ -4,6 +4,7 @@ import pdb
 import datetime
 import logging
 from igsr_archive.utils import is_tool
+from configparser import ConfigParser
 
 # create logger
 file_logger = logging.getLogger(__name__)
@@ -15,11 +16,13 @@ class File(object):
 
     Class variables
     ---------------
+    name : str, Required
+           File path
+    settingf : str, Optional
+               Path to *.ini file several settings
     file_id : int, Optional,
               Internal DB id if the file is
               stored in the DB
-    name : str, Required
-           File path
     type : str, Optional
                 Type of the file.
                 i.e. FASTQ, BAM, CRAM
@@ -46,17 +49,19 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, name, host_id=1,
+    def __init__(self, name, type=None, settingf=None, host_id=1, type=None,
                  withdrawn=0, **kwargs):
 
         file_logger.debug('Creating File object')
 
         self.name = name
+        self.settingf = settingf
         self.host_id = host_id
+        self.type = type
         self.withdrawn = withdrawn
 
         allowed_keys = ['name', 'type', 'host_id', 'withdrawn', 'file_id',
-                        'md5', 'size', 'created', 'updated']
+                        'settingf', 'md5', 'size', 'created', 'updated']
 
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
@@ -114,6 +119,29 @@ class File(object):
         file_logger.info(f"Done")
 
         return md5sum
+
+    def guess_type(self):
+        """
+        Function to get the type of a file depending on the
+        'file_types_rules' section of self.settingf
+        
+        Returns
+        -------
+        str : type of file
+        """
+
+        # initialise ConfigParser object with settings
+        parser = ConfigParser()
+        parser.read(self.settingf)
+    
+
+        extension = None
+        extension = os.path.basename(filename).split('.')[1]
+        #assert xtension is not None, f"*.ext could not be obtained from {self.name}"
+        pdb.set_trace()
+        print("h\n")
+
+        return 0
 
     def check_if_exists(self):
         """

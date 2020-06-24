@@ -70,3 +70,12 @@ def test_check_if_exists():
     )
 
     assert f.check_if_exists() is True
+
+def test_guess_type():
+    log = logging.getLogger('test_guess_type')
+    log.debug('Testing function for guess the type of a file')
+
+    f = File(name="../data/test.txt")
+    f.guess_type()
+    assert 0
+

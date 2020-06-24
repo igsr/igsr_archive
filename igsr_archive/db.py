@@ -31,13 +31,9 @@ class DB(object):
 
         db_logger.debug('Creating DB object')
 
-        # initialise ConfigParser object with connection
-        # settings
-        parser = ConfigParser()
-        parser.read(settingf)
         self.pwd = pwd
         self.dbname = dbname
-        self.settings = parser
+        self.settingf = settingf
         self.conn = self.set_conn()
 
     def set_conn(self):
@@ -52,11 +48,16 @@ class DB(object):
 
         db_logger.debug('Setting connection...')
 
-        conn = pymysql.connect(host=self.settings.get('mysql_conn', 'host'),
-                               user=self.settings.get('mysql_conn', 'user'),
+        # initialise ConfigParser object with connection
+        # settings
+        parser = ConfigParser()
+        parser.read(self.settingf)
+
+        conn = pymysql.connect(host=parser.get('mysql_conn', 'host'),
+                               user=parser.get('mysql_conn', 'user'),
                                password=self.pwd,
                                db=self.dbname,
-                               port=self.settings.getint('mysql_conn', 'port'))
+                               port=parser.getint('mysql_conn', 'port'))
 
         db_logger.debug('Connection successful!')
 
