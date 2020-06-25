@@ -15,15 +15,12 @@ parser = argparse.ArgumentParser(description='Load file/s in a Reseqtrack databa
 
 parser.add_argument('-s', '--settingsf', required=True,
                     help="Path to .ini file with settings")
-parser.add_argument('-t', '--type', required=True, help="This should be a string which will be"
-                                                        " associated with all files, for example "
-                                                        "FASTQ if you are loading fastq files."
-                                                        " There are no restrictions on what this"
-                                                        " is other than it should be shorter"
-                                                        " than 50 characters, convention normally"
-                                                        " has each type in upper case and it is"
-                                                        " good if it is in someway informative "
-                                                        "about the files loaded.")
+parser.add_argument('-t', '--type', help="This is a string which will be associated with the different type of files, for example "
+                                         "FASTQ if you are loading fastq files. There are no restrictions on what this is other than "
+                                         "it should be shorter than 50 characters, convention normally has each type in upper case and "
+                                         "it is good if it is in someway informative about the files loaded. If not provided then "
+                                         "it will guessed by comparing its extension with the rules provided in the 'file_type_rules' "
+                                         "section in the settings.ini file")
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to load the file without "
                                                  "effectively loading it. True: Perform a dry-run.")
 parser.add_argument('-f', '--file', help="Path to file to be stored")
@@ -87,8 +84,14 @@ files = []
 if args.file:
     logger.info('File provided using -f, --file option')
 
-    f = File(name=args.file,
-             type=args.type)
+    if args.type is not None:
+        f = File(name=args.file,
+                 type=args.type)
+    else:
+        f = File(name=args.file,
+                 settingsf=args.settingsf)
+        ftype = f.guess_type()
+        f.type = ftype
     files.append(f)
 
 elif args.list_file:
@@ -102,8 +105,14 @@ elif args.list_file:
                             f"Check format")
 
         path = path.rstrip("\n")
-        f = File(name=path,
-                 type=args.type)
+        if args.type is not None:
+            f = File(name=args.file,
+                     type=args.type)
+        else:
+            f = File(name=args.file,
+                     settingsf=args.settingsf)
+            ftype = f.guess_type()
+            f.type = ftype
         files.append(f)
 elif args.md5_file:
     logger.info('File with <md5sum> <paths> provided using --md5_file option')
@@ -116,9 +125,16 @@ elif args.md5_file:
                             "Check format. It should be: <md5sum>  <path>. First and second column should be"
                             "separated by exactly 2 whitespaces.")
         md5sum, path = (cols[0], cols[1])
-        f = File(name=path,
-                 type=args.type,
-                 md5=md5sum)
+        if args.type is not None:
+            f = File(name=path,
+                     type=args.type,
+                     md5=md5sum)
+        else:
+            f = File(name=args.file,
+                     settingsf=args.settingsf,
+                     md5=md5sum)
+            ftype = f.guess_type()
+            f.type = ftype
         files.append(f)
 else:
     raise Exception("You need to provide the file/s to be loaded using either "

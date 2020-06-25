@@ -49,7 +49,7 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, name, type=None, settingf=None, host_id=1, type=None,
+    def __init__(self, name, settingf=None, host_id=1, type=None,
                  withdrawn=0, **kwargs):
 
         file_logger.debug('Creating File object')
@@ -123,25 +123,31 @@ class File(object):
     def guess_type(self):
         """
         Function to get the type of a file depending on the
-        'file_types_rules' section of self.settingf
+        'file_type_rules' section of self.settingf
         
         Returns
         -------
         str : type of file
         """
 
+        assert self.settingf is not None, "Provide a settings.ini file to the File object"
+
         # initialise ConfigParser object with settings
         parser = ConfigParser()
         parser.read(self.settingf)
-    
+        assert parser.has_section('file_type_rules') is True, "Provide a 'file_type_rules' section in your *.ini file"
 
-        extension = None
-        extension = os.path.basename(filename).split('.')[1]
-        #assert xtension is not None, f"*.ext could not be obtained from {self.name}"
-        pdb.set_trace()
-        print("h\n")
+        rules_dict = parser._sections['file_type_rules']
 
-        return 0
+        ext = None
+        ext = os.path.basename(self.name).split('.')[1]
+        assert ext is not None, f"*.ext could not be obtained from {self.name}"
+
+        if ext not in rules_dict:
+            raise Exception(f"Extension: {ext} does not exist in {self.settings}"
+                            f"Could not assing a type to file")
+        else:
+            return rules_dict[ext]
 
     def check_if_exists(self):
         """
