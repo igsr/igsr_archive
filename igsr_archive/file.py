@@ -18,7 +18,7 @@ class File(object):
     ---------------
     name : str, Required
            File path
-    settingf : str, Optional
+    settingsf : str, Optional
                Path to *.ini file several settings
     file_id : int, Optional,
               Internal DB id if the file is
@@ -49,19 +49,19 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, name, settingf=None, host_id=1, type=None,
+    def __init__(self, name, settingsf=None, host_id=1, type=None,
                  withdrawn=0, **kwargs):
 
         file_logger.debug('Creating File object')
 
         self.name = name
-        self.settingf = settingf
+        self.settingsf = settingsf
         self.host_id = host_id
         self.type = type
         self.withdrawn = withdrawn
 
         allowed_keys = ['name', 'type', 'host_id', 'withdrawn', 'file_id',
-                        'settingf', 'md5', 'size', 'created', 'updated']
+                        'settingsf', 'md5', 'size', 'created', 'updated']
 
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
@@ -123,18 +123,18 @@ class File(object):
     def guess_type(self):
         """
         Function to get the type of a file depending on the
-        'file_type_rules' section of self.settingf
+        'file_type_rules' section of self.settingsf
         
         Returns
         -------
         str : type of file
         """
 
-        assert self.settingf is not None, "Provide a settings.ini file to the File object"
+        assert self.settingsf is not None, "Provide a settings.ini file to the File object"
 
         # initialise ConfigParser object with settings
         parser = ConfigParser()
-        parser.read(self.settingf)
+        parser.read(self.settingsf)
         assert parser.has_section('file_type_rules') is True, "Provide a 'file_type_rules' section in your *.ini file"
 
         rules_dict = parser._sections['file_type_rules']
@@ -144,7 +144,7 @@ class File(object):
         assert ext is not None, f"*.ext could not be obtained from {self.name}"
 
         if ext not in rules_dict:
-            raise Exception(f"Extension: {ext} does not exist in {self.settings}"
+            raise Exception(f"Extension: {ext} does not exist in {self.settingsf}"
                             f"Could not assing a type to file")
         else:
             return rules_dict[ext]

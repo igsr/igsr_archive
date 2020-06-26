@@ -12,7 +12,7 @@ from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Delete file/s from a Reseqtrack database')
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to delete the file without "
@@ -59,10 +59,10 @@ if pwd is None:
                     "variable before running this script!")
 
 if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Class to connect with Reseqtrack DB
-db = DB(settingf=args.settingsf,
+db = DB(settingf=args.settings,
         pwd=pwd,
         dbname=dbname)
 

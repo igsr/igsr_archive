@@ -76,6 +76,6 @@ def test_guess_type():
     log.debug('Testing function for guess the type of a file')
 
     f = File(name="../data/test.txt",
-             settingf="../data/settings.ini")
+             settingsf="../data/settings.ini")
     assert f.guess_type() == "TEST_TXT"
 

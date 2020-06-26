@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description='Script for interacting with the FI
                                              'IGSR FTP. Once a certain file is archived using this script, it will be '\
                                              'accessible from our IGSR public FTP.')
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to archive the file without "
@@ -55,12 +55,12 @@ logger = logging.getLogger(__name__)
 
 logger.info('Running script')
 
-if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Parse config file
 settingsO = ConfigParser()
-settingsO.read(args.settingsf)
+settingsO.read(args.settings)
 
 dbpwd = args.dbpwd
 if args.dbpwd is None:
@@ -107,12 +107,12 @@ if len(files) == 0:
     sys.exit(0)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settingsf,
+db = DB(settingf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 
 # connection to FIRE api
-api = API(settingsf=args.settingsf,
+api = API(settingsf=args.settings,
           pwd=firepwd)
 
 for f in files:

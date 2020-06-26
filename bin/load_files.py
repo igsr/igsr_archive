@@ -13,7 +13,7 @@ from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Load file/s in a Reseqtrack database')
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 parser.add_argument('-t', '--type', help="This is a string which will be associated with the different type of files, for example "
                                          "FASTQ if you are loading fastq files. There are no restrictions on what this is other than "
@@ -70,26 +70,29 @@ if pwd is None:
                     "server containing the RESEQTRACK database using the --pwd option or set a $DBPWD environment "
                     "variable before running this script!")
 
-if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Class to connect with Reseqtrack DB
-db = DB(settingf=args.settingsf,
+db = DB(settingsf=args.settings,
         pwd=pwd,
         dbname=dbname)
 
 # list with paths to be loaded
 files = []
-
+pdb.set_trace()
 if args.file:
     logger.info('File provided using -f, --file option')
 
     if args.type is not None:
+        logger.debug('Type provided using -t, --type option')
         f = File(name=args.file,
                  type=args.type)
     else:
+        logger.debug('No file type provided using -t, --type option')
+        logger.debug('File type will be deduced using file extension')
         f = File(name=args.file,
-                 settingsf=args.settingsf)
+                 settingsf=args.settings)
         ftype = f.guess_type()
         f.type = ftype
     files.append(f)
@@ -106,11 +109,14 @@ elif args.list_file:
 
         path = path.rstrip("\n")
         if args.type is not None:
+            logger.debug('Type provided using -t, --type option')
             f = File(name=args.file,
                      type=args.type)
         else:
+            logger.debug('No file type provided using -t, --type option')
+            logger.debug('File type will be deduced using file extension')
             f = File(name=args.file,
-                     settingsf=args.settingsf)
+                     settingsf=args.settings)
             ftype = f.guess_type()
             f.type = ftype
         files.append(f)
@@ -126,12 +132,15 @@ elif args.md5_file:
                             "separated by exactly 2 whitespaces.")
         md5sum, path = (cols[0], cols[1])
         if args.type is not None:
+            logger.debug('Type provided using -t, --type option')
             f = File(name=path,
                      type=args.type,
                      md5=md5sum)
         else:
+            logger.debug('No file type provided using -t, --type option')
+            logger.debug('File type will be deduced using file extension')
             f = File(name=args.file,
-                     settingsf=args.settingsf,
+                     settingsf=args.settings,
                      md5=md5sum)
             ftype = f.guess_type()
             f.type = ftype

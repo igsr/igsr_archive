@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description='Script for interacting with the FI
                                              'It will also update the file metadata for the moved file in the '
                                              'RESEQTRACK database')
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to archive the file without "
@@ -61,8 +61,8 @@ firepwd = args.firepwd
 if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
 
-if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 if dbname is None:
     raise Exception("$DBNAME undefined. You need either to pass the name of the "
@@ -108,15 +108,15 @@ if len(files) == 0:
 
 # Parse config file
 settingsO = ConfigParser()
-settingsO.read(args.settingsf)
+settingsO.read(args.settings)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settingsf,
+db = DB(settingf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 
 # connection to FIRE api
-api = API(settingsf=args.settingsf,
+api = API(settingsf=args.settings,
           pwd=firepwd)
 
 for tup in files:

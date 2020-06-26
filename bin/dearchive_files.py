@@ -66,8 +66,8 @@ assert firepwd, "$FIRE_PWD undefined"
 assert dbname, "$DBNAME undefined"
 assert dbpwd, "$DBPWD undefined"
 
-if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 if not os.path.isdir(args.directory):
     raise Exception(f"{args.directory} does not exist. Can't continue!")
@@ -75,15 +75,15 @@ if not os.path.isdir(args.directory):
 
 # Parse config file
 settingsO = ConfigParser()
-settingsO.read(args.settingsf)
+settingsO.read(args.settings)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settingsf,
+db = DB(settingf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 
 # connection to FIRE api
-api = API(settingsf=args.settingsf,
+api = API(settingsf=args.settings,
           pwd=firepwd)
 
 # list of tuples (origin, dest) for files to be archived
