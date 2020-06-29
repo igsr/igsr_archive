@@ -80,7 +80,6 @@ db = DB(settingsf=args.settings,
 
 # list with paths to be loaded
 files = []
-pdb.set_trace()
 if args.file:
     logger.info('File provided using -f, --file option')
 
@@ -90,7 +89,7 @@ if args.file:
                  type=args.type)
     else:
         logger.debug('No file type provided using -t, --type option')
-        logger.debug('File type will be deduced using file extension')
+        logger.debug('File type will be guessed from its file extension')
         f = File(name=args.file,
                  settingsf=args.settings)
         ftype = f.guess_type()
@@ -99,7 +98,7 @@ if args.file:
 
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
-
+  #  pdb.set_trace()
     for path in args.list_file:
         path = path.rstrip("\n")
         cols = re.split(' +', path)
@@ -107,15 +106,14 @@ elif args.list_file:
             raise Exception(f"Path provided {path} is not correct. "
                             f"Check format")
 
-        path = path.rstrip("\n")
         if args.type is not None:
             logger.debug('Type provided using -t, --type option')
-            f = File(name=args.file,
+            f = File(name=path,
                      type=args.type)
         else:
             logger.debug('No file type provided using -t, --type option')
-            logger.debug('File type will be deduced using file extension')
-            f = File(name=args.file,
+            logger.debug('File type will be guessed from its file extension')
+            f = File(name=path,
                      settingsf=args.settings)
             ftype = f.guess_type()
             f.type = ftype
@@ -139,7 +137,7 @@ elif args.md5_file:
         else:
             logger.debug('No file type provided using -t, --type option')
             logger.debug('File type will be deduced using file extension')
-            f = File(name=args.file,
+            f = File(name=path,
                      settingsf=args.settings,
                      md5=md5sum)
             ftype = f.guess_type()

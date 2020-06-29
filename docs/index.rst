@@ -50,13 +50,19 @@ Below is the template of one of these configuration files::
  [ftp]
  staging_mount=/nfs/1000g-work/G1K/archive_staging
  ftp_mount=/nfs/1000g-archive/vol1
+ [file_type_rules]
+ fastq = TEST_FASTQ 
+ txt = TEST_TXT
 
 Where the ``[mysql_conn]`` section contains the parameters for connecting the MYSQL server hosting a database
 created with the `RESEQTRACK <https://github.com/EMBL-EBI-GCA/reseqtrack/tree/master/sql>`_ schema and the ``[fire]``
 section contains the FIRE API connection details. If you do not already have a FIRE username and password, you
 will first need to contact ``fire@ebi.ac.uk`` as these are required to connect the
 FIRE API. The ``[ftp]`` section contains the details about the staging area directory (see below why this area is important) and also
-the directory where the FTP server is mounted.
+the directory where the FTP server is mounted. The ``[file_type_rules]`` section is optional, it is used to assing a certain type to each file
+depending on its extension. This type is an arbitrary string used to describe each of the files being loaded in the ``RESEQTRACK`` MYSQL database.
+In the ``settings.ini`` file shown above, an example file named ``test.fastq`` will have the ``TEST_FASTQ`` type, whereas a file named test.txt will
+have the ``TEST_TXT`` type.
 
 **Note:** FIRE provides a testing and a production environment. Each will differ in the ``user``, ``root_endpoint`` and ``password``
 used for connecting the API. Modify ``settings.ini`` depending on the environment you want to use.
@@ -73,7 +79,9 @@ Use the ``-f``/``--file`` option like this::
  load_files.py --settings settings.ini --file /path/to/file.txt --type TEST_F --dbname $DBNAME --pwd $PWD
 
 
-- ``--type`` is an arbitrary string describing the file that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``
+- ``--type`` is an arbitrary string describing the file that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``.
+             If this option is not specified then the file type will be set depending on the parameters specified
+             in the ``[file_type_rules] section of ``settings.ini``.
 - ``--dbname`` is the name of the ``RESEQTRACK`` MYSQL  database
 - ``--pwd`` is the password for connecting the MYSQL server
 
@@ -90,7 +98,9 @@ You can provide the script with a list of files (one file per line) to load. For
 
  load_files.py --settings settings.ini --list_file file_list.txt --type TEST_F --dbname $DBNAME --pwd $PWD
 
-- ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``
+- ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``.
+             If this option is not specified then the file type will be set depending on the parameters specified
+             in the ``[file_type_rules] section of ``settings.ini``.
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--pwd`` is the password for connecting the MYSQL server
 
@@ -112,7 +122,9 @@ loaded. An example command line using this option is::
 
   load_files.py --settings settings.ini --md5_file file_list.txt --type TEST_F --dbname $DBNAME --pwd $PWD
 
-- ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``
+- ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``.
+             If this option is not specified then the file type will be set depending on the parameters specified
+             in the ``[file_type_rules] section of ``settings.ini``.
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--pwd`` is the password for connecting the MYSQL server
 

@@ -144,8 +144,8 @@ class File(object):
         assert ext is not None, f"*.ext could not be obtained from {self.name}"
 
         if ext not in rules_dict:
-            raise Exception(f"Extension: {ext} does not exist in {self.settingsf}"
-                            f"Could not assing a type to file")
+            raise Exception(f"Extension: '{ext}' does not exist in {self.settingsf}. "
+                            f"Unable to assing a type to file")
         else:
             return rules_dict[ext]
 
