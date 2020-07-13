@@ -107,7 +107,7 @@ if len(files) == 0:
     sys.exit(0)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settings,
+db = DB(settingsf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 
