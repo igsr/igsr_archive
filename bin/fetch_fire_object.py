@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(description='Fetch a certain FIRE object and its metadata')
 
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 parser.add_argument('--firePath', required=True,
                     help="firePath of object to retrieve")
@@ -30,11 +30,11 @@ if args.firepwd is None:
 
 assert firepwd, "$FIRE_PWD undefined"
 
-if not os.path.isfile(args.settingsf):
-    raise Exception(f"Config file provided using --settingsf option({args.settingsf}) not found!")
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # connection to FIRE api
-api = API(settingsf=args.settingsf,
+api = API(settingsf=args.settings,
           pwd=firepwd)
 
 fobject = api.fetch_object(firePath=args.firePath)

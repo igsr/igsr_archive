@@ -111,7 +111,7 @@ settingsO = ConfigParser()
 settingsO.read(args.settings)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settings,
+db = DB(settingsf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 

@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. remov
                                              'a desired location before dearchiving from FIRE and will also delete the '\
                                              'entry in the `file` table from the `RESEQTRACK` database.')
 
-parser.add_argument('-s', '--settingsf', required=True,
+parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 parser.add_argument('--dry', default=True,
                     help="Perform a dry-run and attempt to dearchive the file without "
@@ -78,7 +78,7 @@ settingsO = ConfigParser()
 settingsO.read(args.settings)
 
 # connection to Reseqtrack DB
-db = DB(settingf=args.settings,
+db = DB(settingsf=args.settings,
         pwd=dbpwd,
         dbname=dbname)
 
