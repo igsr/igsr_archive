@@ -9,9 +9,9 @@ from igsr_archive.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
-pwd = os.getenv('FIRE_PWD')
+pwd = os.getenv('FIREPWD')
 
-assert pwd, "$FIRE_PWD undefined"
+assert pwd, "$FIREPWD undefined"
 
 api = API(settingsf="../data/settings.ini",
           pwd=pwd)

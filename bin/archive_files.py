@@ -88,7 +88,6 @@ if firepwd is None:
 
 # list of tuples (origin, dest) for files to be archived
 files = []
-
 if args.file:
     logger.info('File provided using -f, --file option')
     abs_path = os.path.abspath(args.file)
@@ -213,3 +212,4 @@ for f in files:
             logger.info(f"File successfully pushed and correctly updated in the DB")
             logger.info(f"File {f} will be removed")
             os.remove(f)
+

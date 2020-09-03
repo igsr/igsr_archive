@@ -20,7 +20,7 @@ def db_obj():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingf="../data/settings.ini",
+    db = DB(settingsf="../data/settings.ini",
             pwd=pwd,
             dbname=dbname)
 
@@ -50,7 +50,7 @@ def test_conn_s():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingf="../data/settings.ini",
+    db = DB(settingsf="../data/settings.ini",
             pwd=pwd,
             dbname=dbname)
 
@@ -64,7 +64,7 @@ def test_conn_e():
     assert dbname, "$DBNAME undefined"
 
     with pytest.raises(Exception) as e_info:
-        db = DB(settingf="../data/settings.ini",
+        db = DB(settingsf="../data/settings.ini",
                 pwd="mockpwd",
                 dbname=dbname)
 
