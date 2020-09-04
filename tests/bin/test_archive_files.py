@@ -17,59 +17,32 @@ assert fpwd, "$FIREPWD undefined"
 assert dbname, "$DBNAME undefined"
 assert dbpwd, "$DBPWD undefined"
 
+db = DB(settingsf="../../data/settings.ini",
+        pwd=dbpwd,
+        dbname=dbname)
+
 def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
-@pytest.fixture(scope="module")
-def modify_settings(request):
-    """
-    Fixture to modify the settings.ini
-    and generate a modified version that will be used
-    in this file
-    """
-    # modify current settings.ini
-    parser = ConfigParser()
-    parser.read('../../data/settings.ini')
-    abs_dir = os.path.abspath('../../data/')
-    parser.set('ftp', 'staging_mount', abs_dir)
-
-    with open('../../data/settings_m.ini', 'w') as configfile:
-        parser.write(configfile)
-
-    def fin():
-        print('\n[teardown] modify_settings finalizer, deleting modified settings file')
-        os.remove('../../data/settings_m.ini')
-
-    request.addfinalizer(fin)
-
-    return '../../data/settings_m.ini'
-
 @pytest.fixture
-def load_file(request):
+def load_file(request, rand_file):
     """
     Fixture to load a file to the RESEQTRACK DB and to delete
     the pushed file from FIRE
     """
     print('Running fixture to load test file in the DB')
 
-    db = DB(settingsf="../../data/settings.ini",
-            pwd=dbpwd,
-            dbname=dbname)
-
-    f = open('../../data/test_arch.txt', 'w')
-    f.write(random_generator())
-    f.close()
-
     fObj = File(
-        name=f.name,
+        name=rand_file.name,
         type="TYPE_F")
 
     db.load_file(fObj, dry=False)
     def fin():
+        pdb.set_trace()
         print('\n[teardown] load_file finalizer, deleting file from db and dearchiving file from FIRE')
         api = API(settingsf="../../data/settings.ini",
                   pwd=fpwd)
-        basename = os.path.basename(f.name)
+        basename = os.path.basename(rand_file.name)
         fire_o = api.fetch_object(firePath=basename)
         api.delete_object(fireOid=fire_o.fireOid,
                           dry=False)
@@ -80,7 +53,7 @@ def load_file(request):
     request.addfinalizer(fin)
     print('Running fixture to load test file in the DB. DONE...')
 
-    return f.name
+    return rand_file.name
 
 @pytest.fixture
 def load_file_list(request):
@@ -90,10 +63,6 @@ def load_file_list(request):
     """
 
     print('Running fixture to load a list of test files in the DB')
-
-    db = DB(settingsf="../../data/settings.ini",
-            pwd=dbpwd,
-            dbname=dbname)
 
     f_lst = ['../../data/test_arch1.txt',
              '../../data/test_arch2.txt',
@@ -124,7 +93,7 @@ def load_file_list(request):
             arch_obj = db.fetch_file(basename=basename)
             db.delete_file(arch_obj,
                            dry=False)
-        print('\n[teardown] load_file_list finalizer, deleting ../../data/file_lst.txt')
+        print('[teardown] load_file_list finalizer, deleting ../../data/file_lst.txt')
         os.remove('../../data/file_lst.txt')
     request.addfinalizer(fin)
     print('Running fixture to load a list of test files in the DB. DONE...')

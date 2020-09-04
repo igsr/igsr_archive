@@ -6,7 +6,6 @@ import string
 import subprocess
 from configparser import ConfigParser
 from igsr_archive.db import DB
-from igsr_archive.api import API
 from igsr_archive.file import File
 
 # get password-related info from environment
