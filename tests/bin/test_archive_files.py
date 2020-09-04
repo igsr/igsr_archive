@@ -47,7 +47,8 @@ def modify_settings(request):
 @pytest.fixture
 def load_file(request):
     """
-    Fixture to load a file to the RESEQTRACK DB
+    Fixture to load a file to the RESEQTRACK DB and to delete
+    the pushed file from FIRE
     """
     print('Running fixture to load test file in the DB')
 
@@ -84,7 +85,8 @@ def load_file(request):
 @pytest.fixture
 def load_file_list(request):
     """
-    Fixture to load a list of files
+    Fixture to load a list of files to the RESEQTRACK DB and to delete the pushed files
+    from FIRE
     """
 
     print('Running fixture to load a list of test files in the DB')
@@ -168,5 +170,5 @@ def test_file_list(modify_settings, load_file_list):
     if ret.returncode != 0:
         print(f"\n##Something went wrong##\n: {stderr}\n##")
 
-    print('Archive a single file using -l and --dry False options. DONE...')
+    print('Archive a list of files using -l and --dry False options. DONE...')
     assert ret.returncode == 0
