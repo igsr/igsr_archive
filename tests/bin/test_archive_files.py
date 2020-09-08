@@ -1,10 +1,7 @@
 import pytest
 import os
 import pdb
-import random
-import string
 import subprocess
-from configparser import ConfigParser
 from igsr_archive.db import DB
 from igsr_archive.api import API
 from igsr_archive.file import File
@@ -21,9 +18,6 @@ db = DB(settingsf="../../data/settings.ini",
         pwd=dbpwd,
         dbname=dbname)
 
-def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
-
 @pytest.fixture
 def load_file(request, rand_file):
     """
@@ -38,7 +32,6 @@ def load_file(request, rand_file):
 
     db.load_file(fObj, dry=False)
     def fin():
-        pdb.set_trace()
         print('\n[teardown] load_file finalizer, deleting file from db and dearchiving file from FIRE')
         api = API(settingsf="../../data/settings.ini",
                   pwd=fpwd)
@@ -56,7 +49,7 @@ def load_file(request, rand_file):
     return rand_file.name
 
 @pytest.fixture
-def load_file_list(request):
+def load_file_list(request, rand_filelst):
     """
     Fixture to load a list of files to the RESEQTRACK DB and to delete the pushed files
     from FIRE
@@ -64,41 +57,35 @@ def load_file_list(request):
 
     print('Running fixture to load a list of test files in the DB')
 
-    f_lst = ['../../data/test_arch1.txt',
-             '../../data/test_arch2.txt',
-             '../../data/test_arch3.txt']
-
-    # file with file paths
-    list_f = open('../../data/file_lst.txt', 'w')
-    for p in f_lst:
-        list_f.write(p+"\n")
-        f = open(p, 'w')
-        f.write(random_generator())
-        f.close()
-        fObj = File(
-            name=f.name,
-            type="TYPE_F")
-        db.load_file(fObj, dry=False)
-    list_f.close()
+    with open(rand_filelst) as f:
+        for p in f:
+            p = p.rstrip("\n")
+            fObj = File(
+                name=p,
+                type="TYPE_F")
+            db.load_file(fObj, dry=False)
 
     def fin():
+        pdb.set_trace()
         print('\n[teardown] load_file_list finalizer, deleting list of files from db and dearchiving from FIRE')
         api = API(settingsf="../../data/settings.ini",
                   pwd=fpwd)
-        for p in f_lst:
-            basename = os.path.basename(p)
-            fire_o = api.fetch_object(firePath=basename)
-            api.delete_object(fireOid=fire_o.fireOid,
-                              dry=False)
-            arch_obj = db.fetch_file(basename=basename)
-            db.delete_file(arch_obj,
-                           dry=False)
+        with open(rand_filelst) as f:
+            for p in f:
+                p = p.rstrip("\n")
+                basename = os.path.basename(p)
+                fire_o = api.fetch_object(firePath=basename)
+                api.delete_object(fireOid=fire_o.fireOid,
+                                  dry=False)
+                arch_obj = db.fetch_file(basename=basename)
+                db.delete_file(arch_obj,
+                               dry=False)
         print('[teardown] load_file_list finalizer, deleting ../../data/file_lst.txt')
         os.remove('../../data/file_lst.txt')
     request.addfinalizer(fin)
     print('Running fixture to load a list of test files in the DB. DONE...')
 
-    return list_f.name
+    return rand_filelst
 
 def test_single_file(modify_settings, load_file):
 
