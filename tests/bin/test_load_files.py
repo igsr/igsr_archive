@@ -3,7 +3,6 @@ import os
 import pdb
 import subprocess
 from igsr_archive.db import DB
-from igsr_archive.file import File
 
 # get password-related info from environment
 dbpwd = os.getenv('DBPWD')
@@ -46,6 +45,7 @@ def test_single_file(rand_file, delete_file):
     stdout, stderr = ret.communicate()
 
     stderr = stderr.decode("utf-8")
+    stdout = stdout.decode("utf-8")
 
     if ret.returncode != 0:
         print(f"\n##Something went wrong##\n: {stderr}\n##")
@@ -70,6 +70,7 @@ def test_single_file_w_type(rand_file, delete_file):
     stdout, stderr = ret.communicate()
 
     stderr = stderr.decode("utf-8")
+    stdout = stdout.decode("utf-8")
 
     if ret.returncode != 0:
         print(f"\n##Something went wrong. STDERR:##\n: {stderr}\n##")
@@ -99,9 +100,10 @@ def test_file_list(rand_filelst, delete_file):
     stdout, stderr = ret.communicate()
 
     stderr = stderr.decode("utf-8")
+    stdout = stdout.decode("utf-8")
 
     if ret.returncode != 0:
-        print(f"\n##Something went wrong##\n: {stderr}\n##")
+        print(f"\n##Something went wrong. STDERR:##\n: {stderr}\n##")
         print(f"\n##Something went wrong. STDOUT:##\n: {stdout}\n##")
 
     # deleting test files
@@ -126,6 +128,7 @@ def test_w_md5_file(rand_filelst_md5, delete_file):
     stdout, stderr = ret.communicate()
 
     stderr = stderr.decode("utf-8")
+    stdout = stdout.decode("utf-8")
 
     if ret.returncode != 0:
         print(f"\n##Something went wrong##\n: {stderr}\n##")
