@@ -2,25 +2,13 @@ import pytest
 import os
 import pdb
 import subprocess
-from igsr_archive.file import File
-from igsr_archive.db import DB
 
-# get password-related info from environment
-dbpwd = os.getenv('DBPWD')
-dbname = os.getenv('DBNAME')
-assert dbname, "$DBNAME undefined"
-assert dbpwd, "$DBPWD undefined"
-
-db = DB(settingsf="../../data/settings.ini",
-        pwd=dbpwd,
-        dbname=dbname)
-
-def test_single_file(load_file):
+def test_single_file(load_file, settings_f):
 
     print('Delete a single file using -f and --dry False options')
 
-    cmd = f"../../bin/delete_files.py -f {load_file} --dry False --settings ../../data/settings.ini" \
-          f" --dbname {dbname} --pwd {dbpwd}"
+    cmd = f"{os.getenv('SCRIPTSDIR')}/delete_files.py -f {load_file} --dry False --settings {settings_f}" \
+          f" --dbname {os.getenv('DBNAME')} --pwd {os.getenv('DBPWD')}"
 
     ret = subprocess.Popen(cmd,
                            shell=True,
@@ -41,12 +29,12 @@ def test_single_file(load_file):
     print('Delete a single file using -f and --dry False options. DONE...')
     assert ret.returncode == 0
 
-def test_file_list(load_file_list):
+def test_file_list(load_file_list, settings_f):
 
     print('Delete a list of files using -l and --dry False options')
 
-    cmd = f"../../bin/delete_files.py -l {load_file_list} --dry False --settings ../../data/settings.ini" \
-          f" --dbname {dbname} --pwd {dbpwd}"
+    cmd = f"{os.getenv('SCRIPTSDIR')}/delete_files.py -l {load_file_list} --dry False --settings {settings_f}" \
+          f" --dbname {os.getenv('DBNAME')} --pwd {os.getenv('DBPWD')}"
 
     ret = subprocess.Popen(cmd,
                            shell=True,
