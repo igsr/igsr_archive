@@ -47,7 +47,7 @@ def rand_file():
     -------
     File that has been generated
     """
-    f = open('../data/test_arch.txt', 'w')
+    f = open(f"{os.getenv('DATADIR')}/test_arch.txt", 'w')
     f.write(random_generator())
     f.close()
 

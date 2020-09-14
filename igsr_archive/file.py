@@ -140,7 +140,7 @@ class File(object):
         rules_dict = parser._sections['file_type_rules']
 
         ext = None
-        ext = os.path.basename(self.name).split('.')[1]
+        ext = os.path.basename(self.name).split('.')[-1]
         assert ext is not None, f"*.ext could not be obtained from {self.name}"
 
         if ext not in rules_dict:
