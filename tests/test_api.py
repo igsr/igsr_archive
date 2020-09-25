@@ -39,7 +39,8 @@ def loaded_obj():
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
     fobject = api.push_object(fileO=f, dry=False,
-                              fire_path="test_dir/test.txt")
+                              fire_path="test_dir/test.txt",
+                              publish=False)
 
     return fobject
 
@@ -100,8 +101,8 @@ def test_fetch_object_by_fpath(loaded_obj, del_obj):
 
     del_obj.append(loaded_obj.fireOid)
 
-    assert fobject.objectMd5 == 'f5aa4f4f1380b71acc56750e9f8ff825'
-    assert fobject.objectSize == 17
+    assert fobject.objectMd5 == '369ccfaf31586363bd645d48b72c09c4'
+    assert fobject.objectSize == 7
 
 def test_fetch_nonexistent_object_by_fpath():
     log = logging.getLogger('test_fetch_nonexistent_object_by_fpath')
@@ -126,6 +127,7 @@ def test_delete_object_by_foi(loaded_obj):
 def test_push_object(del_obj):
     """
     This test will fail if an Exception is raised
+    The push_object will be invoked without fire_path and will not publish
     """
     log = logging.getLogger('test_push_object')
 
@@ -137,7 +139,7 @@ def test_push_object(del_obj):
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
-    fobj = api.push_object(fileO=f, dry=False)
+    fobj = api.push_object(fileO=f, dry=False, publish=False)
 
     del_obj.append(fobj.fireOid)
 
@@ -156,7 +158,7 @@ def test_push_object_w_fpath(del_obj):
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
-    fobj = api.push_object(fileO=f, dry=False,
+    fobj = api.push_object(fileO=f, dry=False, publish=False,
                            fire_path="test_dir/test.txt")
 
     del_obj.append(fobj.fireOid)
@@ -183,13 +185,13 @@ def test_push_comp_object_w_fpath(del_obj):
     del_obj.append(fobj.fireOid)
 
 
-def test_update_object(loaded_obj, del_obj):
+def test_update_object_w_fpath(loaded_obj, del_obj):
     """
     This test will test the 'update_object' function
     to update the FIRE path of an archived object
     """
 
-    log = logging.getLogger('test_update_object')
+    log = logging.getLogger('test_update_object_w_fpath')
 
     log.debug('Updating FIRE path of an archived'
               ' object')
@@ -204,3 +206,44 @@ def test_update_object(loaded_obj, del_obj):
 
     del_obj.append(loaded_obj.fireOid)
 
+def test_update_object_publish1(loaded_obj, del_obj):
+    """
+    This test will test the 'update_object' function
+    to change publish status of an archived object
+    """
+
+    log = logging.getLogger('test_update_object_publish1')
+
+    log.debug('Updating FIRE object metadata. Publish will be set '
+              'to True')
+
+    updated_obj = api.update_object(attr_name='publish',
+                                    value=True,
+                                    fireOid=loaded_obj.fireOid,
+                                    dry=False)
+
+    # check that FIRE path has been modified
+    assert updated_obj.published is True
+
+    del_obj.append(loaded_obj.fireOid)
+
+def test_update_object_publish2(loaded_obj, del_obj):
+    """
+    This test will test the 'update_object' function
+    to change publish status of an archived object
+    """
+
+    log = logging.getLogger('test_update_object_publish2')
+
+    log.debug('Updating FIRE object metadata. Publish will be set '
+              'to False')
+
+    updated_obj = api.update_object(attr_name='publish',
+                                    value=False,
+                                    fireOid=loaded_obj.fireOid,
+                                    dry=False)
+
+    # check that FIRE path has been modified
+    assert updated_obj.published is False
+
+    del_obj.append(loaded_obj.fireOid)

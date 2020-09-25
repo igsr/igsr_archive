@@ -240,19 +240,14 @@ class API(object):
 
         fire_obj = None
         if dry is False:
+            # FIRE api requires atomic operations, so the POST request must be atomic
+            # and also multiple atomic PUSH requests for providing fire path and publishing
             url = url+f" -F file=@{fileO.name} -H 'x-fire-md5: {fileO.md5}' -H 'x-fire-size: {fileO.size}' "
-
-            if fire_path is not None:
-                api_logger.info(f"Virtual FIRE path provided")
-                url = url+f"-H 'x-fire-path: {fire_path}' "
-            if publish is True:
-                api_logger.info(f"Pushed object will be published")
-                url = url+"-H 'x-fire-publish: true'"
-
             p = Popen(url, stdout=PIPE, stderr=PIPE, shell=True)
             stdout, stderr = p.communicate()
             res = stdout.decode("utf-8")
 
+            fire_obj = None
             api_logger.debug(f"API response:{res}")
             # FIRE api is down
             if res == "Service Unavailable":
@@ -264,7 +259,18 @@ class API(object):
             else:
                 fire_obj = self.__parse_json_response(d)
                 api_logger.info(f"File object pushed with fireOid: {fire_obj.fireOid}")
-                return fire_obj
+
+            pdb.set_trace()
+            if fire_path is not None:
+                api_logger.info(f"Virtual FIRE path provided")
+                self.update_object(attr_name='firePath', value=fire_path,
+                                  fireOid=fire_obj.fireOid, dry=False)
+            if publish is True:
+                api_logger.info(f"Pushed object will be published")
+                self.update_object(attr_name='publish', value=True,
+                                   fireOid=fire_obj.fireOid, dry=False)
+
+            return fire_obj
         elif dry is True:
             api_logger.info(f"Did not push File with path (dry=True): {fileO.name}")
             api_logger.info(f"Endpoint for pushing is: {url}")
@@ -279,7 +285,7 @@ class API(object):
         ----------
         attr_name : str
                     Attribute name to modify. Required
-                    Valid attribute names are: 'firePath'
+                    Valid attribute names are: 'firePath', 'publish'
         value : str
                 New value for 'attr_name'. Required
         dry : Bool, optional
@@ -313,37 +319,48 @@ class API(object):
                             "defined")
 
         res = None
+        header = None
+        url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+              f"{fireOid}/"
         if attr_name is 'firePath':
             api_logger.info(f"firePath will be modified")
-
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
-                  f"{fireOid}/firePath"
-
+            url = url + "firePath"
             header = {"x-fire-path": f"{value}"}
-            if dry is False:
-                try:
-                    res = requests.put(url, auth=(self.user, self.pwd), headers=header)
-                    res.raise_for_status()
-                except HTTPError as http_err:
-                    print(f'HTTP error occurred: {http_err}')
-                    print(f'Error message: {res.text}')
-                except Exception as err:
-                    print(f'Other error occurred: {err}')
-                    print(f'Error message: {res.text}')
-                else:
-                    if res.status_code == 200:
-                        json_res = res.json()
-                        fireObj = self.__parse_json_response(json_res)
-                        api_logger.info(f"Done firePath update")
-                        return fireObj
-            elif dry is True:
-                api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be updated")
-                api_logger.info(f"FIRE object attribute {attr_name} is going to be updated with value {value}")
-                api_logger.info(f"FIRE object was not updated")
-                api_logger.info(f"Use --dry False to update it")
-            else:
-                raise Exception(f"dry option: {dry} not recognized")
+        elif attr_name is 'publish':
+            api_logger.info(f"publish will be set to {value} for this FIRE object")
+            url = url + "publish"
 
+        if dry is False:
+            try:
+                if header is not None:
+                    res = requests.put(url, auth=(self.user, self.pwd), headers=header)
+                else:
+                    if value is True:
+                        # 'publish' will be set to True
+                        res = requests.put(url, auth=(self.user, self.pwd))
+                    elif value is False:
+                        # 'publish' will be set to False
+                        res = requests.delete(url, auth=(self.user, self.pwd))
+                res.raise_for_status()
+            except HTTPError as http_err:
+                print(f'HTTP error occurred: {http_err}')
+                print(f'Error message: {res.text}')
+            except Exception as err:
+                print(f'Other error occurred: {err}')
+                print(f'Error message: {res.text}')
+            else:
+                if res.status_code == 200:
+                    json_res = res.json()
+                    fireObj = self.__parse_json_response(json_res)
+                    api_logger.info(f"Done FIRE object update")
+                    return fireObj
+        elif dry is True:
+            api_logger.info(f"FIRE object with fireOid: {fireOid} is going to be updated")
+            api_logger.info(f"FIRE object attribute {attr_name} is going to be updated with value {value}")
+            api_logger.info(f"FIRE object was not updated")
+            api_logger.info(f"Use --dry False to update it")
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
 
     def delete_object(self, fireOid=None, dry=True):
         """
