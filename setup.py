@@ -19,7 +19,7 @@ URL = 'https://github.com/igsr/igsr_archive/archive/0.2.3.tar.gz'
 EMAIL = 'ernestolowy@gmail.com'
 AUTHOR = 'Ernesto Lowy'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.2.3'
+VERSION = '0.2.4'
 
 # What packages are required for this module to be executed?
 REQUIRED = [

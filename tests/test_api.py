@@ -184,7 +184,6 @@ def test_push_comp_object_w_fpath(del_obj):
 
     del_obj.append(fobj.fireOid)
 
-
 def test_update_object_w_fpath(loaded_obj, del_obj):
     """
     This test will test the 'update_object' function

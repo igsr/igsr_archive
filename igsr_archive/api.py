@@ -213,7 +213,7 @@ class API(object):
         dry : Bool, optional
               If dry=True then it will not try
               to push the File object to FIRE. Default True
-        pubish : Bool, optional
+        publish : Bool, optional
                  If publish=True then the pushed object will
                  be published on upload. Default True
         fire_path : str, optional
@@ -260,15 +260,14 @@ class API(object):
                 fire_obj = self.__parse_json_response(d)
                 api_logger.info(f"File object pushed with fireOid: {fire_obj.fireOid}")
 
-            pdb.set_trace()
             if fire_path is not None:
                 api_logger.info(f"Virtual FIRE path provided")
-                self.update_object(attr_name='firePath', value=fire_path,
-                                  fireOid=fire_obj.fireOid, dry=False)
+                fire_obj = self.update_object(attr_name='firePath', value=fire_path,
+                                              fireOid=fire_obj.fireOid, dry=False)
             if publish is True:
                 api_logger.info(f"Pushed object will be published")
-                self.update_object(attr_name='publish', value=True,
-                                   fireOid=fire_obj.fireOid, dry=False)
+                fire_obj = self.update_object(attr_name='publish', value=True,
+                                              fireOid=fire_obj.fireOid, dry=False)
 
             return fire_obj
         elif dry is True:

@@ -44,7 +44,7 @@ Below is the template of one of these configuration files::
  user = g1krw
  port = 4197
  [fire]
- root_endpoint = http://hh.fire-test.sdo.ebi.ac.uk/fire
+ root_endpoint = https://hh.fire-test.sdo.ebi.ac.uk/fire
  user = g1k-test-ernesto
  version = v1.1
  [ftp]

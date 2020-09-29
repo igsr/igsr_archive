@@ -53,7 +53,7 @@ def rand_file():
 
     return f
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def rand_filelst():
     """
     Fixture to generate a list of files containing random strings

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: igsr-archive
-Version: 0.2.3
+Version: 0.2.4
 Summary: Contains code to perform several operations involving files in the IGSR (1000 genomes) FTP archive.
 Home-page: https://github.com/igsr/igsr_archive/archive/0.2.3.tar.gz
 Author: Ernesto Lowy
