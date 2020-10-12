@@ -322,10 +322,10 @@ By default, the script will perform a dry run and the files will not be moved. Y
 
 Use the the ``--src_dir`` and ``--tg_dir`` options like this::
 
- move_files.py --settings settings.ini --src_dir /nfs/1000g-archive/vol1/dir1/ --tg_dir /nfs/1000g-archive/vol1/dir2/ \
+ move_files.py --settings settings.ini --src_dir "/nfs/1000g-archive/vol1/dir1/*" --tg_dir /nfs/1000g-archive/vol1/dir2/ \
   --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
-- ``--src_dir`` is the directory in the FTP area containing the files to be moved. All files in the directory will be moved unless you use a wildcard to define the pattern for searching the files, i.e. ``--tg_dir "*.txt"``. Note the double quotes.
+- ``--src_dir`` is the directory in the FTP area containing the files to be moved. You can use the wildcard to define the pattern for searching the files, i.e. ``--src_dir "*.txt"``. Note the double quotes.
 - ``--tg_dir`` is the directory in the FTP area where the files specified by ``--src_dir`` will be moved.
 
 By default, the script will perform a dry run and the files will not be moved. You need to run
