@@ -6,6 +6,7 @@ import logging
 import sys
 import re
 import pdb
+import glob
 from igsr_archive.utils import str2bool
 from igsr_archive.db import DB
 from igsr_archive.api import API
@@ -23,6 +24,8 @@ parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt t
                                                 "effectively doing it. True: Perform a dry-run")
 parser.add_argument('--origin', help="Path to the archived file in the FTP to be moved")
 parser.add_argument('--dest', help="Final path of file in the FTP")
+parser.add_argument('--src_dir', help="Source directory containing files in the FTP")
+parser.add_argument('--tg_dir', help="Target directory where the files in --src_dir will be moved")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="2-columns file containing the paths to"
                                                                            " the archived files in the FTP that are going"
                                                                            " to be moved and the final paths of the "
@@ -81,11 +84,13 @@ if firepwd is None:
 files = []
 
 origin_seen = False
-if args.origin:
+src_dir_seen = False
+if args.origin or args.dest:
     origin_seen = True
-    assert args.dest, "--origin arg defined, --dest arg also needs to be defined"
-elif args.dest:
-    assert args.origin, "--dest arg defined, --origin arg also needs to be defined"
+    assert args.dest and args.dest, "--origin and --dest args need to be defined"
+elif args.src_dir or args.tg_dir:
+    src_dir_seen = True
+    assert args.src_dir and args.tg_dir, "--src_dir and --tg_dir args needs to be defined"
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
 
@@ -101,6 +106,14 @@ elif args.list_file:
 if origin_seen is True:
     logger.info('--origin and --dest args defined')
     files.append((args.origin, args.dest))
+elif src_dir_seen is True:
+    logger.info('--src_dir and --tg_dir args defined')
+    for origin in glob.glob(f"{args.src_dir}"):
+        # get absolute paths
+        origin = os.path.abspath(origin)
+        basename = os.path.basename(origin)
+        dest = f"{os.path.abspath(args.tg_dir)}/{basename}"
+        files.append((origin, dest))
 
 # check if user has passed any file
 if len(files) == 0:

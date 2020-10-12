@@ -54,17 +54,22 @@ def rand_file():
     return f
 
 @pytest.fixture(scope="function")
-def rand_filelst():
+def rand_filelst(dirname='../data/'):
     """
     Fixture to generate a list of files containing random strings
+
+    Parameters
+    ----------
+    dirname : Directory used for putting the random files. Optional
+              Default: ../data/
 
     Returns
     -------
     A file containing a list of file paths (one per line)
     """
-    f_lst = ['../data/test_arch1.txt',
-             '../data/test_arch2.txt',
-             '../data/test_arch3.txt']
+    f_lst = [f"{dirname}test_arch1.txt",
+             f"{dirname}test_arch2.txt",
+             f"{dirname}test_arch3.txt"]
 
     # file with file paths
     list_f = open('../data/file_lst.txt', 'w')

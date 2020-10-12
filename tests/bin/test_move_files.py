@@ -5,8 +5,6 @@ import subprocess
 import re
 
 from configparser import ConfigParser
-from igsr_archive.db import DB
-from igsr_archive.api import API
 
 @pytest.fixture(scope="function")
 def modify_settings(request, settings_f):
@@ -41,6 +39,7 @@ def delete_arch_file(modify_settings, conn_db, conn_api):
     fileList = []
     yield fileList
     print('\n[teardown] delete_arch_file finalizer, deleting file from db')
+
     parser = ConfigParser()
     parser.read(modify_settings)
 
@@ -126,3 +125,33 @@ def test_file_list(push_file_list, modify_settings, delete_arch_file):
 
     print('Move a list of files using -l and --dry False options. DONE...')
     assert ret.returncode == 0
+
+def test_move_dir(push_file_list, modify_settings, delete_arch_file):
+
+    print('Move the files in a directory using the --src_dir and --tg_dir options')
+
+    cmd = f"{os.getenv('SCRIPTSDIR')}/move_files.py --src_dir \"{os.getenv('DATADIR')}/test_arch*.txt\" --tg_dir {os.getenv('DATADIR')}/out/ --dry False --settings {modify_settings}" \
+          f" --dbname {os.getenv('DBNAME')} --dbpwd {os.getenv('DBPWD')} --firepwd {os.getenv('FIREPWD')}"
+
+    ret = subprocess.Popen(cmd,
+                           shell=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+    stdout, stderr = ret.communicate()
+
+    stderr = stderr.decode("utf-8")
+    stdout = stdout.decode("utf-8")
+
+    if ret.returncode != 0:
+        print(f"\n##Something went wrong##\n: {stderr}\n##")
+        print(f"\n##Something went wrong. STDOUT:##\n: {stdout}\n##")
+
+    # remove newly created files
+    with open(push_file_list) as f:
+        for path in f:
+            path = path.rstrip("\n")
+            dest_p = os.path.abspath(f"{os.getenv('DATADIR')}/out/"+os.path.basename(path))
+            os.remove(path)
+            delete_arch_file.append(dest_p)
+
+    os.remove(push_file_list)

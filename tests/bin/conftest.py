@@ -69,6 +69,10 @@ def push_file_list(rand_filelst, conn_db, conn_api):
     """
     Fixture to push a list of files to FIRE. It will also load the files
     to the RESEQTRACK DB
+
+    Returns
+    -------
+    File with the lisf of file paths that have been pushed
     """
     print('Running fixture to push a list of test files to FIRE')
     with open(rand_filelst) as f:

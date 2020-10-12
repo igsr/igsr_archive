@@ -264,10 +264,12 @@ class API(object):
                 api_logger.info(f"Virtual FIRE path provided")
                 fire_obj = self.update_object(attr_name='firePath', value=fire_path,
                                               fireOid=fire_obj.fireOid, dry=False)
+                assert fire_obj is not None, "Error adding a FIRE path to the object"
             if publish is True:
                 api_logger.info(f"Pushed object will be published")
                 fire_obj = self.update_object(attr_name='publish', value=True,
                                               fireOid=fire_obj.fireOid, dry=False)
+                assert fire_obj is not None, "Error adding a publishing the object"
 
             return fire_obj
         elif dry is True:
