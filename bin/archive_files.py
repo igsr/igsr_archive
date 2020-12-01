@@ -131,7 +131,12 @@ for f in files:
     f_indb_o = db.fetch_file(path=f)
 
     # check if this file is already in the ftp
+    # by querying the FTP path to db
     f_inftp_o = db.fetch_file(path=ftp_path)
+    
+    # check if this fire_path is already in the FTP by
+    # querying the FIRE API
+    f_in_fire_o = api.fetch_object(firePath=fire_path)
 
     if f_indb_o is None and f_inftp_o is not None:
         if str2bool(args.update_existing) is True:
@@ -178,7 +183,9 @@ for f in files:
             logger.info(f"Archived file will not be updated with new file")
     elif f_indb_o is not None and f_inftp_o is None:
         # 'f' does not exist in the FTP, archive it as a new file
-    
+        if f_in_fire_o is not None:
+            raise Exception("FTP path:{0} does not exist in the DB but there is a FIRE object with FIRE path {1}. Can't continue!".format(ftp_path, fire_path))
+
         # push the file to FIRE where fire_path will the path in the FIRE
         # filesystem
         fireObj = api.push_object(fileO=f_indb_o,
