@@ -246,9 +246,10 @@ class API(object):
             p = Popen(url, stdout=PIPE, stderr=PIPE, shell=True)
             stdout, stderr = p.communicate()
             res = stdout.decode("utf-8")
-
             fire_obj = None
             api_logger.debug(f"API response:{res}")
+            api_logger.debug(f"API response (STDOUT):{stdout}")
+            api_logger.debug(f"API response (STDERR):{stderr}")
             # FIRE api is down
             if res == "Service Unavailable":
                 raise HTTPError("FIRE Service Unavailable")
