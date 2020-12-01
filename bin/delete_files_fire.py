@@ -17,6 +17,8 @@ parser.add_argument('-s', '--settings', required=True,
 parser.add_argument('-f', '--file', help="FIRE path of the object to be removed")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing the FIRE paths of the objects to"
                                                                            "be removed")
+parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to delte the file without "
+                                                "effectively doing it. True: Perform a dry-run")
 parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess"
                                       "the FIRE pwd from the $FIRE_PWD env variable")
 parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
@@ -71,5 +73,5 @@ for fire_path in files:
     assert dearch_fobj is not None, f"File entry with firePath {fire_path} is not archived in FIRE. " \
                                     f"Can't proceed"
     # delete FIRE object
-    api.delete_object(fireOid=dearch_fobj.fireOid)
+    api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
 
