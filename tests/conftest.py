@@ -22,19 +22,14 @@ def env_setup(monkeypatch):
     monkeypatch.setenv('DATADIR', '../data/')
 
 @pytest.fixture(scope="session")
-def settings_f():
-    return "/Users/ernesto/PycharmProjects/igsr_archive/data/settings.ini"
+def conn_api():
+    api = API(pwd=os.getenv('FIREPWD'))
 
-@pytest.fixture(scope="session")
-def conn_api(settings_f):
-    api = API(settingsf=settings_f,
-              pwd=os.getenv('FIREPWD'))
     return api
 
 @pytest.fixture(scope="session")
-def conn_db(settings_f):
-    db = DB(settingsf=settings_f,
-            pwd=os.getenv('DBPWD'),
+def conn_db():
+    db = DB(pwd=os.getenv('DBPWD'),
             dbname=os.getenv('DBNAME'))
     return db
 

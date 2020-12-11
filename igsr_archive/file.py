@@ -4,11 +4,10 @@ import pdb
 import datetime
 import logging
 from igsr_archive.utils import is_tool
-from configparser import ConfigParser
+from igsr_archive.config import CONFIG
 
 # create logger
 file_logger = logging.getLogger(__name__)
-
 
 class File(object):
     """
@@ -18,8 +17,6 @@ class File(object):
     ---------------
     name : str, Required
            File path
-    settingsf : str, Optional
-               Path to *.ini file several settings
     file_id : int, Optional,
               Internal DB id if the file is
               stored in the DB
@@ -49,19 +46,18 @@ class File(object):
               in the format (%Y-%m-%d %H:%M:%S)
     """
 
-    def __init__(self, name, settingsf=None, host_id=1, type=None,
+    def __init__(self, name, host_id=1, type=None,
                  withdrawn=0, **kwargs):
 
         file_logger.debug('Creating File object')
 
         self.name = name
-        self.settingsf = settingsf
         self.host_id = host_id
         self.type = type
         self.withdrawn = withdrawn
 
         allowed_keys = ['name', 'type', 'host_id', 'withdrawn', 'file_id',
-                        'settingsf', 'md5', 'size', 'created', 'updated']
+                        'md5', 'size', 'created', 'updated']
 
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
@@ -130,21 +126,16 @@ class File(object):
         str : type of file
         """
 
-        assert self.settingsf is not None, "Provide a settings.ini file to the File object"
+        assert CONFIG.has_section('file_type_rules') is True, "Provide a 'file_type_rules' section in your *.ini file"
 
-        # initialise ConfigParser object with settings
-        parser = ConfigParser()
-        parser.read(self.settingsf)
-        assert parser.has_section('file_type_rules') is True, "Provide a 'file_type_rules' section in your *.ini file"
-
-        rules_dict = parser._sections['file_type_rules']
+        rules_dict = CONFIG._sections['file_type_rules']
 
         ext = None
         ext = os.path.basename(self.name).split('.')[-1]
         assert ext is not None, f"*.ext could not be obtained from {self.name}"
 
         if ext not in rules_dict:
-            raise Exception(f"Extension: '{ext}' does not exist in {self.settingsf}. "
+            raise Exception(f"Extension: '{ext}' does not exist in the settings. "
                             f"Unable to assing a type to file")
         else:
             return rules_dict[ext]

@@ -20,8 +20,7 @@ def db_obj():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingsf="../data/settings.ini",
-            pwd=pwd,
+    db = DB(pwd=pwd,
             dbname=dbname)
 
     return db
@@ -50,8 +49,7 @@ def test_conn_s():
     assert dbname, "$DBNAME undefined"
     assert pwd, "$PWD undefined"
 
-    db = DB(settingsf="../data/settings.ini",
-            pwd=pwd,
+    db = DB(pwd=pwd,
             dbname=dbname)
 
     assert db.conn
@@ -64,8 +62,7 @@ def test_conn_e():
     assert dbname, "$DBNAME undefined"
 
     with pytest.raises(Exception) as e_info:
-        db = DB(settingsf="../data/settings.ini",
-                pwd="mockpwd",
+        db = DB(pwd="mockpwd",
                 dbname=dbname)
 
 def test_load_f(db_obj, del_obj):
@@ -74,15 +71,13 @@ def test_load_f(db_obj, del_obj):
     log.debug('Testing \'load_file\' function to load file entry in DB')
 
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TYPE_F"
     )
 
     db_obj.load_file(f, dry=False)
 
     del_obj.append(f)
-
-
 
 def test_update_f(db_obj, del_obj):
     log = logging.getLogger('test_update_f')
@@ -92,7 +87,7 @@ def test_update_f(db_obj, del_obj):
 
     # First, load file entry in the database
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TYPE_F")
 
     db_obj.load_file(f, dry=False)
@@ -100,12 +95,12 @@ def test_update_f(db_obj, del_obj):
     # Now, modify the file path for
     # entry in the 'file' table
     db_obj.update_file(attr_name='name',
-                       value='../data/test1.txt',
-                       name='../data/test.txt',
+                       value=os.getenv('DATADIR')+"test1.txt",
+                       name=os.getenv('DATADIR')+"test.txt",
                        dry=False)
 
     f1 = File(
-        name="../data/test1.txt",
+        name=os.getenv('DATADIR')+"test1.txt",
         type="TYPE_F")
 
     del_obj.append(f1)
@@ -116,7 +111,7 @@ def test_delete_f(db_obj):
     log.debug('Testing \'delete_file\' function to delete a file entry in the DB')
 
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TYPE_F"
     )
 
@@ -132,7 +127,7 @@ def test_fetch_f_exists_w_path(db_obj, del_obj):
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its path')
 
-    rel_path = "../data/test.txt"
+    rel_path = os.getenv('DATADIR')+"test.txt"
     # First, load file entry in the database
     f = File(
         name=rel_path,
@@ -165,7 +160,7 @@ def test_fetch_f_exists_w_basename(db_obj, del_obj):
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its basename')
 
-    rel_path = "../data/test.txt"
+    rel_path = os.getenv('DATADIR')+"test.txt"
 
     # First, load file entry in the database
     f = File(

@@ -72,22 +72,21 @@ def test_check_if_exists():
 
     assert f.check_if_exists() is True
 
-def test_guess_type(settings_f):
+def test_guess_type():
     log = logging.getLogger('test_guess_type')
     log.debug('Testing function for guess the type of a file')
 
-    f = File(name=f"{os.getenv('DATADIR')}/test.txt",
-             settingsf=settings_f)
+    f = File(name=f"{os.getenv('DATADIR')}/test.txt")
+
     assert f.guess_type() == "TEST_TXT"
 
-def test_guess_type1(settings_f, rand_file):
+def test_guess_type1(rand_file):
     log = logging.getLogger('test_guess_type1')
     log.debug('Testing function for guess the type of a complex filename')
     new_fname = f"{os.getenv('DATADIR')}/test_arch.2020.txt"
     # change the basename to something more complex
     os.rename(f"{os.getenv('DATADIR')}/test_arch.txt", new_fname)
-    f = File(name=new_fname,
-             settingsf=settings_f)
+    f = File(name=new_fname)
 
     # delete test type
     os.remove(new_fname)

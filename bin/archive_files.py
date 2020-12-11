@@ -58,6 +58,9 @@ logger.info('Running script')
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
+pdb.set_trace()
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = args.settings
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settings)
@@ -106,13 +109,11 @@ if len(files) == 0:
     sys.exit(0)
 
 # connection to Reseqtrack DB
-db = DB(settingsf=args.settings,
-        pwd=dbpwd,
+db = DB(pwd=dbpwd,
         dbname=dbname)
 
 # connection to FIRE api
-api = API(settingsf=args.settings,
-          pwd=firepwd)
+api = API(pwd=firepwd)
 
 for f in files:
     fireObj = None

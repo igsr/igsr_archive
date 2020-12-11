@@ -2,23 +2,22 @@ import pytest
 import os
 import pdb
 import subprocess
-from configparser import ConfigParser
+from igsr_archive.config import CONFIG
 
 @pytest.fixture
-def modify_settings(request, settings_f):
+def modify_settings(request):
     """
     Fixture to modify the settings.ini
     and generate a modified version that will be used
     in this file
     """
     # modify current settings.ini
-    parser = ConfigParser()
-    parser.read(settings_f)
+
     abs_dir = os.path.abspath(os.getenv('DATADIR'))
-    parser.set('ftp', 'staging_mount', abs_dir)
+    CONFIG.set('ftp', 'staging_mount', abs_dir)
 
     with open('settings_m.ini', 'w') as configfile:
-        parser.write(configfile)
+        CONFIG.write(configfile)
 
     def fin():
         print('\n[teardown] modify_settings finalizer, deleting modified settings file')
@@ -32,9 +31,11 @@ def test_single_file(modify_settings, load_file, delete_file):
 
     print('Archive a single file using -f and --dry False options')
 
+
     cmd = f"{os.getenv('SCRIPTSDIR')}/archive_files.py -f {load_file} --dry False --settings {modify_settings}" \
           f" --dbname {os.getenv('DBNAME')} --dbpwd {os.getenv('DBPWD')} --firepwd {os.getenv('FIREPWD')}"
 
+    print(cmd)
     ret = subprocess.Popen(cmd,
                            shell=True,
                            stdout=subprocess.PIPE,

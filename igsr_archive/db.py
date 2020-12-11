@@ -1,4 +1,3 @@
-from configparser import ConfigParser
 from igsr_archive.file import File
 
 import pymysql
@@ -7,6 +6,7 @@ import datetime
 import os
 import sys
 import pdb
+from igsr_archive.config import CONFIG
 
 # create logger
 db_logger = logging.getLogger(__name__)
@@ -17,8 +17,6 @@ class DB(object):
 
     Class variables
     ---------------
-    settingsf : str, Required
-               Path to *.ini file with MySQL server connection settings
     conn : Connection object
            Connection to MySQL db
     pwd : srt, Required
@@ -27,13 +25,12 @@ class DB(object):
             Reseqtrack db name
     """
 
-    def __init__(self, settingsf, pwd, dbname):
+    def __init__(self, pwd, dbname):
 
         db_logger.debug('Creating DB object')
 
         self.pwd = pwd
         self.dbname = dbname
-        self.settingsf = settingsf
         self.conn = self.set_conn()
 
     def set_conn(self):
@@ -50,14 +47,12 @@ class DB(object):
 
         # initialise ConfigParser object with connection
         # settings
-        parser = ConfigParser()
-        parser.read(self.settingsf)
 
-        conn = pymysql.connect(host=parser.get('mysql_conn', 'host'),
-                               user=parser.get('mysql_conn', 'user'),
+        conn = pymysql.connect(host=CONFIG.get('mysql_conn', 'host'),
+                               user=CONFIG.get('mysql_conn', 'user'),
                                password=self.pwd,
                                db=self.dbname,
-                               port=parser.getint('mysql_conn', 'port'))
+                               port=CONFIG.getint('mysql_conn', 'port'))
 
         db_logger.debug('Connection successful!')
 

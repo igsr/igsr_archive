@@ -13,8 +13,7 @@ pwd = os.getenv('FIREPWD')
 
 assert pwd, "$FIREPWD undefined"
 
-api = API(settingsf="../data/settings.ini",
-          pwd=pwd)
+api = API(pwd=pwd)
 
 @pytest.fixture
 def clean_tmp():
@@ -22,7 +21,7 @@ def clean_tmp():
     log = logging.getLogger('clean_tmp')
     log.debug('Cleaning tmp files')
 
-    files = glob.glob('../data/out/*')
+    files = glob.glob(os.getenv('DATADIR')+'/out/*')
     for f in files:
         os.remove(f)
 
@@ -34,14 +33,13 @@ def loaded_obj():
 
     # creating File object
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
     fobject = api.push_object(fileO=f, dry=False,
                               fire_path="test_dir/test.txt",
                               publish=False)
-
     return fobject
 
 @pytest.fixture
@@ -63,11 +61,11 @@ def test_retrieve_object_by_foi(loaded_obj, del_obj, clean_tmp):
     log.debug('Retrieving (Downloading) a FIRE object by its fireOid')
 
     outfile = api.retrieve_object(fireOid=loaded_obj.fireOid,
-                                  outfile='../data/out/test.txt')
+                                  outfile=os.getenv('DATADIR')+'/out/test.txt')
 
     del_obj.append(loaded_obj.fireOid)
 
-    assert outfile == "../data/out/test.txt"
+    assert outfile == os.getenv('DATADIR')+"/out/test.txt"
 
 def test_retrieve_object_by_fpath(loaded_obj, del_obj, clean_tmp):
     log = logging.getLogger('test_retrieve_object_by_fpath')
@@ -75,11 +73,11 @@ def test_retrieve_object_by_fpath(loaded_obj, del_obj, clean_tmp):
     log.debug('Retrieving (Downloading) a FIRE object by its firePath')
 
     outfile = api.retrieve_object(firePath='test_dir/test.txt',
-                                  outfile='../data/out/test.txt')
+                                  outfile=os.getenv('DATADIR')+"/out/test.txt")
 
     del_obj.append(loaded_obj.fireOid)
 
-    assert outfile == "../data/out/test.txt"
+    assert outfile == os.getenv('DATADIR')+"/out/test.txt"
 
 def test_fetch_object_by_foi(loaded_obj, del_obj):
     log = logging.getLogger('test_fetch_object_by_foi')
@@ -135,7 +133,7 @@ def test_push_object(del_obj):
 
     # creating File object
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
@@ -154,7 +152,7 @@ def test_push_object_w_fpath(del_obj):
 
     # creating File object
     f = File(
-        name="../data/test.txt",
+        name=os.getenv('DATADIR')+"test.txt",
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
@@ -175,7 +173,7 @@ def test_push_comp_object_w_fpath(del_obj):
 
     # creating File object
     f = File(
-        name="../data/test.txt.gz",
+        name=os.getenv('DATADIR')+"test.txt.gz",
         type="TEST_F",
         md5sum="a32c5f11391b49b0788def64d28f8807")
 

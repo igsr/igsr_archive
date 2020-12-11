@@ -4,12 +4,12 @@ import pdb
 import sys
 import json
 from subprocess import Popen, PIPE
-from configparser import ConfigParser
 from igsr_archive.utils import is_tool
 
 import requests
 from requests.exceptions import HTTPError
 from igsr_archive.object import fObject
+from igsr_archive.config import CONFIG
 
 # create logger
 api_logger = logging.getLogger(__name__)
@@ -21,23 +21,16 @@ class API(object):
 
     Class variables
     ---------------
-    settingsf : str, Required
-               Path to *.ini file with MySQL server connection settings
     pwd : str, Required
           Password for API
     user : str,
            Username for API. Obtained from settings.ini
     """
-    def __init__(self, settingsf, pwd):
+    def __init__(self, pwd):
 
         api_logger.debug('Creating an API object')
 
-        # initialise ConfigParser object with connection
-        # settings
-        parser = ConfigParser()
-        parser.read(settingsf)
-        self.settings = parser
-        self.user = self.settings.get('fire', 'user')
+        self.user = CONFIG.get('fire', 'user')
         self.pwd = pwd
 
     def get_filename_from_cd(self, cd):
@@ -83,13 +76,13 @@ class API(object):
 
             api_logger.debug('Retrieving a FIRE object through its FIRE object id')
 
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/blob/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/blob/" \
                   f"{fireOid}"
         elif firePath is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE path')
 
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/blob/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/blob/" \
                   f"path/{firePath}"
 
         try:
@@ -139,13 +132,13 @@ class API(object):
 
             api_logger.debug('Fetching FIRE object\'s metadata through its FIRE object id')
 
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
                   f"{fireOid}"
         elif firePath is not None:
 
             api_logger.debug('Fetching FIRE object\'s metadata through its FIRE path')
 
-            url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/path/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/path/" \
                   f"{firePath}"
         else:
             print("Could not fetch the object. Please provide either a fireOid or a firePath")
@@ -235,7 +228,7 @@ class API(object):
         if is_tool("curl") is False:
             raise Exception("The 'curl' program was not found in this system. Can't continue!...")
 
-        url = f"curl {self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects" \
+        url = f"curl {CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects" \
               f" -u {self.user}:{self.pwd}"
 
         fire_obj = None
@@ -322,7 +315,7 @@ class API(object):
 
         res = None
         header = None
-        url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+        url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
               f"{fireOid}/"
         if attr_name is 'firePath':
             api_logger.info(f"firePath will be modified")
@@ -379,7 +372,7 @@ class API(object):
 
         api_logger.info(f"Deleting FIRE object with fireOid: {fireOid}")
 
-        url = f"{self.settings.get('fire', 'root_endpoint')}/{self.settings.get('fire', 'version')}/objects/" \
+        url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
               f"{fireOid}"
 
         if dry is False:
