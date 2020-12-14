@@ -74,8 +74,7 @@ if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Class to connect with Reseqtrack DB
-db = DB(settingsf=args.settings,
-        pwd=pwd,
+db = DB(pwd=pwd,
         dbname=dbname)
 
 # list with paths to be loaded
@@ -98,7 +97,7 @@ if args.file:
 
 elif args.list_file:
     logger.info('File with paths provided using -l, --list_file option')
-  #  pdb.set_trace()
+
     for path in args.list_file:
         path = path.rstrip("\n")
         cols = re.split(' +', path)

@@ -34,8 +34,7 @@ if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # connection to FIRE api
-api = API(settingsf=args.settings,
-          pwd=firepwd)
+api = API(pwd=firepwd)
 
 fobject = api.fetch_object(firePath=args.firePath)
 

@@ -5,8 +5,6 @@ import random
 import string
 
 from igsr_archive.file import File
-from igsr_archive.db import DB
-from igsr_archive.api import API
 
 def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -105,7 +103,7 @@ def delete_file(conn_db, conn_api) :
         fObj = conn_db.fetch_file(basename=basename)
         # delete from DB
         conn_db.delete_file(fObj,
-                       dry=False)
+                            dry=False)
         # dearchive from FIRE
         fire_o = conn_api.fetch_object(firePath=basename)
         conn_api.delete_object(fireOid=fire_o.fireOid,

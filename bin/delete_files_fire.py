@@ -52,12 +52,10 @@ settingsO = ConfigParser()
 settingsO.read(args.settings)
 
 # connection to FIRE api
-api = API(settingsf=args.settings,
-          pwd=firepwd)
+api = API(pwd=firepwd)
 
 # list of tuples (origin, dest) for files to be archived
 files = []
-
 if args.file:
     logger.info("File provided")
     files.append(args.file)

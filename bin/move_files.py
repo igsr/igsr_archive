@@ -120,18 +120,18 @@ if len(files) == 0:
     logger.info('No file/s provided. Nothing to be done...')
     sys.exit(0)
 
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = args.settings
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settings)
 
 # connection to Reseqtrack DB
-db = DB(settingsf=args.settings,
-        pwd=dbpwd,
+db = DB(pwd=dbpwd,
         dbname=dbname)
 
 # connection to FIRE api
-api = API(settingsf=args.settings,
-          pwd=firepwd)
+api = API(pwd=firepwd)
 
 for tup in files:
     # check if 'origin' exists in db and fetch the file

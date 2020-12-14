@@ -160,6 +160,9 @@ class API(object):
             if res.status_code == 404:
                 api_logger.info('No FIRE object found')
                 return fireObj
+            elif res.status_code != 200:
+                api_logger.info('There was an issue in the FIRE API request')
+                raise Exception(f"Error: {res.text}")
             else:
                 fireObj = self.__parse_json_response(json_res)
                 api_logger.info('Fetched FIRE object')

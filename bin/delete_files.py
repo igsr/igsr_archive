@@ -61,9 +61,11 @@ if pwd is None:
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = args.settings
+
 # Class to connect with Reseqtrack DB
-db = DB(settingsf=args.settings,
-        pwd=pwd,
+db = DB(pwd=pwd,
         dbname=dbname)
 
 if args.file:

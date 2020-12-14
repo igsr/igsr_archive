@@ -58,7 +58,6 @@ logger.info('Running script')
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
-pdb.set_trace()
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = args.settings
 # Parse config file
@@ -138,7 +137,6 @@ for f in files:
     # check if this fire_path is already in the FTP by
     # querying the FIRE API
     f_in_fire_o = api.fetch_object(firePath=fire_path)
-
     if f_indb_o is None and f_inftp_o is not None:
         if str2bool(args.update_existing) is True:
             # 'f' that is in the staging area does not exist in DB, but it does exist in the FTP
@@ -203,6 +201,9 @@ for f in files:
         # 'f' does not exist neither the DB nor the FTP. Raise exception
         raise Exception(f"File entry with path {f} does not exist in the DB. "
                         f"You need to load it first in order to proceed")
+    else:
+        logger.info("Do not know what to do!!")
+        raise Exception("Process halted!!!")
 
     if args.type:
         logger.info(f"--type option provided. Its value will be used for updating"

@@ -31,15 +31,14 @@ def test_single_file(modify_settings, load_file, delete_file):
 
     print('Archive a single file using -f and --dry False options')
 
-
     cmd = f"{os.getenv('SCRIPTSDIR')}/archive_files.py -f {load_file} --dry False --settings {modify_settings}" \
           f" --dbname {os.getenv('DBNAME')} --dbpwd {os.getenv('DBPWD')} --firepwd {os.getenv('FIREPWD')}"
 
-    print(cmd)
     ret = subprocess.Popen(cmd,
                            shell=True,
                            stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
+
     stdout, stderr = ret.communicate()
 
     stderr = stderr.decode("utf-8")

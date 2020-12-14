@@ -4,23 +4,21 @@ import pdb
 import subprocess
 import re
 
-from configparser import ConfigParser
+from igsr_archive.config import CONFIG
 
 @pytest.fixture(scope="function")
-def modify_settings(request, settings_f):
+def modify_settings(request):
     """
     Fixture to modify the settings.ini
     and generate a modified version that will be used
     in this file
     """
-    # modify current settings.ini
-    parser = ConfigParser()
-    parser.read(settings_f)
+
     abs_dir = os.path.abspath(os.getenv('DATADIR'))
-    parser.set('ftp', 'ftp_mount', abs_dir)
+    CONFIG.set('ftp', 'ftp_mount', abs_dir)
 
     with open('settings_m.ini', 'w') as configfile:
-        parser.write(configfile)
+        CONFIG.write(configfile)
 
     def fin():
         print('\n[teardown] modify_settings finalizer, deleting modified settings file')
@@ -40,8 +38,7 @@ def delete_arch_file(modify_settings, conn_db, conn_api):
     yield fileList
     print('\n[teardown] delete_arch_file finalizer, deleting file from db')
 
-    parser = ConfigParser()
-    parser.read(modify_settings)
+    CONFIG.read(modify_settings)
 
     for path in fileList:
         basename = os.path.basename(path)
@@ -50,7 +47,7 @@ def delete_arch_file(modify_settings, conn_db, conn_api):
         conn_db.delete_file(fObj,
                             dry=False)
         # dearchive from FIRE
-        fire_path =  re.sub(parser.get('ftp', 'ftp_mount') + "/", '', path)
+        fire_path =  re.sub(CONFIG.get('ftp', 'ftp_mount') + "/", '', path)
         fire_o = conn_api.fetch_object(firePath=fire_path)
         conn_api.delete_object(fireOid=fire_o.fireOid,
                                dry=False)
