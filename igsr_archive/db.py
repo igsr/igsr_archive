@@ -6,6 +6,8 @@ import datetime
 import os
 import sys
 import pdb
+import time
+
 from igsr_archive.config import CONFIG
 
 # create logger
@@ -205,6 +207,66 @@ class DB(object):
             db_logger.error("Exception occurred", exc_info=True)
             # Rollback in case there is any error
             self.conn.rollback()
+
+    def get_ctree(self, fields, outfile, limit=None):
+        """
+        Function to dump DB file records and generate
+        a current tree file pointed by outfile.
+        This function will also parse each of the records
+        in the 'file' table and creates a dict with the following information:
+        { 'path' : md5 }
+
+        Parameter
+        --------
+        fields: list
+                List with the fields from the 'file' table to
+                be dumped. The order of the fields in the dumped
+                file will be preserved
+        outfile: str
+                 File path for the current.tree output
+        limit: int, Optional
+               Limit current.tree file to this int number of records
+               Default: None (all records will be dumped)
+
+        Return
+        ------
+        string, dict
+                path with current.tree file, dict with md5s
+        """
+        assert isinstance(fields, list)
+
+        cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+        fields_str = ",".join(fields)
+        if limit is None:
+            query = f"SELECT {fields_str} FROM file"
+        else:
+            query = f"SELECT {fields_str} FROM file limit {limit}"
+
+        fields.insert(1, "type")
+
+        f = open(outfile, 'w')
+        # print header
+        f.write(" ".join(fields))
+        f.write("\n")
+        cursor.execute(query)
+        try:
+            result_set = cursor.fetchall()
+            if not result_set:
+                db_logger.debug(f"No file retrieved from DB using using query:{query}")
+                return None
+            for row in result_set:
+                row["name"] = row["name"].replace(CONFIG.get("ftp","ftp_mount")+"/","")
+                row["type"] = "file"
+                for k in fields:
+                    f.write(f"{row[k]}\t")
+                f.write("\n")
+            cursor.close()
+            self.conn.commit()
+        except pymysql.Error as e:
+            db_logger.error("Exception occurred", exc_info=True)
+            # Rollback in case there is any error
+            self.conn.rollback()
+        f.close
 
     def update_file(self, attr_name, value, name, dry=True):
         """

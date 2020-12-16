@@ -9,23 +9,6 @@ from igsr_archive.file import File
 logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture
-def db_obj():
-    """
-    Fixture to get a DB object
-    """
-
-    pwd = os.getenv('DBPWD')
-    dbname = os.getenv('DBNAME')
-
-    assert dbname, "$DBNAME undefined"
-    assert pwd, "$PWD undefined"
-
-    db = DB(pwd=pwd,
-            dbname=dbname)
-
-    return db
-
-@pytest.fixture
 def del_obj(db_obj):
 
     fileList = []
@@ -186,3 +169,15 @@ def test_fetch_f_not_exists_w_basename(db_obj):
     f = db_obj.fetch_file(basename='mock_file.txt')
 
     assert f == None
+
+def test_get_ctree(db_obj):
+    log = logging.getLogger('test_get_ctree_l')
+
+    log.debug('Testing \'get_ctree\' function to get the current.tree file'
+              'from the DB limiting the number of dumped records')
+
+    # list of fields in the 'file' table
+    # to be dumped in the current.tree file
+    fields = ['name', 'size', 'updated']
+    db_obj.get_ctree(fields, outfile= os.getenv('DATADIR')+"/current.tree", limit=10)
+

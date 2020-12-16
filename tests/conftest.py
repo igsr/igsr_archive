@@ -103,3 +103,20 @@ def rand_filelst_md5():
     list_f.close()
 
     return list_f.name
+
+@pytest.fixture
+def db_obj():
+    """
+    Fixture to get a DB object
+    """
+
+    pwd = os.getenv('DBPWD')
+    dbname = os.getenv('DBNAME')
+
+    assert dbname, "$DBNAME undefined"
+    assert pwd, "$PWD undefined"
+
+    db = DB(pwd=pwd,
+            dbname=dbname)
+
+    return db
