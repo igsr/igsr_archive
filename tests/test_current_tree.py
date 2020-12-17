@@ -1,6 +1,7 @@
 import pytest
 import logging
 import os
+import pdb
 
 from igsr_archive.current_tree import CurrentTree
 
@@ -21,10 +22,12 @@ def ct_obj(db_obj):
 
     return ct_obj
 
-def test_get_db_dict(ct_obj):
+def test_get_file_dict(ct_obj):
+    log = logging.getLogger('test_get_file_dict')
 
-    log = logging.getLogger('test_get_db_dict')
-    log.debug('Testing the get_db_dict function')
+    log.debug('Testing \'get_file_dict\' function')
 
-    ct_obj.get_db_dict()
+    data_dict = ct_obj.get_file_dict()
 
+    assert len(data_dict.keys()) == 10
+    assert 0

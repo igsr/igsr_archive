@@ -231,7 +231,7 @@ class DB(object):
         Return
         ------
         string, dict
-                path with current.tree file, dict with md5s
+        path with current.tree file, dict with md5s
         """
         assert isinstance(fields, list)
 
@@ -246,8 +246,10 @@ class DB(object):
 
         f = open(outfile, 'w')
         # print header
-        f.write(" ".join(fields))
+        f.write("\t".join(fields))
         f.write("\n")
+
+        data_dict = {} # dict {'path' : 'md5' }
         cursor.execute(query)
         try:
             result_set = cursor.fetchall()
@@ -257,6 +259,7 @@ class DB(object):
             for row in result_set:
                 row["name"] = row["name"].replace(CONFIG.get("ftp","ftp_mount")+"/","")
                 row["type"] = "file"
+                data_dict[row["name"]] = row["md5"]
                 for k in fields:
                     f.write(f"{row[k]}\t")
                 f.write("\n")
@@ -267,6 +270,8 @@ class DB(object):
             # Rollback in case there is any error
             self.conn.rollback()
         f.close
+
+        return outfile, data_dict
 
     def update_file(self, attr_name, value, name, dry=True):
         """

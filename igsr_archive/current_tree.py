@@ -23,7 +23,9 @@ class CurrentTree(object):
         """
 
         fields = ['name', 'size', 'updated']
-        self.db.get_ctree(fields, outfile=self.stating_tree, limit=10)
+        db_dict = self.db.get_ctree(fields, outfile=self.staging_tree)
+        file_dict = self.get_file_dict()
+
         pdb.set_trace()
         print("h")
 
@@ -37,9 +39,57 @@ class CurrentTree(object):
         -------
         dict
         """
+        fields = None
+        header = False
 
-    def cmp_dicts(self):
+        data_dict = {}  # dict {'path' : 'md5' }
+        with open(self.prod_tree) as f:
+            for line in f:
+                line = line.rstrip("\n")
+                if header is False:
+                    fields = line.split("\t")
+                    try:
+                        ix_md5 = fields.index("md5")
+                        ix_name = fields.index("name")
+                    except:
+                        raise ValueError(f"Either 'md5' or 'name' not found"
+                                         f" in the header of f{self.prod_tree}")
+                    header = True
+                else:
+                    name = line.split("\t")[ix_name]
+                    md5 = line.split("\t")[ix_md5]
+                    data_dict[name] = md5
+
+        return data_dict
+
+    def cmp_dicts(self, db_dict, file_dict):
         """
-        Function to compare the 'dict1' and 'dict2' dicts and look
+        Function to compare the 'db_dict' and 'file_dict' dicts and look
         for differences
+
+        Parameters
+        ----------
+        db_dict : dict
+                  Dict in the format { 'name' : 'md5sum' } generated
+                  by self.db.get_ctree
+        file_dict : dict
+                    Dict in the format { 'name' : 'md5sum' } generated
+                    by self.get_file_dict
+        Returns
+        -------
+        4 dicts in the following order:
+        added : containing the items that are
+        removed :
+        modified :
+        same : containing the items that are the same
         """
+        d1_keys = set(db_dict.keys())
+        d2_keys = set(file_dict.keys())
+        shared_keys = d1_keys.intersection(d2_keys)
+        added = d1_keys - d2_keys
+        removed = d2_keys - d1_keys
+        modified = {o: (db_dict[o], file_dict[o]) for o in shared_keys if db_dict[o] != file_dict[o]}
+        same = set(o for o in shared_keys if db_dict[o] == file_dict[o])
+
+        return added, removed, modified, same
+

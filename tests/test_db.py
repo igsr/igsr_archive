@@ -178,6 +178,8 @@ def test_get_ctree(db_obj):
 
     # list of fields in the 'file' table
     # to be dumped in the current.tree file
-    fields = ['name', 'size', 'updated']
-    db_obj.get_ctree(fields, outfile= os.getenv('DATADIR')+"/current.tree", limit=10)
+    fields = ['name', 'size', 'updated', 'md5']
+    ctree_path, data_dict = db_obj.get_ctree(fields, outfile= os.getenv('DATADIR')+"/current.tree", limit=800000)
+    assert os.path.exists(ctree_path == 1)
+    assert len(data_dict.keys()) == 10
 
