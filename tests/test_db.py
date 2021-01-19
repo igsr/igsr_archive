@@ -173,13 +173,13 @@ def test_fetch_f_not_exists_w_basename(db_obj):
 def test_get_ctree(db_obj):
     log = logging.getLogger('test_get_ctree_l')
 
-    log.debug('Testing \'get_ctree\' function to get the current.tree file'
+    log.debug('Testing \'get_ctree\' function to get the current.same.tree file'
               'from the DB limiting the number of dumped records')
 
     # list of fields in the 'file' table
-    # to be dumped in the current.tree file
+    # to be dumped in the current.same.tree file
     fields = ['name', 'size', 'updated', 'md5']
-    ctree_path, data_dict = db_obj.get_ctree(fields, outfile= os.getenv('DATADIR')+"/current.tree", limit=800000)
+    ctree_path, data_dict = db_obj.get_ctree(fields, outfile= os.getenv('DATADIR')+"/current.same.tree", limit=10)
     assert os.path.exists(ctree_path == 1)
     assert len(data_dict.keys()) == 10
 

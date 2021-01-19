@@ -223,9 +223,9 @@ class DB(object):
                 be dumped. The order of the fields in the dumped
                 file will be preserved
         outfile: str
-                 File path for the current.tree output
+                 File path for the current.same.tree output
         limit: int, Optional
-               Limit current.tree file to this int number of records
+               Limit current.same.tree file to this int number of records
                Default: None (all records will be dumped)
 
         Return
