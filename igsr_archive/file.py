@@ -119,13 +119,12 @@ class File(object):
     def guess_type(self):
         """
         Function to get the type of a file depending on the
-        'file_type_rules' section of self.settingsf
+        'file_type_rules' section of CONFIG
         
         Returns
         -------
         str : type of file
         """
-
         assert CONFIG.has_section('file_type_rules') is True, "Provide a 'file_type_rules' section in your *.ini file"
 
         rules_dict = CONFIG._sections['file_type_rules']
@@ -135,8 +134,8 @@ class File(object):
         assert ext is not None, f"*.ext could not be obtained from {self.name}"
 
         if ext not in rules_dict:
-            raise Exception(f"Extension: '{ext}' does not exist in the settings. "
-                            f"Unable to assing a type to file")
+            # assign the default file type
+            return rules_dict['default']
         else:
             return rules_dict[ext]
 

@@ -92,3 +92,14 @@ def test_guess_type1(rand_file):
     os.remove(new_fname)
     assert f.guess_type() == "TEST_TXT"
 
+def test_guess_type_default():
+    log = logging.getLogger('test_guess_type_default')
+    log.debug('Testing function to check when a default '
+              'type is assigned when the extension is'
+              'not recognised')
+
+    new_fname = f"{os.getenv('DATADIR')}/test.2020.pippo"
+    f = File(name=new_fname)
+
+    assert f.guess_type() == "MISC"
+

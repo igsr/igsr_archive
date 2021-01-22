@@ -6,6 +6,7 @@ import os
 from igsr_archive.file import File
 from igsr_archive.db import DB
 from igsr_archive.api import API
+from igsr_archive.current_tree import CurrentTree
 
 def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -105,6 +106,27 @@ def rand_filelst_md5():
     return list_f.name
 
 @pytest.fixture
+def ct_obj(db_obj):
+    '''
+    Returns a CurrentTree object
+    '''
+    ct_obj = CurrentTree(db=db_obj,
+                         staging_tree=os.getenv('DATADIR')+"/current.new.tree",
+                         prod_tree=os.getenv('DATADIR')+"/current.same.tree")
+    return ct_obj
+
+@pytest.fixture
+def db_dict(db_obj):
+    '''
+    Returns a dict from the records in DB
+    '''
+    fields = ['name', 'size', 'updated', 'md5']
+    # limit the number of records to 10
+    ctree_path, data_dict = db_obj.get_ctree(fields, outfile=os.getenv('DATADIR') + "/current.new.tree", limit=10)
+
+    return data_dict
+
+@pytest.fixture
 def db_obj():
     """
     Fixture to get a DB object
@@ -120,3 +142,4 @@ def db_obj():
             dbname=dbname)
 
     return db
+
