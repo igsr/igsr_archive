@@ -2,6 +2,7 @@ import random
 import string
 import pytest
 import os
+import pdb
 
 from igsr_archive.file import File
 from igsr_archive.db import DB
@@ -27,12 +28,6 @@ def conn_api():
     api = API(pwd=os.getenv('FIREPWD'))
 
     return api
-
-@pytest.fixture(scope="session")
-def conn_db():
-    db = DB(pwd=os.getenv('DBPWD'),
-            dbname=os.getenv('DBNAME'))
-    return db
 
 @pytest.fixture(scope="function")
 def rand_file():
@@ -106,11 +101,12 @@ def rand_filelst_md5():
     return list_f.name
 
 @pytest.fixture
-def ct_obj(db_obj):
+def ct_obj(db_obj, conn_api):
     '''
     Returns a CurrentTree object
     '''
     ct_obj = CurrentTree(db=db_obj,
+                         api= conn_api,
                          staging_tree=os.getenv('DATADIR')+"/current.new.tree",
                          prod_tree=os.getenv('DATADIR')+"/current.same.tree")
     return ct_obj
@@ -143,3 +139,100 @@ def db_obj():
 
     return db
 
+#
+# Fixtures used by test_change_events.py and test_current_tree.py
+#
+@pytest.fixture
+def chObject_new(ct_obj, db_dict):
+    """
+    Fixture returning a ChangeEvents object
+    with a new path
+    """
+    ct_obj.prod_tree = os.getenv('DATADIR') + "ctree/current.minus1.tree"
+    file_dict = ct_obj.get_file_dict()
+    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+
+    return chObject
+
+@pytest.fixture
+def chObject_withdrawn(ct_obj, db_dict):
+    """
+    Fixture returning a ChangeEvents object
+    with a withdrawn path
+    """
+    ct_obj.prod_tree = os.getenv('DATADIR') + "ctree/current.plus1.tree"
+    file_dict = ct_obj.get_file_dict()
+    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+
+    return chObject
+
+@pytest.fixture
+def chObject_moved(ct_obj, db_dict):
+    """
+    Fixture returning a ChangeEvents object
+    with a moved path
+    """
+    ct_obj.prod_tree = os.getenv('DATADIR') + "ctree/current.moved.tree"
+    file_dict = ct_obj.get_file_dict()
+    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+
+    return chObject
+
+@pytest.fixture
+def chObject_replacement(ct_obj, db_dict):
+    """
+    Fixture returning a ChangeEvents object
+    with a replacement path
+    """
+    ct_obj.prod_tree = os.getenv('DATADIR') + "ctree/current.mod.tree"
+    file_dict = ct_obj.get_file_dict()
+    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+
+    return chObject
+
+@pytest.fixture(scope="function")
+def changelog_file():
+    """
+    Fixture to generate a mock CHANGELOG File object
+    """
+    print('Running fixture to generate a mock CHANGELOG File object')
+
+    mock_fpath = os.getenv('DATADIR') + "ctree/MOCK_CHANGELOG"
+    f = open(mock_fpath, 'w')
+    f.write("# This is a MOCK CHANGELOG file for testing purposes\n")
+    f.close()
+    fObj = File(
+        name=mock_fpath,
+        type="MOCK_CHANGELOG")
+
+    return fObj
+
+@pytest.fixture(scope="function")
+def load_changelog_file(db_obj, changelog_file):
+    """
+    Fixture to load to the DB a mock CHANGELOG to be used with the CurrentTree.run function
+
+    Returns
+    -------
+    File object that has been loaded to the DB
+    """
+    print('Running fixture to load a mock CHANGELOG file in the DB')
+    db_obj.load_file(changelog_file, dry=False)
+    print('Running fixture to load a mock CHANGELOG file in the DB. DONE...')
+
+    return changelog_file
+
+@pytest.fixture(scope="function")
+def push_changelog_file(conn_api, changelog_file):
+    """
+    Fixture to push to the FIRE archive a mock CHANGELOG to be used with the CurrentTree.run function
+
+    Returns
+    -------
+    FIRE path of the object that has been pushed
+    """
+    conn_api.push_object(fileO=changelog_file,
+                         fire_path="ctree/MOCK_CHANGELOG",
+                         dry=False)
+
+    return "ctree/MOCK_CHANGELOG"

@@ -6,7 +6,6 @@ import datetime
 import os
 import sys
 import pdb
-import time
 
 from igsr_archive.config import CONFIG
 

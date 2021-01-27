@@ -225,7 +225,6 @@ class API(object):
         ------
         HTTPError
         """
-
         api_logger.info(f"Pushing File with path: {fileO.name}")
 
         if is_tool("curl") is False:

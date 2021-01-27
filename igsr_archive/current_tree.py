@@ -1,9 +1,8 @@
 import logging
 import pdb
+import os
 
-from igsr_archive.file import File
-
-from datetime import datetime
+from igsr_archive.change_events import ChangeEvents
 
 # create logger
 ct_logger = logging.getLogger(__name__)
@@ -15,8 +14,8 @@ class CurrentTree(object):
 
     Class variables
     ---------------
-    db: DB object
-        with connection params
+    db: DB object. Required
+    api: FIRE api object. Required
     prod_tree: str
                Path to the 'production tree' file. This is the tree that will
                be the reference in the comparison, i.e. Tree that could
@@ -24,29 +23,56 @@ class CurrentTree(object):
     staging_tree: str
                   Path to the 'staging tree' file. This is the tree that will
                   be the query in the comparison, i.e. New tree generated from
-                  the Reseqtrack DB that is located in the 'staging area'
+                  the Reseqtrack DB that is located in the 'staging area'. Required
 
     """
-    def __init__(self, db, prod_tree, staging_tree):
+    def __init__(self, db, api, prod_tree, staging_tree):
 
         ct_logger.debug('Creating CurrentTree object')
 
         self.db = db
+        self.api = api
         self.prod_tree = prod_tree
         self.staging_tree = staging_tree
 
-    def run(self):
+    def run(self, chlog_fpath, chlog_name='CHANGELOG'):
         """
-        Function to perform all operations
-        """
+        Function to perform all operations involved in the comparison
+        between the current.tree in the DB and the current.tree in the FTP
 
-        fields = ['name', 'size', 'updated']
-        db_dict = self.db.get_ctree(fields, outfile=self.staging_tree)
+        Parameters
+        ----------
+        chlog_fpath: string
+                     Fire path for CHANGELOG file (i.e. ). Required
+        chlog_name: string
+                    Basename for the file used to add the new CHANGELOG entry
+                    Default: CHANGELOG
+
+        Returns
+        -------
+        0 if run was successful, 1 otherwise
+        """
+        wd = os.path.dirname(self.staging_tree)
+
+        fields = ['name', 'size', 'updated', 'md5']
+        db_dict = self.db.get_ctree(fields, outfile=self.staging_tree, limit=10)[1]
         file_dict = self.get_file_dict()
-
-
-        pdb.set_trace()
-        print("h")
+        chgEvents = self.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+        if chgEvents.size() == 0:
+            ct_logger.info("No changes detected, nothing will be done. "
+                           "The current.tree file in the staging area will be removed")
+            os.remove(self.staging_tree)
+            return 0
+        else:
+            pdb.set_trace()
+            ct_logger.info("Changes detected in the data structures. Proceeding...")
+            ct_logger.info("Generating chlog_details_* files")
+            ofiles = chgEvents.print_chlog_details(odir=wd)
+            ct_logger.info("Fetching CHANGELOG file from archive")
+            chlog_obj = self.db.fetch_file(basename=chlog_name)
+            ct_logger.info("Updating CHANGELOG file in the DB")
+            chgEvents.print_changelog(ifile=chlog_obj.name)
+            print("h")
 
     def get_file_dict(self):
         """
@@ -133,125 +159,6 @@ class CurrentTree(object):
         replacement = {o: (db_dict[o], file_dict[o]) for o in shared_keys if db_dict[o] != file_dict[o]}
 
         return ChangeEvents(new, withdrawn, moved, replacement)
-
-    # object introspection
-    def __str__(self):
-        sb = []
-        for key in self.__dict__:
-            sb.append("{key}='{value}'".format(key=key, value=self.__dict__[key]))
-
-        return ', '.join(sb)
-
-    def __repr__(self):
-        return self.__str__()
-
-class ChangeEvents(object):
-    """
-    Container encapsulating a change/s in the state of self.staging_tree vs
-    self.prod_tree
-
-    Class variables
-    ---------------
-    new : set containing the paths that are new in staging vs prod ctree files
-    withdrawn : set containing the paths that are removed in staging vs prod ctree files
-    moved : containing the file paths (and not the file content) that have
-            been modified. This category will contain a dict with the
-            following format:
-            { 'new_path' : 'old_path'}
-    replacement : containing the paths for which the file contents have changed, even
-                  if the path stays the same. This category will contain a dict with the
-                  following format:
-                  { 'path' : tuple ('new_md5', 'old_md5')}
-    datetime : datetime object
-               When this object has been created
-    """
-    def __init__(self, new, withdrawn, moved, replacement):
-
-        ct_logger.debug('Creating ChangeEvents object')
-
-        self.new = new
-        self.withdrawn = withdrawn
-        self.moved = moved
-        self.replacement = replacement
-        self.dtime = datetime.now()
-
-    def print_chlog_details(self, odir):
-        """
-        Function to generate the changelog_details files
-        These filenames contain the information on the changes between staging and prod
-        ctree files
-
-        Parameters
-        ----------
-        odir : directory name for placing the changelog_details files
-
-        returns
-        -------
-        list : list with the file paths of the new
-               changelog_details_* files
-        """
-        now_str = self.dtime.strftime('%Y%m%d')
-
-        ofiles_lst = []
-        if len(self.new) > 0:
-            ofile_new = open("{0}/changelog_details_{1}_new".format(odir, now_str), 'w')
-            for i in self.new:
-                ofile_new.write(i + "\n")
-            ofile_new.close()
-            ofiles_lst.append(ofile_new.name)
-        elif len(self.withdrawn) > 0:
-            ofile_with = open("{0}/changelog_details_{1}_withdrawn".format(odir, now_str), 'w')
-            for i in self.withdrawn:
-                ofile_with.write(i + "\n")
-            ofile_with.close()
-            ofiles_lst.append(ofile_with.name)
-        elif len(self.moved) > 0:
-            ofile_moved = open("{0}/changelog_details_{1}_moved".format(odir, now_str), 'w')
-            for f in self.moved.keys():
-                ofile_moved.write("{0}\t{1}\n".format(self.moved[f], f))
-            ofile_moved.close()
-            ofiles_lst.append(ofile_moved.name)
-        elif len(self.replacement) > 0:
-            ofile_replc = open("{0}/changelog_details_{1}_replacement".format(odir, now_str), 'w')
-            for f in self.replacement.keys():
-                ofile_replc.write(f + "\n")
-            ofile_replc.close()
-            ofiles_lst.append(ofile_replc.name)
-
-        return ofiles_lst
-
-    def print_changelog(self, ifile):
-        """
-        Function that adds an entry to the CHANGELOG report
-        file
-
-        Parameters
-        ----------
-        ifile : path to CHANGELOG file
-        """
-        now_str = self.dtime.strftime('%Y-%m-%d')
-        now_str1 = self.dtime.strftime('%Y%m%d')
-        try:
-            f = open(ifile, 'a')
-            f.write(now_str+"\n\n")
-            for state, value in self.__dict__.items():
-                size = 0
-                if type(value) is set:
-                    size = len(value)
-                elif type(value) is dict:
-                    size = len(value.keys())
-                if size == 0: continue
-                types = []
-                for p in value:
-                    # create File object to get its type
-                    fObj = File(name=p)
-                    types.append(fObj.guess_type())
-                f.write("Modification to: {0}\n\n".format(",".join(types)))
-                f.write("Details can be found in\nchangelog_details/changelog_details_{0}_{1}\n\n".format(now_str1, state))
-        except FileNotFoundError:
-            print('File does not exist')
-        finally:
-            f.close()
 
     # object introspection
     def __str__(self):

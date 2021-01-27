@@ -5,6 +5,8 @@ import glob
 import pdb
 import re
 
+from igsr_archive.config import CONFIG
+
 logging.basicConfig(level=logging.DEBUG)
 
 @pytest.fixture
@@ -13,62 +15,47 @@ def clean_tmp():
     log = logging.getLogger('clean_tmp')
     log.debug('Cleaning tmp files')
 
-    files = glob.glob(os.getenv('DATADIR')+'/changelog_details_*')
+    files = glob.glob(os.getenv('DATADIR')+'/ctree/changelog_details_*')
     for f in files:
         os.remove(f)
 
     # delete CHANGELOG file
-    files1 = glob.glob(os.getenv('DATADIR')+'/CHANGELOG')
+    files1 = glob.glob(os.getenv('DATADIR')+'/ctree/MOCK_CHANGELOG*')
     for f in files1:
         os.remove(f)
 
-@pytest.fixture
-def chObject_new(ct_obj, db_dict):
+@pytest.fixture(scope="function")
+def dearchive_file(db_obj, conn_api) :
     """
-    Fixture returning a ChangeEvents object
-    with a new path
+    Fixture to dearchive files from FIRE
     """
-    ct_obj.prod_tree = os.getenv('DATADIR') + "/current.minus1.tree"
-    file_dict = ct_obj.get_file_dict()
-    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+    pathList = []
+    yield pathList
+    print('\n[teardown] dearchive_file finalizer, dearchiving from FIRE')
+    for path in pathList:
+        # dearchive from FIRE
+        fire_o = conn_api.fetch_object(firePath=path)
+        conn_api.delete_object(fireOid=fire_o.fireOid,
+                               dry=False)
 
-    return chObject
+        print(f"[teardown] dearchive_file finalizer, deleting object with firePath: {path}")
 
-@pytest.fixture
-def chObject_withdrawn(ct_obj, db_dict):
+@pytest.fixture(scope="function")
+def del_from_db(db_obj) :
     """
-    Fixture returning a ChangeEvents object
-    with a withdrawn path
+    Fixture to delete file/s from the DB
     """
-    ct_obj.prod_tree = os.getenv('DATADIR') + "/current.plus1.tree"
-    file_dict = ct_obj.get_file_dict()
-    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+    fileList = []
+    yield fileList
+    print('\n[teardown] del_from_db finalizer, deleting from DB')
+    for path in fileList:
+        basename = os.path.basename(path)
+        fObj = db_obj.fetch_file(basename=basename)
+        # delete from DB
+        db_obj.delete_file(fObj,
+                           dry=False)
+    print(f"[teardown] del_from_db finalizer, deleting object with path: {path}")
 
-    return chObject
-
-@pytest.fixture
-def chObject_moved(ct_obj, db_dict):
-    """
-    Fixture returning a ChangeEvents object
-    with a moved path
-    """
-    ct_obj.prod_tree = os.getenv('DATADIR') + "/current.moved.tree"
-    file_dict = ct_obj.get_file_dict()
-    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
-
-    return chObject
-
-@pytest.fixture
-def chObject_replacement(ct_obj, db_dict):
-    """
-    Fixture returning a ChangeEvents object
-    with a replacement path
-    """
-    ct_obj.prod_tree = os.getenv('DATADIR') + "/current.mod.tree"
-    file_dict = ct_obj.get_file_dict()
-    chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
-
-    return chObject
 
 def test_print_chlog_details_new(chObject_new, clean_tmp):
     log = logging.getLogger('test_print_chlog_details_new')
@@ -201,3 +188,35 @@ def test_print_changelog_replacement(chObject_replacement, clean_tmp):
 
     chglog_f = os.getenv('DATADIR') + "/CHANGELOG"
     chObject_replacement.print_changelog(ifile=chglog_f)
+
+def test_update_CHANGELOG(chObject_new, load_changelog_file,
+                          push_changelog_file, db_obj, conn_api,
+                          dearchive_file, del_from_db, clean_tmp):
+    log = logging.getLogger('test_update_CHANGELOG')
+    log.debug('Testing the \'update_CHANGELOG\' function')
+
+    CONFIG.set('ctree','backup',os.getenv('DATADIR')+"/ctree/")
+    CONFIG.set('ctree', 'chlog_fpath','/ctree/MOCK_CHANGELOG')
+
+    chObject_new.print_changelog(ifile=load_changelog_file.name)
+    chObject_new.update_CHANGELOG(load_changelog_file, db=db_obj,
+                                  api=conn_api)
+
+    del_from_db.append(load_changelog_file.name)
+    dearchive_file.append(push_changelog_file)
+
+def test_push_chlog_details(chObject_new, del_from_db, dearchive_file,
+                            db_obj, conn_api):
+    log = logging.getLogger('test_push_chlog_details')
+    log.debug('Testing the \'push_chlog_details\' function')
+
+    ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR'))
+
+    chObject_new.push_chlog_details(pathlist=ofiles,db=db_obj,
+                                    api=conn_api)
+
+    for path in ofiles:
+        del_from_db.append(path)
+        fire_path = f"{CONFIG.get('ctree','chlog_details_dir')}/{os.path.basename(path)}"
+        dearchive_file.append(path)
+

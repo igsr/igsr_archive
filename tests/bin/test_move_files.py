@@ -29,7 +29,7 @@ def modify_settings(request):
     return 'settings_m.ini'
 
 @pytest.fixture
-def delete_arch_file(modify_settings, conn_db, conn_api):
+def delete_arch_file(modify_settings, db_obj, conn_api):
     """
     Fixture to delete the moved test file/s
     from DB and to dearchive it from FIRE
@@ -42,9 +42,9 @@ def delete_arch_file(modify_settings, conn_db, conn_api):
 
     for path in fileList:
         basename = os.path.basename(path)
-        fObj = conn_db.fetch_file(basename=basename)
+        fObj = db_obj.fetch_file(basename=basename)
         # delete from DB
-        conn_db.delete_file(fObj,
+        db_obj.delete_file(fObj,
                             dry=False)
         # dearchive from FIRE
         fire_path =  re.sub(CONFIG.get('ftp', 'ftp_mount') + "/", '', path)

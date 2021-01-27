@@ -4,7 +4,7 @@ import pdb
 import subprocess
 
 @pytest.fixture
-def delete_file(conn_db):
+def delete_file(db_obj):
     """
     Fixture to delete a file from the RESEQTRACK DB
     It will also delete the file
@@ -14,8 +14,8 @@ def delete_file(conn_db):
     print('\n[teardown] delete_file finalizer, deleting file from db')
 
     for path in fileList:
-        fObj = conn_db.fetch_file(path=path)
-        conn_db.delete_file(fObj,
+        fObj = db_obj.fetch_file(path=path)
+        db_obj.delete_file(fObj,
                        dry=False)
         print(f"[teardown] delete_file finalizer, deleting {path}")
         os.remove(path)
@@ -47,7 +47,7 @@ def test_single_file(rand_file, delete_file):
     print('Load a single file using -f and --dry False options. DONE...')
     assert ret.returncode == 0
 
-def test_single_file_w_type(conn_db, rand_file, delete_file):
+def test_single_file_w_type(db_obj, rand_file, delete_file):
 
     print('Load a single file using -f, --type TEST_TYPE and --dry False options')
 
@@ -73,7 +73,7 @@ def test_single_file_w_type(conn_db, rand_file, delete_file):
 
     print('Load a single file using -f, --type TEST_TYPE and --dry False options. DONE...')
     print('Checking that stored file has the right file type=TEST_TYPE')
-    fetched_F = conn_db.fetch_file(path=rand_file.name)
+    fetched_F = db_obj.fetch_file(path=rand_file.name)
     assert fetched_F.type == 'TEST_TYPE'
     print('Checking that stored file has the right file type=TEST_TYPE. DONE...')
 

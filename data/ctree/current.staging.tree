@@ -1,0 +1,11 @@
+name	type	size	updated	md5
+ftp/historical_data/former_toplevel/README.ftp_structure	file	8408	2015-09-17 16:15:09	2a59a3feb2540c113e10877f3ef1efe5	
+ftp/CHANGELOG	file	298530	2020-12-09 11:16:09	bffb27eeac035b72c5a472b0fc7fde74	
+ftp/pilot_data/README.bas	file	2970	2010-02-24 10:35:46	fa808f1eea6b53e65b1ae3c0931023f8	
+/nfs/1000g-work/G1K/archive_staging/ftp/current.tree	file	115513189	2020-12-09 14:58:10	83c60f0266fac94f39385f0076435c1e	
+ftp/pilot_data/README.alignment.index	file	1516	2010-02-24 10:35:46	a374bad4b04ad8403b9a7f30f1aaca5f	
+ftp/pilot_data/README.sequence.index	file	1694	2010-02-24 10:35:46	e4bb73d119189e15e0d636722b276bd2	
+ftp/historical_data/former_toplevel/README.pilot_data	file	2082	2015-09-17 16:15:07	977fe3983de2131f9e28f6f0036b31d9	
+ftp/release/2009_08/SV/README_Trio-CEU_20090622_v2.txt	file	6522	2009-11-30 10:51:10	36c71cab3a3704a4d82e80254d4bbf9c	
+ftp/release/2009_08/SV/dels_Trio-CEU_20090616.txt	file	354370	2009-11-30 10:51:10	807085056b5e760af20adb8a7f4f1b8d	
+ftp/release/2009_02/release_2009_02.index	file	1487	2009-11-30 10:51:10	7b94db31f7063f185071e21ba5242ae0	

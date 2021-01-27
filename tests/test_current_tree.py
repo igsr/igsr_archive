@@ -1,9 +1,10 @@
 import pytest
 import logging
 import os
-import glob
 import pdb
-import re
+
+from igsr_archive.current_tree import CurrentTree
+from igsr_archive.file import File
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -76,3 +77,44 @@ def test_cmp_dicts_moved(ct_obj, db_dict):
     expected = {'ftp/pilot_data/README.alignment.index': 'ftp/pilot_data1/README.alignment.index'}
 
     assert changeObj.moved == expected
+
+def test_run_nochges(db_obj):
+    log = logging.getLogger('test_run_nochges')
+
+    log.debug('Testing \'run\' function when there are no changes/alteration between '
+              'the CurrentTree.prod_tree and CurrentTree.staging_tree')
+
+    ctree = CurrentTree(db=db_obj,
+                        staging_tree=os.getenv('DATADIR') + "/current.staging.tree",
+                        prod_tree=os.getenv('DATADIR') + "/current.prod.tree")
+
+    exit_code = ctree.run()
+    assert 0 == exit_code
+
+def test_update_CHANGELOG(db_obj, conn_api, load_changelog_file, push_changelog_file,
+                          chObject_new):
+    log = logging.getLogger('test_update_CHANGELOG')
+
+    log.debug('Testing \'update_CHANGELOG\' function')
+    bname = os.path.basename(load_changelog_file)
+
+    chObject_new.print_changelog(ifile=load_changelog_file)
+
+
+def test_run_new(db_obj, conn_api, load_changelog_file, push_changelog_file):
+    log = logging.getLogger('test_run_new')
+
+    log.debug('Testing \'run\' function when there is an additional path in '
+              'CurrentTree.staging_tree with respect to CurrentTree.prod_tree')
+
+    ctree = CurrentTree(db=db_obj,
+                        api=conn_api,
+                        staging_tree=os.getenv('DATADIR') + "/current.staging.tree",
+                        prod_tree=os.getenv('DATADIR') + "/current.minus1.tree")
+    bname = os.path.basename(load_changelog_file)
+    exit_code = ctree.run(chlog_name=bname, chlog_fpath='ctree/MOCK_CHANGELOG')
+    assert 0
+
+
+
+
