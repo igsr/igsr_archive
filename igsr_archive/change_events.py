@@ -194,14 +194,14 @@ class ChangeEvents(object):
         api : API connection object
         """
         ce_logger.info("Pushing changelog_details_* files to the archive")
-
         for p in pathlist:
             basename= os.path.basename(p)
             fObj = File(name=p, type="CHANGELOG")
+            new_path = f"{CONFIG.get('ftp','ftp_mount')}{CONFIG.get('ctree','chlog_details_dir')}/{basename}"
             db.load_file(fObj, dry=False)
-            api.push_object(fObj, dry=False,
+            api.push_object(fObj, dry=False, publish=True,
                             fire_path=f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
-            print("h")
+            db.update_file('name', new_path, fObj.name, dry=False)
 
     # object introspection
     def __str__(self):

@@ -206,17 +206,19 @@ def test_update_CHANGELOG(chObject_new, load_changelog_file,
     dearchive_file.append(push_changelog_file)
 
 def test_push_chlog_details(chObject_new, del_from_db, dearchive_file,
-                            db_obj, conn_api):
+                            db_obj, conn_api, clean_tmp):
     log = logging.getLogger('test_push_chlog_details')
     log.debug('Testing the \'push_chlog_details\' function')
 
-    ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR'))
+    ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR')+"/ctree")
 
     chObject_new.push_chlog_details(pathlist=ofiles,db=db_obj,
                                     api=conn_api)
 
     for path in ofiles:
-        del_from_db.append(path)
+        basename = os.path.basename(path)
+        new_path = f"{CONFIG.get('ftp', 'ftp_mount')}{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}"
+        del_from_db.append(new_path)
         fire_path = f"{CONFIG.get('ctree','chlog_details_dir')}/{os.path.basename(path)}"
-        dearchive_file.append(path)
+        dearchive_file.append(fire_path)
 
