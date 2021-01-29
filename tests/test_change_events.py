@@ -24,39 +24,6 @@ def clean_tmp():
     for f in files1:
         os.remove(f)
 
-@pytest.fixture(scope="function")
-def dearchive_file(db_obj, conn_api) :
-    """
-    Fixture to dearchive files from FIRE
-    """
-    pathList = []
-    yield pathList
-    print('\n[teardown] dearchive_file finalizer, dearchiving from FIRE')
-    for path in pathList:
-        # dearchive from FIRE
-        fire_o = conn_api.fetch_object(firePath=path)
-        conn_api.delete_object(fireOid=fire_o.fireOid,
-                               dry=False)
-
-        print(f"[teardown] dearchive_file finalizer, deleting object with firePath: {path}")
-
-@pytest.fixture(scope="function")
-def del_from_db(db_obj) :
-    """
-    Fixture to delete file/s from the DB
-    """
-    fileList = []
-    yield fileList
-    print('\n[teardown] del_from_db finalizer, deleting from DB')
-    for path in fileList:
-        basename = os.path.basename(path)
-        fObj = db_obj.fetch_file(basename=basename)
-        # delete from DB
-        db_obj.delete_file(fObj,
-                           dry=False)
-    print(f"[teardown] del_from_db finalizer, deleting object with path: {path}")
-
-
 def test_print_chlog_details_new(chObject_new, clean_tmp):
     log = logging.getLogger('test_print_chlog_details_new')
 

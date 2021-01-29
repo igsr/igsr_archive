@@ -8,6 +8,7 @@ from igsr_archive.file import File
 from igsr_archive.db import DB
 from igsr_archive.api import API
 from igsr_archive.current_tree import CurrentTree
+from igsr_archive.config import CONFIG
 
 def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
@@ -194,6 +195,10 @@ def chObject_replacement(ct_obj, db_dict):
 def changelog_file():
     """
     Fixture to generate a mock CHANGELOG File object
+
+    Returns
+    -------
+    File object
     """
     print('Running fixture to generate a mock CHANGELOG File object')
 
@@ -223,6 +228,20 @@ def load_changelog_file(db_obj, changelog_file):
     return changelog_file
 
 @pytest.fixture(scope="function")
+def load_staging_tree(db_obj):
+    """
+    Fixture to load a MOCK current.tree file to DB
+    """
+    mock_fpath = os.getenv('DATADIR') + "ctree/current.staging.tree"
+    fObj = File(
+        name=mock_fpath,
+        type="MOCK_CURRENT_TREE")
+
+    db_obj.load_file(fObj, dry=False)
+
+    return fObj
+
+@pytest.fixture(scope="function")
 def push_changelog_file(conn_api, changelog_file):
     """
     Fixture to push to the FIRE archive a mock CHANGELOG to be used with the CurrentTree.run function
@@ -236,3 +255,57 @@ def push_changelog_file(conn_api, changelog_file):
                          dry=False)
 
     return "ctree/MOCK_CHANGELOG"
+
+@pytest.fixture(scope="function")
+def push_prod_tree(conn_api):
+    """
+    Fixture to push a mock production current.tree to the FIRE archive
+
+    Returns
+    -------
+    FIRE path of the object that has been pushed
+    """
+    mock_fpath = os.getenv('DATADIR') + "ctree/current.minus1.tree"
+    basename = os.path.basename(mock_fpath)
+
+    fObj = File(
+        name=mock_fpath,
+        type="MOCK_CURRENT_TREE")
+
+    fire_path = f"{CONFIG.get('ctree','ctree_fpath')}/{basename}"
+    conn_api.push_object(fileO=fObj,
+                         fire_path=fire_path,
+                         dry=False)
+    return fire_path
+
+@pytest.fixture(scope="function")
+def del_from_db(db_obj) :
+    """
+    Fixture to delete file/s from the DB
+    """
+    fileList = []
+    yield fileList
+    print('\n[teardown] del_from_db finalizer, deleting from DB')
+    for path in fileList:
+        basename = os.path.basename(path)
+        fObj = db_obj.fetch_file(basename=basename)
+        # delete from DB
+        db_obj.delete_file(fObj,
+                           dry=False)
+    print(f"[teardown] del_from_db finalizer, deleting object with path: {path}")
+
+@pytest.fixture(scope="function")
+def dearchive_file(db_obj, conn_api) :
+    """
+    Fixture to dearchive files from FIRE
+    """
+    pathList = []
+    yield pathList
+    print('\n[teardown] dearchive_file finalizer, dearchiving from FIRE')
+    for path in pathList:
+        # dearchive from FIRE
+        fire_o = conn_api.fetch_object(firePath=path)
+        conn_api.delete_object(fireOid=fire_o.fireOid,
+                               dry=False)
+
+        print(f"[teardown] dearchive_file finalizer, deleting object with firePath: {path}")

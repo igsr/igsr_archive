@@ -152,6 +152,10 @@ class ChangeEvents(object):
                 updated CHANGELOG file that will be pushed to FIRE
         db : DB connection object
         api : API connection object
+
+        Returns
+        -------
+        path : Fire path of the updated CHANGELOG files
         """
         # update the CHANGELOG metadata in the DB
         chlog.md5 = chlog.calc_md5()
@@ -177,6 +181,8 @@ class ChangeEvents(object):
         ce_logger.info("Push updated CHANGELOG file to the archive")
         api.push_object(chlog, dry=False, fire_path=CONFIG.get('ctree','chlog_fpath'))
 
+        return f"{CONFIG.get('ctree','chlog_fpath')}"
+
     def push_chlog_details(self, pathlist, db, api):
         """
         Function to push the change changelog_details_* files to the archive.
@@ -192,8 +198,14 @@ class ChangeEvents(object):
                    (resulting from running self.print_chlog_details)
         db : DB connection object
         api : API connection object
+
+        Returns
+        -------
+        list : list with the Fire paths of the pushed changelog_details_*
         """
         ce_logger.info("Pushing changelog_details_* files to the archive")
+
+        pushed_files = []
         for p in pathlist:
             basename= os.path.basename(p)
             fObj = File(name=p, type="CHANGELOG")
@@ -201,7 +213,12 @@ class ChangeEvents(object):
             db.load_file(fObj, dry=False)
             api.push_object(fObj, dry=False, publish=True,
                             fire_path=f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
+            pushed_files.append(f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
             db.update_file('name', new_path, fObj.name, dry=False)
+
+        return pushed_files
+
+
 
     # object introspection
     def __str__(self):

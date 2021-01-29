@@ -3,6 +3,8 @@ import pdb
 import os
 
 from igsr_archive.change_events import ChangeEvents
+from igsr_archive.file import File
+from igsr_archive.config import CONFIG
 
 # create logger
 ct_logger = logging.getLogger(__name__)
@@ -35,22 +37,25 @@ class CurrentTree(object):
         self.prod_tree = prod_tree
         self.staging_tree = staging_tree
 
-    def run(self, chlog_fpath, chlog_name='CHANGELOG'):
+    def run(self, chlog_fobj):
         """
         Function to perform all operations involved in the comparison
         between the current.tree in the DB and the current.tree in the FTP
 
         Parameters
         ----------
-        chlog_fpath: string
-                     Fire path for CHANGELOG file (i.e. ). Required
-        chlog_name: string
-                    Basename for the file used to add the new CHANGELOG entry
-                    Default: CHANGELOG
-
+        chlog_fobj: File
+                    File object for CHANGELOG file. Required
         Returns
         -------
-        0 if run was successful, 1 otherwise
+        If there is a ChangeEvents with entries in it then it will generate a dict
+        with the following format:
+
+         {'chlog_details' : chlog_details_list,
+         'chlog_firepath' : chlog_firepath,
+         'ctree_firepath' : ctree_firepath}
+
+        If the ChangeEvents object has size = 0 then it will return 0
         """
         wd = os.path.dirname(self.staging_tree)
 
@@ -64,15 +69,60 @@ class CurrentTree(object):
             os.remove(self.staging_tree)
             return 0
         else:
-            pdb.set_trace()
             ct_logger.info("Changes detected in the data structures. Proceeding...")
-            ct_logger.info("Generating chlog_details_* files")
             ofiles = chgEvents.print_chlog_details(odir=wd)
-            ct_logger.info("Fetching CHANGELOG file from archive")
-            chlog_obj = self.db.fetch_file(basename=chlog_name)
-            ct_logger.info("Updating CHANGELOG file in the DB")
-            chgEvents.print_changelog(ifile=chlog_obj.name)
-            print("h")
+            chlog_details_list = chgEvents.push_chlog_details(pathlist=ofiles, db=self.db, api=self.api)
+            chgEvents.print_changelog(ifile=chlog_fobj.name)
+            chlog_firepath = chgEvents.update_CHANGELOG(chlog_fobj, db=self.db, api=self.api)
+            ctree_firepath= self.push_ctree()
+            return {
+                'chlog_details' : chlog_details_list,
+                'chlog_firepath' : chlog_firepath,
+                'ctree_firepath' : ctree_firepath
+            }
+
+    def push_ctree(self):
+        """
+        Function to push self.staging_tree to the archive.
+        This function will follow these steps:
+        1) Update the metadata for current.tree entry in the DB
+        2) Create a backup for self.prod_tree
+        3) Delete self.prod_tree
+        4) Push self.staging_tree to the archive
+
+        Returns
+        -------
+        path : Fire path of the pushed current.tree
+
+        """
+        # updating metadata for existing staging_tree file in the DB
+        staging_fobj = File(name=self.staging_tree)
+        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=False)
+        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=False)
+
+        # create a backup for self.prod_tree
+        basename = os.path.basename(self.prod_tree)
+        fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
+        prod_file = self.api.retrieve_object(firePath=fire_path,
+                                            outfile=f"{CONFIG.get('ctree', 'backup')}/{basename}.backup")
+
+        if prod_file is None:
+            raise Exception(f"No current.tree file retrieved from the archive")
+
+        # delete self.prod_tree from archive
+        fire_obj = self.api.fetch_object(firePath=fire_path)
+
+        if fire_obj is None:
+            raise Exception(f"No current.tree file retrieved from the archive")
+        self.api.delete_object(fireOid=fire_obj.fireOid, dry=False)
+
+        # push self.staging_tree to archive
+        basename = os.path.basename(self.staging_tree)
+        fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
+        self.api.push_object(fileO=staging_fobj,
+                             fire_path=fire_path,
+                             dry=False)
+        return fire_path
 
     def get_file_dict(self):
         """

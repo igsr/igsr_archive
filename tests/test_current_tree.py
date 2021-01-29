@@ -1,12 +1,31 @@
 import pytest
 import logging
 import os
+import glob
 import pdb
 
 from igsr_archive.current_tree import CurrentTree
-from igsr_archive.file import File
+from igsr_archive.config import CONFIG
 
 logging.basicConfig(level=logging.DEBUG)
+
+@pytest.fixture
+def clean_tmp():
+    yield
+    log = logging.getLogger('clean_tmp')
+    log.debug('Cleaning tmp files')
+
+    files = glob.glob(os.getenv('DATADIR')+'/ctree/*.backup')
+    for f in files:
+        os.remove(f)
+
+    files1 = glob.glob(os.getenv('DATADIR') + '/ctree/changelog_details_*')
+    for f in files1:
+        os.remove(f)
+
+    files2 = glob.glob(os.getenv('DATADIR') + '/ctree/MOCK_CHANGELOG*')
+    for f in files2:
+        os.remove(f)
 
 def test_get_file_dict(ct_obj):
     log = logging.getLogger('test_get_file_dict')
@@ -85,23 +104,15 @@ def test_run_nochges(db_obj):
               'the CurrentTree.prod_tree and CurrentTree.staging_tree')
 
     ctree = CurrentTree(db=db_obj,
-                        staging_tree=os.getenv('DATADIR') + "/current.staging.tree",
-                        prod_tree=os.getenv('DATADIR') + "/current.prod.tree")
+                        staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
+                        prod_tree=os.getenv('DATADIR') + "/ctree/current.prod.tree")
 
     exit_code = ctree.run()
     assert 0 == exit_code
 
-def test_update_CHANGELOG(db_obj, conn_api, load_changelog_file, push_changelog_file,
-                          chObject_new):
-    log = logging.getLogger('test_update_CHANGELOG')
-
-    log.debug('Testing \'update_CHANGELOG\' function')
-    bname = os.path.basename(load_changelog_file)
-
-    chObject_new.print_changelog(ifile=load_changelog_file)
-
-
-def test_run_new(db_obj, conn_api, load_changelog_file, push_changelog_file):
+def test_run_new(db_obj, conn_api, load_changelog_file,
+                 push_changelog_file, push_prod_tree,
+                 del_from_db, dearchive_file, clean_tmp):
     log = logging.getLogger('test_run_new')
 
     log.debug('Testing \'run\' function when there is an additional path in '
@@ -109,12 +120,44 @@ def test_run_new(db_obj, conn_api, load_changelog_file, push_changelog_file):
 
     ctree = CurrentTree(db=db_obj,
                         api=conn_api,
-                        staging_tree=os.getenv('DATADIR') + "/current.staging.tree",
-                        prod_tree=os.getenv('DATADIR') + "/current.minus1.tree")
-    bname = os.path.basename(load_changelog_file)
-    exit_code = ctree.run(chlog_name=bname, chlog_fpath='ctree/MOCK_CHANGELOG')
-    assert 0
+                        staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
+                        prod_tree=os.getenv('DATADIR') + "/ctree/current.minus1.tree")
 
+    CONFIG.set('ctree', 'backup', os.getenv('DATADIR') + "/ctree/")
+    CONFIG.set('ctree', 'chlog_fpath','/ctree/MOCK_CHANGELOG')
+
+    pushed_dict = ctree.run(chlog_fobj=load_changelog_file)
+
+    for k in pushed_dict.keys():
+        if k == "chlog_details":
+            for p in pushed_dict[k]:
+                dearchive_file.append(p)
+        else:
+            dearchive_file.append(pushed_dict[k])
+
+    for p in pushed_dict['chlog_details']:
+        del_from_db.append(f"{CONFIG.get('ftp', 'ftp_mount')}/{p}")
+
+    del_from_db.append(load_changelog_file.name)
+
+
+def test_push_ctree(db_obj, conn_api, load_staging_tree, push_prod_tree,
+                    dearchive_file, del_from_db, clean_tmp):
+    log = logging.getLogger('test_push_ctree')
+
+    log.debug('Testing \'push_ctree\' function')
+
+    CONFIG.set('ctree', 'backup', os.getenv('DATADIR') + "/ctree/")
+
+    ctree = CurrentTree(db=db_obj,
+                        api=conn_api,
+                        staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
+                        prod_tree=os.getenv('DATADIR') + "/ctree/current.minus1.tree")
+
+    fire_path = ctree.push_ctree()
+
+    del_from_db.append(load_staging_tree.name)
+    dearchive_file.append(fire_path)
 
 
 
