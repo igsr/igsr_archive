@@ -29,7 +29,6 @@ def clean_tmp():
 
 def test_get_file_dict(ct_obj):
     log = logging.getLogger('test_get_file_dict')
-
     log.debug('Testing \'get_file_dict\' function')
 
     data_dict = ct_obj.get_file_dict()
@@ -38,7 +37,6 @@ def test_get_file_dict(ct_obj):
 
 def test_cmp_dicts_new(ct_obj, db_dict):
     log = logging.getLogger('test_cmp_dicts_new')
-
     log.debug('Testing \'cmp_dicts\' function in which staging current.tree '
               'contains an additional record')
 
@@ -50,14 +48,12 @@ def test_cmp_dicts_new(ct_obj, db_dict):
 
 def test_cmp_dicts_withdrawn(ct_obj, db_dict):
     log = logging.getLogger('test_cmp_dicts_withdrawn')
-
     log.debug('Testing \'cmp_dicts\' function in which staging current.tree '
               'contains 1 record less than in production current.tree')
 
     ct_obj.prod_tree = os.getenv('DATADIR')+"/current.plus1.tree"
 
     file_dict = ct_obj.get_file_dict()
-
     changeObj = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
 
     assert 'ftp/release/2009_02/release_02.index' == list(changeObj.withdrawn)[0]
@@ -140,9 +136,8 @@ def test_run_new(db_obj, conn_api, load_changelog_file,
 
     del_from_db.append(load_changelog_file.name)
 
-
 def test_push_ctree(db_obj, conn_api, load_staging_tree, push_prod_tree,
-                    dearchive_file, del_from_db, clean_tmp):
+                    dearchive_file, clean_tmp, del_from_db):
     log = logging.getLogger('test_push_ctree')
 
     log.debug('Testing \'push_ctree\' function')

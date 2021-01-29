@@ -108,8 +108,8 @@ def ct_obj(db_obj, conn_api):
     '''
     ct_obj = CurrentTree(db=db_obj,
                          api= conn_api,
-                         staging_tree=os.getenv('DATADIR')+"/current.new.tree",
-                         prod_tree=os.getenv('DATADIR')+"/current.same.tree")
+                         staging_tree=os.getenv('DATADIR')+"/ctree/current.new.tree",
+                         prod_tree=os.getenv('DATADIR')+"/ctree/current.same.tree")
     return ct_obj
 
 @pytest.fixture
@@ -278,6 +278,9 @@ def push_prod_tree(conn_api):
                          dry=False)
     return fire_path
 
+#
+# Teardown fixtures
+#
 @pytest.fixture(scope="function")
 def del_from_db(db_obj) :
     """

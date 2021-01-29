@@ -1,10 +1,12 @@
 import logging
 import pdb
 import os
+import datetime
 
 from igsr_archive.change_events import ChangeEvents
 from igsr_archive.file import File
 from igsr_archive.config import CONFIG
+from datetime import datetime
 
 # create logger
 ct_logger = logging.getLogger(__name__)
@@ -26,7 +28,8 @@ class CurrentTree(object):
                   Path to the 'staging tree' file. This is the tree that will
                   be the query in the comparison, i.e. New tree generated from
                   the Reseqtrack DB that is located in the 'staging area'. Required
-
+    dtime: str
+              Str with the datetime this object was instantiated
     """
     def __init__(self, db, api, prod_tree, staging_tree):
 
@@ -36,6 +39,7 @@ class CurrentTree(object):
         self.api = api
         self.prod_tree = prod_tree
         self.staging_tree = staging_tree
+        self.dtime = datetime.now().strftime('%Y_%m_%dT%H%M%S')
 
     def run(self, chlog_fobj):
         """
@@ -104,7 +108,8 @@ class CurrentTree(object):
         basename = os.path.basename(self.prod_tree)
         fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
         prod_file = self.api.retrieve_object(firePath=fire_path,
-                                            outfile=f"{CONFIG.get('ctree', 'backup')}/{basename}.backup")
+                                            outfile=f"{CONFIG.get('ctree', 'backup')}/{basename}."
+                                                    f"{self.dtime}.backup")
 
         if prod_file is None:
             raise Exception(f"No current.tree file retrieved from the archive")

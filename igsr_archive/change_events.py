@@ -26,8 +26,8 @@ class ChangeEvents(object):
                   if the path stays the same. This category will contain a dict with the
                   following format:
                   { 'path' : tuple ('new_md5', 'old_md5')}
-    datetime : datetime object
-               When this object has been created
+    dtime: str
+              Str with the datetime this object was instantiated
     """
     def __init__(self, new, withdrawn, moved, replacement):
 
@@ -157,6 +157,7 @@ class ChangeEvents(object):
         -------
         path : Fire path of the updated CHANGELOG files
         """
+        dtstr = self.dtime.now().strftime('%Y_%m_%dT%H%M%S')
         # update the CHANGELOG metadata in the DB
         chlog.md5 = chlog.calc_md5()
         chlog.size = os.path.getsize(chlog.name)
@@ -166,7 +167,8 @@ class ChangeEvents(object):
         ce_logger.info("Pushing updated CHANGELOG file to API")
         # to push the updated CHANGELOG you need to delete it from FIRE first
         old_file = api.retrieve_object(firePath=CONFIG.get('ctree','chlog_fpath'),
-                                       outfile=f"{CONFIG.get('ctree','backup')}/{os.path.basename(chlog.name)}.backup")
+                                       outfile=f"{CONFIG.get('ctree','backup')}/{os.path.basename(chlog.name)}."
+                                               f"{dtstr}.backup")
         if old_file is None:
             raise Exception(f"No CHANGELOG file retrieved from the archive")
 
@@ -217,8 +219,6 @@ class ChangeEvents(object):
             db.update_file('name', new_path, fObj.name, dry=False)
 
         return pushed_files
-
-
 
     # object introspection
     def __str__(self):
