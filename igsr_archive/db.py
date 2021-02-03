@@ -176,22 +176,16 @@ class DB(object):
         file.file.File object retrieved from DB
         None if no file was retrieved
         """
-
         cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-
         if path is not None:
             db_logger.debug(f"Fetching file with path: {path}")
-
             abs_path = os.path.abspath(path)
-
             query = "SELECT * FROM file WHERE name = %s"
             cursor.execute(query, [abs_path])
-
         elif basename is not None:
             db_logger.debug(f"Fetching file with basename: {basename}")
             query = "SELECT * FROM file WHERE name like %s"
             cursor.execute(query, ['%' + basename])
-
         try:
             result_set = cursor.fetchall()
             if not result_set:

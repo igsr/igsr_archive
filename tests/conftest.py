@@ -3,6 +3,7 @@ import string
 import pytest
 import os
 import pdb
+import pickle
 
 from igsr_archive.file import File
 from igsr_archive.db import DB
@@ -113,15 +114,15 @@ def ct_obj(db_obj, conn_api):
     return ct_obj
 
 @pytest.fixture
-def db_dict(db_obj):
+def db_dict():
     '''
-    Returns a dict from the records in DB
+    Returns a dict from a serialized object containing 10 records extracted from the DB
     '''
-    fields = ['name', 'size', 'updated', 'md5']
-    # limit the number of records to 10
-    ctree_path, data_dict = db_obj.get_ctree(fields, outfile=os.getenv('DATADIR') + "/current.new.tree", limit=10)
 
-    return data_dict
+    pickle_in = open(os.getenv('DATADIR')+"/ctree/db_dict.pickle", "rb")
+    db_dict = pickle.load(pickle_in)
+
+    return db_dict
 
 @pytest.fixture
 def db_obj():

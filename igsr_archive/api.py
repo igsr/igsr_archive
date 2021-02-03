@@ -129,13 +129,11 @@ class API(object):
         """
 
         if fireOid is not None:
-
             api_logger.debug('Fetching FIRE object\'s metadata through its FIRE object id')
 
             url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
                   f"{fireOid}"
         elif firePath is not None:
-
             api_logger.debug('Fetching FIRE object\'s metadata through its FIRE path')
 
             url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/path/" \
@@ -303,7 +301,6 @@ class API(object):
         ------
         HTTPError
         """
-
         fireObj = None
         if fireOid is not None:
             api_logger.info(f"fireOid provided. Fetching FIRE object that will be modified")

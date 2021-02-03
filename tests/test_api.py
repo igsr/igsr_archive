@@ -3,7 +3,9 @@ import logging
 import os
 import glob
 import pdb
+import responses
 
+from igsr_archive.object import fObject
 from igsr_archive.api import API
 from igsr_archive.file import File
 
@@ -43,6 +45,22 @@ def loaded_obj():
     return fobject
 
 @pytest.fixture
+def mock_fireobj():
+    """
+    Object mimicking a file archived in FIRE
+    """
+
+    f_obj = fObject(objectId=61903465,
+                    fireOid='06cb664f1b844809b09a93cb18fcfc6b',
+                    objectMd5='369ccfaf31586363bd645d48b72c09c4',
+                    objectSize='7',
+                    createTime='2021-02-02 11:53:01',
+                    path='/test_dir/test.txt',
+                    published='False')
+
+    return f_obj
+
+@pytest.fixture
 def del_obj():
 
     fireOids = []
@@ -79,48 +97,80 @@ def test_retrieve_object_by_fpath(loaded_obj, del_obj, clean_tmp):
 
     assert outfile == os.getenv('DATADIR')+"/out/test.txt"
 
-def test_fetch_object_by_foi(loaded_obj, del_obj):
+@responses.activate
+def test_fetch_object_by_foi(mock_fireobj):
     log = logging.getLogger('test_fetch_object_by_foi')
 
     log.debug('Fetching metadata for a particular FIRE object by its fireOid')
-    fobject = api.fetch_object(fireOid=loaded_obj.fireOid)
 
-    del_obj.append(loaded_obj.fireOid)
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b',
+                  json= {'objectId': 61903465,
+                         'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                         'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                         'objectSize': 7,
+                         'createTime': '2021-02-02 11:53:01',
+                         'metadata': [],
+                         'filesystemEntry': None},
+                  status=200)
 
-    assert fobject.fireOid == loaded_obj.fireOid
-    assert fobject.objectId == loaded_obj.objectId
+    ret_fobject = api.fetch_object(fireOid=mock_fireobj.fireOid)
 
-def test_fetch_object_by_fpath(loaded_obj, del_obj):
+    assert mock_fireobj.fireOid == ret_fobject.fireOid
+    assert mock_fireobj.objectId == ret_fobject.objectId
+
+@responses.activate
+def test_fetch_object_by_fpath(mock_fireobj):
     log = logging.getLogger('test_fetch_object_by_fpath')
 
     log.debug('Fetching metadata for a particular FIRE object by its firePath')
 
-    fobject = api.fetch_object(firePath='test_dir/test.txt')
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/path/test_dir/test.txt',
+                  json= {'objectId': 61903465,
+                         'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                         'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                         'objectSize': 7,
+                         'createTime': '2021-02-02 11:53:01',
+                         'metadata': [],
+                         'filesystemEntry': {'path': '/test_dir/test.txt',
+                                             'published': False}}, status=200)
 
-    del_obj.append(loaded_obj.fireOid)
+    ret_fobject = api.fetch_object(firePath='test_dir/test.txt')
 
-    assert fobject.objectMd5 == '369ccfaf31586363bd645d48b72c09c4'
-    assert fobject.objectSize == 7
+    assert mock_fireobj.fireOid == ret_fobject.fireOid
+    assert mock_fireobj.objectId == ret_fobject.objectId
 
+@responses.activate
 def test_fetch_nonexistent_object_by_fpath():
     log = logging.getLogger('test_fetch_nonexistent_object_by_fpath')
 
     log.debug('Fetching metadata for a non-existent FIRE object')
 
-    fobject = api.fetch_object(firePath='test_dir/mockfile.txt')
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/path/test_dir/mockfile.txt',
+                  json={'statusCode': 404,
+                        'statusMessage': 'Not Found',
+                        'httpMethod': 'GET',
+                        'detail': 'No archived object found which has a Fire path of `/test_dir/mockfile.txt`'},
+                  status=404)
 
-    assert fobject == None
+    ret_fobject = api.fetch_object(firePath='test_dir/mockfile.txt')
 
-def test_delete_object_by_foi(loaded_obj):
+    assert ret_fobject == None
+
+@responses.activate
+def test_delete_object_by_foi(mock_fireobj):
     """
     This test will fail if an Exception is raised
     """
     log = logging.getLogger('test_delete_object_by_foi')
 
+    responses.add(responses.DELETE, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b',
+                  json={},
+                  status=204)
+
     log.debug('Deleting a FIRE object using its fireOid')
 
     # now, you can delete it by its fireOid
-    api.delete_object(fireOid=loaded_obj.fireOid, dry=False)
+    api.delete_object(fireOid=mock_fireobj.fireOid, dry=False)
 
 def test_push_object(del_obj):
     """
@@ -182,7 +232,8 @@ def test_push_comp_object_w_fpath(del_obj):
 
     del_obj.append(fobj.fireOid)
 
-def test_update_object_w_fpath(loaded_obj, del_obj):
+@responses.activate
+def test_update_object_w_fpath(mock_fireobj):
     """
     This test will test the 'update_object' function
     to update the FIRE path of an archived object
@@ -193,17 +244,39 @@ def test_update_object_w_fpath(loaded_obj, del_obj):
     log.debug('Updating FIRE path of an archived'
               ' object')
 
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir/test.txt',
+                                            'published': False}},
+                  status=200)
+
+    responses.add(responses.PUT, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b/firePath',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir1/test.txt',
+                                            'published': False}},
+                  headers={'x-fire-path': 'test_dir1/test.txt'},
+                  status=200)
+
     updated_obj = api.update_object(attr_name='firePath',
                                     value='test_dir1/test.txt',
-                                    fireOid=loaded_obj.fireOid,
+                                    fireOid=mock_fireobj.fireOid,
                                     dry=False)
 
     # check that FIRE path has been modified
     assert updated_obj.path == "/test_dir1/test.txt"
 
-    del_obj.append(loaded_obj.fireOid)
-
-def test_update_object_publish1(loaded_obj, del_obj):
+@responses.activate
+def test_update_object_publish1(mock_fireobj):
     """
     This test will test the 'update_object' function
     to change publish status of an archived object
@@ -214,17 +287,39 @@ def test_update_object_publish1(loaded_obj, del_obj):
     log.debug('Updating FIRE object metadata. Publish will be set '
               'to True')
 
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir/test.txt',
+                                            'published': False}},
+                  status=200)
+
+    responses.add(responses.PUT,
+                  'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b/publish',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir/test.txt',
+                                            'published': True}},
+                  status=200)
+
     updated_obj = api.update_object(attr_name='publish',
                                     value=True,
-                                    fireOid=loaded_obj.fireOid,
+                                    fireOid=mock_fireobj.fireOid,
                                     dry=False)
 
     # check that FIRE path has been modified
     assert updated_obj.published is True
 
-    del_obj.append(loaded_obj.fireOid)
-
-def test_update_object_publish2(loaded_obj, del_obj):
+@responses.activate
+def test_update_object_publish2(mock_fireobj):
     """
     This test will test the 'update_object' function
     to change publish status of an archived object
@@ -235,12 +330,32 @@ def test_update_object_publish2(loaded_obj, del_obj):
     log.debug('Updating FIRE object metadata. Publish will be set '
               'to False')
 
+    responses.add(responses.GET, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir/test.txt',
+                                            'published': False}},
+                  status=200)
+
+    responses.add(responses.DELETE, 'https://hx.fire.sdo.ebi.ac.uk/fire/v1.1/objects/06cb664f1b844809b09a93cb18fcfc6b/publish',
+                  json={'objectId': 61903465,
+                        'fireOid': '06cb664f1b844809b09a93cb18fcfc6b',
+                        'objectMd5': '369ccfaf31586363bd645d48b72c09c4',
+                        'objectSize': 7,
+                        'createTime': '2021-02-02 11:53:01',
+                        'metadata': [],
+                        'filesystemEntry': {'path': '/test_dir/test.txt',
+                                            'published': False}},
+                  status=200)
+
     updated_obj = api.update_object(attr_name='publish',
                                     value=False,
-                                    fireOid=loaded_obj.fireOid,
+                                    fireOid=mock_fireobj.fireOid,
                                     dry=False)
 
     # check that FIRE path has been modified
     assert updated_obj.published is False
-
-    del_obj.append(loaded_obj.fireOid)
