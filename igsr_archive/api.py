@@ -197,7 +197,7 @@ class API(object):
         """
         Function to push (upload) a file.file.File object
         to FIRE. This function currently uses 'curl'.
-        As the standars 'requests' module throws memory errors
+        As the standard 'requests' module throws memory errors
         when trying to upload large files
 
         Parameters

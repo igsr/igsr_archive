@@ -30,6 +30,8 @@ parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="2-co
                                                                            " the archived files in the FTP that are going"
                                                                            " to be moved and the final paths of the "
                                                                            "files in the FTP, one in each line")
+
+# DB and FIRE API connection params
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess "
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess the dbname"
