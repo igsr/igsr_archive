@@ -46,9 +46,6 @@ logger.info('Running script')
 
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = args.settings
-# Parse config file
-settingsO = ConfigParser()
-settingsO.read(args.settings)
 
 dbpwd = args.dbpwd
 if args.dbpwd is None:
