@@ -95,4 +95,4 @@ ctree = CurrentTree(db=db,
                     staging_tree=args.staging_tree,
                     prod_tree=args.prod_tree)
 
-pushed_dict = ctree.run(chlog_fobj=chglogFobj)
+pushed_dict = ctree.run(chlog_fobj=chglogFobj, limit=10)

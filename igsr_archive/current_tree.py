@@ -41,7 +41,7 @@ class CurrentTree(object):
         self.staging_tree = staging_tree
         self.dtime = datetime.now().strftime('%Y_%m_%dT%H%M%S')
 
-    def run(self, chlog_fobj):
+    def run(self, chlog_fobj, limit =None):
         """
         Function to perform all operations involved in the comparison
         between the current.tree in the DB and the current.tree in the FTP
@@ -50,6 +50,10 @@ class CurrentTree(object):
         ----------
         chlog_fobj: File
                     File object for CHANGELOG file. Required
+        limit: int
+               Limit the number of records to retrieve from DB.
+               Default: None
+              
         Returns
         -------
         If there is a ChangeEvents with entries in it then it will generate a dict
@@ -64,7 +68,7 @@ class CurrentTree(object):
         wd = os.path.dirname(self.staging_tree)
 
         fields = ['name', 'size', 'updated', 'md5']
-        db_dict = self.db.get_ctree(fields, outfile=self.staging_tree, limit=10)[1]
+        db_dict = self.db.get_ctree(fields, outfile=self.staging_tree, limit=limit)[1]
         file_dict = self.get_file_dict()
         chgEvents = self.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
         if chgEvents.size() == 0:
@@ -141,7 +145,7 @@ class CurrentTree(object):
         """
         fields = None
         header = False
-
+        pdb.set_trace()
         data_dict = {}  # dict {'path' : 'md5' }
         with open(self.prod_tree) as f:
             for line in f:
