@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-
 import argparse
 import os
 import re
 import logging
-from igsr_archive.utils import str2bool
-from igsr_archive.api import API
+
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='This script is the simplest way of deleting file/s from FIRE.'
@@ -35,17 +33,21 @@ logging.basicConfig(level=numeric_level)
 
 # Create logger
 logger = logging.getLogger(__name__)
-
 logger.info('Running script')
+
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.utils import str2bool
+from igsr_archive.api import API
 
 firepwd = args.firepwd
 if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
 
 assert firepwd, "$FIRE_PWD undefined"
-
-if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Parse config file
 settingsO = ConfigParser()

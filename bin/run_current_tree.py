@@ -4,8 +4,6 @@ import os
 import logging
 import pdb
 
-from configparser import ConfigParser
-
 parser = argparse.ArgumentParser(description='Script to generate a new current.tree from files in the RESEQTRACK DB')
 
 parser.add_argument('-s', '--settings', required=True,
@@ -30,7 +28,6 @@ args = parser.parse_args()
 
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
-
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 

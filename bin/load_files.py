@@ -1,15 +1,10 @@
 #!/usr/bin/env python
-
 import argparse
 import os
 import sys
 import logging
 import pdb
 import re
-from igsr_archive.utils import str2bool
-
-from igsr_archive.db import DB
-from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Load file/s in a Reseqtrack database')
 
@@ -50,8 +45,16 @@ logging.basicConfig(level=numeric_level)
 
 # Create logger
 logger = logging.getLogger(__name__)
-
 logger.info('Running script')
+
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.file import File
 
 pwd = args.pwd
 if args.pwd is None:
@@ -69,9 +72,6 @@ if pwd is None:
     raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
                     "server containing the RESEQTRACK database using the --pwd option or set a $DBPWD environment "
                     "variable before running this script!")
-
-if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # Class to connect with Reseqtrack DB
 db = DB(pwd=pwd,

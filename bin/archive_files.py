@@ -1,15 +1,11 @@
 #!/usr/bin/env python
-
 import argparse
 import os
 import logging
 import sys
 import re
 import pdb
-from igsr_archive.utils import str2bool
-from igsr_archive.db import DB
-from igsr_archive.api import API
-from igsr_archive.file import File
+
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
@@ -52,17 +48,21 @@ logging.basicConfig(level=numeric_level)
 
 # Create logger
 logger = logging.getLogger(__name__)
-
 logger.info('Running script')
 
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # set the CONFIG_FILE env variable
-os.environ["CONFIG_FILE"] = args.settings
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settings)
+
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.api import API
+from igsr_archive.file import File
 
 dbpwd = args.dbpwd
 if args.dbpwd is None:

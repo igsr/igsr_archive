@@ -1,13 +1,9 @@
 #!/usr/bin/env python
-
 import argparse
 import os
 import re
 import logging
-from igsr_archive.utils import str2bool
-from igsr_archive.db import DB
-from igsr_archive.api import API
-from igsr_archive.file import File
+
 from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script for dearchiving (i.e. removing) a file or a list of files from '\
@@ -36,6 +32,17 @@ parser.add_argument('--firepwd', help="FIRE api password. If not provided then i
 parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 
 args = parser.parse_args()
+
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.api import API
+from igsr_archive.file import File
 
 # logging
 loglevel = args.log
@@ -66,12 +73,8 @@ assert firepwd, "$FIRE_PWD undefined"
 assert dbname, "$DBNAME undefined"
 assert dbpwd, "$DBPWD undefined"
 
-if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
-
 if not os.path.isdir(args.directory):
     raise Exception(f"{args.directory} does not exist. Can't continue!")
-
 
 # Parse config file
 settingsO = ConfigParser()
@@ -83,9 +86,6 @@ db = DB(pwd=dbpwd,
 
 # connection to FIRE api
 api = API(pwd=firepwd)
-
-# set the CONFIG_FILE env variable
-os.environ["CONFIG_FILE"] = args.settings
 
 # list of tuples (origin, dest) for files to be archived
 files = []
@@ -128,4 +128,3 @@ for path in files:
     api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
     # finally, delete de-archived file from RESEQTRACK DB
     db.delete_file(dearch_f, dry=str2bool(args.dry))
-

@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-
 import argparse
 import os
 import re
 import logging
 import pdb
-from igsr_archive.utils import str2bool
-
-from igsr_archive.db import DB
-from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Delete file/s from a Reseqtrack database')
 
@@ -38,8 +33,16 @@ logging.basicConfig(level=numeric_level)
 
 # Create logger
 logger = logging.getLogger(__name__)
-
 logger.info('Running script')
+
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.utils import str2bool
+from igsr_archive.db import DB
+from igsr_archive.file import File
 
 pwd = args.pwd
 if args.pwd is None:
@@ -60,9 +63,6 @@ if pwd is None:
 
 if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
-
-# set the CONFIG_FILE env variable
-os.environ["CONFIG_FILE"] = args.settings
 
 # Class to connect with Reseqtrack DB
 db = DB(pwd=pwd,

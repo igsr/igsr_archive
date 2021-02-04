@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-
 import argparse
 import logging
 import os
-from igsr_archive.api import API
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -20,18 +18,22 @@ parser.add_argument('--firePath', required=True,
 parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess"
                                       "the FIRE pwd from the $FIRE_PWD env variable")
 
+logger.info('Running script')
+
 args = parser.parse_args()
 
-logger.info('Running script')
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.api import API
 
 firepwd = args.firepwd
 if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
 
 assert firepwd, "$FIRE_PWD undefined"
-
-if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 # connection to FIRE api
 api = API(pwd=firepwd)
