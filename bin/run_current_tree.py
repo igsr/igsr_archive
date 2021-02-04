@@ -2,12 +2,9 @@
 import argparse
 import os
 import logging
+import pdb
 
 from configparser import ConfigParser
-from igsr_archive.current_tree import CurrentTree
-from igsr_archive.db import DB
-from igsr_archive.api import API
-from igsr_archive.file import File
 
 parser = argparse.ArgumentParser(description='Script to generate a new current.tree from files in the RESEQTRACK DB')
 
@@ -31,6 +28,17 @@ parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, IN
 
 args = parser.parse_args()
 
+if not os.path.isfile(args.settings):
+    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+
+# set the CONFIG_FILE env variable
+os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.current_tree import CurrentTree
+from igsr_archive.db import DB
+from igsr_archive.api import API
+from igsr_archive.file import File
+
 # logging
 loglevel = args.log
 numeric_level = getattr(logging, loglevel.upper(), None)
@@ -44,9 +52,6 @@ logger = logging.getLogger(__name__)
 
 logger.info('Running script')
 
-# set the CONFIG_FILE env variable
-os.environ["CONFIG_FILE"] = args.settings
-
 dbpwd = args.dbpwd
 if args.dbpwd is None:
     dbpwd = os.getenv('DBPWD')
@@ -58,9 +63,6 @@ if args.dbname is None:
 firepwd = args.firepwd
 if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
-
-if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 
 if dbname is None:
     raise Exception("$DBNAME undefined. You need either to pass the name of the "
