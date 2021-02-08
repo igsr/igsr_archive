@@ -30,7 +30,7 @@ def test_print_chlog_details_new(chObject_new, clean_tmp):
     log.debug('Testing the \'print_chlog_details\' function to '
               'generate a changelog_details_*_new file')
 
-    ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR'))
+    ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR')+'/ctree')
 
     p = re.compile('.*_new$')
     m = p.match(ofiles[0])
@@ -48,7 +48,7 @@ def test_print_chlog_details_withdrawn(chObject_withdrawn, clean_tmp):
     log.debug('Testing the \'print_chlog_details\' function to '
               'generate a changelog_details_*_withdrawn file')
 
-    ofiles = chObject_withdrawn.print_chlog_details(os.getenv('DATADIR'))
+    ofiles = chObject_withdrawn.print_chlog_details(os.getenv('DATADIR')+'/ctree')
 
     p = re.compile('.*_withdrawn$')
     m = p.match(ofiles[0])
@@ -66,7 +66,7 @@ def test_print_chlog_details_moved(chObject_moved, clean_tmp):
     log.debug('Testing the \'print_chlog_details\' function to '
               'generate a changelog_details_*_moved file')
 
-    ofiles = chObject_moved.print_chlog_details(os.getenv('DATADIR'))
+    ofiles = chObject_moved.print_chlog_details(os.getenv('DATADIR')+'/ctree')
 
     p = re.compile('.*_moved$')
     m = p.match(ofiles[0])
@@ -84,7 +84,7 @@ def test_print_chlog_details_replacement(chObject_replacement, clean_tmp):
     log.debug('Testing the \'print_chlog_details\' function to '
               'generate a changelog_details_*_replacement file')
 
-    ofiles = chObject_replacement.print_chlog_details(os.getenv('DATADIR'))
+    ofiles = chObject_replacement.print_chlog_details(os.getenv('DATADIR')+'/ctree')
 
     p = re.compile('.*_replacement$')
     m = p.match(ofiles[0])

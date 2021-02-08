@@ -201,6 +201,41 @@ class DB(object):
             # Rollback in case there is any error
             self.conn.rollback()
 
+    def fetch_files_by_pattern(self, pattern):
+        """
+        Function to fetch all files using a certain pattern
+        of the 'name' field: i.e. SELECT * FROM file WHERE name like '%PATTERN';
+
+        Parameters
+        ----------
+        pattern : str, Required
+
+        Returns
+        -------
+        A list with all File objects returned by the query
+        """
+
+        db_logger.debug(f"Fetching all files for pattern: {pattern}")
+        cursor = self.conn.cursor(pymysql.cursors.DictCursor)
+        query = "SELECT * FROM file WHERE name like %s"
+        cursor.execute(query, [pattern+'%'])
+        file_list = []
+        try:
+            result_set = cursor.fetchall()
+            if not result_set:
+                db_logger.debug(f"No file retrieved from DB using using pattern:{pattern}")
+                return None
+            for row in result_set:
+                f = File(**row)
+                file_list.append(f)
+            cursor.close()
+            self.conn.commit()
+        except pymysql.Error as e:
+            db_logger.error("Exception occurred", exc_info=True)
+            # Rollback in case there is any error
+            self.conn.rollback()
+        return file_list
+
     def get_ctree(self, fields, outfile, limit=None):
         """
         Function to dump DB file records and generate
@@ -238,9 +273,6 @@ class DB(object):
         fields.insert(1, "type")
 
         f = open(outfile, 'w')
-        # print header
-        f.write("\t".join(fields))
-        f.write("\n")
 
         data_dict = {} # dict {'path' : 'md5' }
         cursor.execute(query)
@@ -251,6 +283,13 @@ class DB(object):
                 return None
             for row in result_set:
                 row["name"] = row["name"].replace(CONFIG.get("ftp","ftp_mount")+"/","")
+                if CONFIG.get("ftp","staging_mount") in row["name"]:
+                    continue
+                # skip files that are in any dir that is not the ftp/ dir,
+                # as these files are not included in the current.tree file
+                bits = row["name"].split("/")
+                if bits[0] != "ftp":
+                    continue
                 row["type"] = "file"
                 data_dict[row["name"]] = row["md5"]
                 for k in fields:

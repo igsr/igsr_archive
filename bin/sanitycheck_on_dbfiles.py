@@ -1,19 +1,16 @@
-#!/usr/bin/env python
 import argparse
 import os
-import logging
 import pdb
+import logging
+import re
 
-parser = argparse.ArgumentParser(description='Script to generate a new current.tree from files in the RESEQTRACK DB')
+from configparser import ConfigParser
+
+parser = argparse.ArgumentParser(description='Script to check if all files in the DB considered to be archived in FIRE '
+                                             'are actually in FIRE')
 
 parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
-parser.add_argument('--staging_tree', default='/nfs/1000g-work/G1K/archive_staging/ftp/current.tree',
-                    help="File where the new current.tree will be dumped from the RESEQTRACK DB")
-parser.add_argument('--prod_tree', default='/nfs/1000g-archive/vol1/ftp/current.tree',
-                    help="Current.tree that is in the archive and against which the new current.tree will be compared")
-parser.add_argument('--CHANGELOG', default='/nfs/1000g-archive/vol1/ftp/CHANGELOG',
-                    help="Path to CHANGELOG file used to record the changes between '--staging_tree' and '--prod_tree'")
 
 # DB and FIRE API connection params
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess "
@@ -31,10 +28,12 @@ if not os.path.isfile(args.settings):
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 
-from igsr_archive.current_tree import CurrentTree
+# Parse config file
+settingsO = ConfigParser()
+settingsO.read(args.settings)
+
 from igsr_archive.db import DB
 from igsr_archive.api import API
-from igsr_archive.file import File
 
 # logging
 loglevel = args.log
@@ -80,19 +79,19 @@ db = DB(pwd=dbpwd,
 # connection to FIRE api
 api = API(pwd=firepwd)
 
-# check if CHANGELOG file is in the DB
-chglogFobj = File(
-    name=args.CHANGELOG,
-    type="CHANGELOG")
+flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
 
-rf = db.fetch_file(path=chglogFobj.name)
+logger.info(f"Number of files returned with this pattern {len(flist)}")
 
-if rf is None:
-    raise Exception(f"CHANGELOG file path: {chglogFobj} does not exist. Can't continue!")
+counter = 0
+for f in flist:
+    if (counter % 100 == 0):
+        logger.info(f"{counter} lines processed!")
+    counter += 1
 
-ctree = CurrentTree(db=db,
-                    api=api,
-                    staging_tree=args.staging_tree,
-                    prod_tree=args.prod_tree)
-
-pushed_dict = ctree.run(chlog_fobj=chglogFobj)
+    if settingsO.get('ftp', 'ftp_mount') in f.name:
+        fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', f.name)
+        fire_obj = None
+        fire_obj = api.fetch_object(firePath=fire_path)
+        if fire_obj is None:
+            print(f"ERROR: File with db name {f.name} is not archived in FIRE")

@@ -81,19 +81,22 @@ class ChangeEvents(object):
                 ofile_new.write(i + "\n")
             ofile_new.close()
             ofiles_lst.append(ofile_new.name)
-        elif len(self.withdrawn) > 0:
+
+        if len(self.withdrawn) > 0:
             ofile_with = open("{0}/changelog_details_{1}_withdrawn".format(odir, now_str), 'w')
             for i in self.withdrawn:
                 ofile_with.write(i + "\n")
             ofile_with.close()
             ofiles_lst.append(ofile_with.name)
-        elif len(self.moved) > 0:
+
+        if len(self.moved) > 0:
             ofile_moved = open("{0}/changelog_details_{1}_moved".format(odir, now_str), 'w')
             for f in self.moved.keys():
                 ofile_moved.write("{0}\t{1}\n".format(self.moved[f], f))
             ofile_moved.close()
             ofiles_lst.append(ofile_moved.name)
-        elif len(self.replacement) > 0:
+
+        if len(self.replacement) > 0:
             ofile_replc = open("{0}/changelog_details_{1}_replacement".format(odir, now_str), 'w')
             for f in self.replacement.keys():
                 ofile_replc.write(f + "\n")

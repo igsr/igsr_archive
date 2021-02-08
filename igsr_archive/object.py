@@ -29,7 +29,7 @@ class fObject(object):
     """
     def __init__(self, **kwargs):
 
-        object_logger.info('Creating a FIRE Object')
+        object_logger.debug('Creating a FIRE Object')
 
         allowed_keys = ['objectId', 'fireOid', 'md5', 'size',
                         'createTime', 'path', 'published', 'objectMd5',

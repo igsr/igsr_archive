@@ -65,12 +65,24 @@ class CurrentTree(object):
 
         If the ChangeEvents object has size = 0 then it will return 0
         """
-        wd = os.path.dirname(self.staging_tree)
+        ct_logger.info("Starting CurrentTree.run() process")
 
+        wd = os.path.dirname(self.staging_tree)
         fields = ['name', 'size', 'updated', 'md5']
+
+        ct_logger.info(f"Dumping files from DB to {self.staging_tree}")
         db_dict = self.db.get_ctree(fields, outfile=self.staging_tree, limit=limit)[1]
+        ct_logger.info(f"Number of records dumped: {len(db_dict.keys())}")
+
+        ct_logger.info(f"Parsing records in {self.prod_tree}")
         file_dict = self.get_file_dict()
+        ct_logger.info(f"Number of records parsed: {len(file_dict.keys())}")
+
+        ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}")
         chgEvents = self.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
+        ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}. DONE!")
+        pdb.set_trace()
+
         if chgEvents.size() == 0:
             ct_logger.info("No changes detected, nothing will be done. "
                            "The current.tree file in the staging area will be removed")
@@ -136,6 +148,11 @@ class CurrentTree(object):
     def get_file_dict(self):
         """
         Function to parse each line in the file pointed by self.prod_tree
+        This file must have the following columns:
+        <path> <type(file|directory> <size> <updated> <md5>
+
+        Note: The lines representing directories are skipped.
+
         to create a dict with the following information:
         { 'path' : md5 }
 
@@ -143,26 +160,19 @@ class CurrentTree(object):
         -------
         dict
         """
-        fields = None
-        header = False
-        pdb.set_trace()
         data_dict = {}  # dict {'path' : 'md5' }
         with open(self.prod_tree) as f:
             for line in f:
                 line = line.rstrip("\n")
-                if header is False:
-                    fields = line.split("\t")
-                    try:
-                        ix_md5 = fields.index("md5")
-                        ix_name = fields.index("name")
-                    except:
-                        raise ValueError(f"Either 'md5' or 'name' not found"
-                                         f" in the header of f{self.prod_tree}")
-                    header = True
-                else:
-                    name = line.split("\t")[ix_name]
-                    md5 = line.split("\t")[ix_md5]
-                    data_dict[name] = md5
+                line = line.rstrip("\t")
+                fields = line.split("\t")
+                if fields[1] == 'directory':
+                    continue
+                if len(fields) != 5:
+                    continue
+                name = fields[0]
+                md5 = fields[4]
+                data_dict[name] = md5
 
         return data_dict
 
@@ -197,21 +207,23 @@ class CurrentTree(object):
         d1_keys = set(db_dict.keys())
         d2_keys = set(file_dict.keys())
         shared_keys = d1_keys.intersection(d2_keys)
+        ct_logger.info(f"Number of records shared: {len(shared_keys)}")
         new_in_db = d1_keys - d2_keys
-
         new = d1_keys - d2_keys
         withdrawn = d2_keys - d1_keys
-        moved ={} # initialise dict
+        moved = {} # initialise dict
+        ct_logger.info(f"Number of records that are new in the DB: {len(new_in_db)}")
         for r in new_in_db:
             md5 = db_dict[r]
-            # check if file_dict or db_dict contains this 'md5'. Which basically
-            # means that file is the same but dir has changed
+            # check if file_dict or db_dict contain different records with the same 'md5'. Which basically
+            # means that file is the same but dir or filename has changed
             pathfdict = [key for (key, value) in file_dict.items() if value == md5]
             pathdbdict = [key for (key, value) in db_dict.items() if value == md5]
             for i, j in zip(pathfdict, pathdbdict):
-                print(i, j)
-                new.remove(j)
-                withdrawn.remove(i)
+                if j in new:
+                    new.remove(j)
+                if i in withdrawn:
+                    withdrawn.remove(i)
                 moved[j] = i
 
         # { 'path' : tuple ('new_md5', 'old_md5')}

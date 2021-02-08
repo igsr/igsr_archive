@@ -163,7 +163,7 @@ class API(object):
                 raise Exception(f"Error: {res.text}")
             else:
                 fireObj = self.__parse_json_response(json_res)
-                api_logger.info('Fetched FIRE object')
+                api_logger.debug('Fetched FIRE object')
                 return fireObj
 
     def __parse_json_response(self, json_res):

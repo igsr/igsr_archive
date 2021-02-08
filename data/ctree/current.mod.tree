@@ -1,5 +1,4 @@
-name	type	size	updated	md5
-ftp/historical_data/former_toplevel/README.ftp_structure	file	8408	2015-09-17 16:15:09	2a59a3feb2540c113e10877f3ef1efe5	
+ftp/historical_data/former_toplevel/README.ftp_structure	file	8408	2015-09-17 16:15:09	2a59a3feb2540c113e10877f3ef1efe5
 ftp/CHANGELOG	file	298530	2020-12-09 11:16:09	bffb27eeac035b72c5a472b0fc7fde74	
 ftp/pilot_data/README.bas	file	2970	2010-02-24 10:35:46	fa808f1eea6b53e65b1ae3c0931023f8	
 /nfs/1000g-work/G1K/archive_staging/ftp/current.tree	file	115513189	2020-12-09 14:58:10	83c60f0266fac94f39f0076435c1e
