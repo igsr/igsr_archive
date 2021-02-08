@@ -83,11 +83,14 @@ flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
 
 logger.info(f"Number of files returned with this pattern {len(flist)}")
 
-counter = 0
+tot_counter = 0
+count = 0
 for p in flist:
-    if (counter % 100 == 0):
-        logger.info(f"{counter} lines processed!")
-    counter += 1
+    if count == 100:
+        logger.info(f"{tot_counter} lines processed!")
+        count = 0
+    tot_counter += 1
+    count += 1
 
     if settingsO.get('ftp', 'ftp_mount') in p:
         fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', p)
