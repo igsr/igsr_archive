@@ -212,7 +212,7 @@ class DB(object):
 
         Returns
         -------
-        A list with all File objects returned by the query
+        A list with all paths returned by the query
         """
 
         db_logger.debug(f"Fetching all files for pattern: {pattern}")
@@ -226,8 +226,7 @@ class DB(object):
                 db_logger.debug(f"No file retrieved from DB using using pattern:{pattern}")
                 return None
             for row in result_set:
-                f = File(**row)
-                file_list.append(f)
+                file_list.append(row["name"])
             cursor.close()
             self.conn.commit()
         except pymysql.Error as e:
