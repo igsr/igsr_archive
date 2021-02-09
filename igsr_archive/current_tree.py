@@ -41,15 +41,15 @@ class CurrentTree(object):
         self.staging_tree = staging_tree
         self.dtime = datetime.now().strftime('%Y_%m_%dT%H%M%S')
 
-    def run(self, chlog_fobj, limit =None):
+    def run(self, chlog_f, limit =None):
         """
         Function to perform all operations involved in the comparison
         between the current.tree in the DB and the current.tree in the FTP
 
         Parameters
         ----------
-        chlog_fobj: File
-                    File object for CHANGELOG file. Required
+        chlog_f:  Str
+                  Path for CHANGELOG file that will be modified. Required
         limit: int
                Limit the number of records to retrieve from DB.
                Default: None
@@ -81,7 +81,6 @@ class CurrentTree(object):
         ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}")
         chgEvents = self.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
         ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}. DONE!")
-        pdb.set_trace()
 
         if chgEvents.size() == 0:
             ct_logger.info("No changes detected, nothing will be done. "
@@ -91,10 +90,14 @@ class CurrentTree(object):
         else:
             ct_logger.info("Changes detected in the data structures. Proceeding...")
             ofiles = chgEvents.print_chlog_details(odir=wd)
+            ct_logger.info("Pushing changelog_details_* files to archive...")
             chlog_details_list = chgEvents.push_chlog_details(pathlist=ofiles, db=self.db, api=self.api)
-            chgEvents.print_changelog(ifile=chlog_fobj.name)
-            chlog_firepath = chgEvents.update_CHANGELOG(chlog_fobj, db=self.db, api=self.api)
+            chgEvents.print_changelog(ifile=chlog_f)
+            ct_logger.info("Updating and pushing to archive the updated CHANGELOG file...")
+            chlog_firepath = chgEvents.update_CHANGELOG(chlog_f, db=self.db, api=self.api)
+            ct_logger.info("Pushing to archive the new current.tree file...")
             ctree_firepath= self.push_ctree()
+            ct_logger.info("Pushing to archive the new current.tree file. DONE!")
             return {
                 'chlog_details' : chlog_details_list,
                 'chlog_firepath' : chlog_firepath,
@@ -117,8 +120,8 @@ class CurrentTree(object):
         """
         # updating metadata for existing staging_tree file in the DB
         staging_fobj = File(name=self.staging_tree)
-        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=False)
-        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=False)
+        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=True)
+        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=True)
 
         # create a backup for self.prod_tree
         basename = os.path.basename(self.prod_tree)
@@ -135,14 +138,14 @@ class CurrentTree(object):
 
         if fire_obj is None:
             raise Exception(f"No current.tree file retrieved from the archive")
-        self.api.delete_object(fireOid=fire_obj.fireOid, dry=False)
+        self.api.delete_object(fireOid=fire_obj.fireOid, dry=True)
 
         # push self.staging_tree to archive
         basename = os.path.basename(self.staging_tree)
         fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
         self.api.push_object(fileO=staging_fobj,
                              fire_path=fire_path,
-                             dry=False)
+                             dry=True)
         return fire_path
 
     def get_file_dict(self):

@@ -3,6 +3,9 @@ import argparse
 import os
 import logging
 import pdb
+import re
+
+from configparser import ConfigParser
 
 parser = argparse.ArgumentParser(description='Script to generate a new current.tree from files in the RESEQTRACK DB')
 
@@ -30,6 +33,11 @@ if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+# Parse config file
+settingsO = ConfigParser()
+settingsO.read(args.settings)
+
 
 from igsr_archive.current_tree import CurrentTree
 from igsr_archive.db import DB
@@ -80,19 +88,36 @@ db = DB(pwd=dbpwd,
 # connection to FIRE api
 api = API(pwd=firepwd)
 
-# check if CHANGELOG file is in the DB
-chglogFobj = File(
-    name=args.CHANGELOG,
-    type="CHANGELOG")
-
-rf = db.fetch_file(path=chglogFobj.name)
+# check if CHANGELOG path is in the DB
+rf = db.fetch_file(path=args.CHANGELOG)
 
 if rf is None:
-    raise Exception(f"CHANGELOG file path: {chglogFobj} does not exist. Can't continue!")
+    raise Exception(f"CHANGELOG file path: {args.CHANGELOG} does not exist. Can't continue!")
+
+# make a copy of the chglogFobj file that will be modified, as the
+# version that is archived is read-only
+fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.CHANGELOG)
+# get fireOid for chglogFobj file
+f_obj = api.fetch_object(firePath=fire_path)
+if f_obj is None:
+    raise Exception(f"CHANGELOG file path: {args.CHANGELOG} is not archived in FIRE. Can't continue!")
+
+chlogl_path = f"{settingsO.get('ctree', 'temp')}/{os.path.basename(args.CHANGELOG)}"
+api.retrieve_object(fireOid=f_obj.fireOid, outfile=chlogl_path)
 
 ctree = CurrentTree(db=db,
                     api=api,
                     staging_tree=args.staging_tree,
                     prod_tree=args.prod_tree)
 
-pushed_dict = ctree.run(chlog_fobj=chglogFobj)
+pushed_dict = ctree.run(chlog_f=chlogl_path)
+pdb.set_trace()
+if pushed_dict:
+    logger.info(f"The following changelog_details_* files have geen generated and pushed to archive:")
+    chglog_details_str = "\n".join(pushed_dict['chlog_details'])
+    logger.info(f"{chglog_details_str}\n")
+    logger.info(f"The current.tree file has been pushed to archive with FIRE path {pushed_dict['ctree_firepath']}")
+    logger.info(f"The CHANGELOG file has been pushed to archive with FIRE path {pushed_dict['chlog_firepath']}")
+
+    # delete temp file
+    os.remove(chlogl_path)

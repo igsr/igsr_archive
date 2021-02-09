@@ -116,29 +116,31 @@ class ChangeEvents(object):
         """
         now_str = self.dtime.strftime('%Y-%m-%d')
         now_str1 = self.dtime.strftime('%Y%m%d')
-        try:
-            f = open(ifile, 'a')
-            f.write(now_str+"\n\n")
-            for state, value in self.__dict__.items():
-                size = 0
-                if type(value) is set:
-                    size = len(value)
-                elif type(value) is dict:
-                    size = len(value.keys())
-                if size == 0: continue
-                types = []
-                for p in value:
-                    # create File object to get its type
-                    fObj = File(name=p)
-                    types.append(fObj.guess_type())
-                f.write("Modification to: {0}\n\n".format(",".join(types)))
-                f.write("Details can be found in\nchangelog_details/changelog_details_{0}_{1}\n\n".format(now_str1, state))
-        except FileNotFoundError:
-            print('File does not exist')
-        finally:
-            f.close()
 
-    def update_CHANGELOG(self, chlog, db, api):
+        lines_to_add = now_str + "\n\n"
+        for state, value in self.__dict__.items():
+            size = 0
+            if type(value) is set:
+                size = len(value)
+            elif type(value) is dict:
+                size = len(value.keys())
+            if size == 0: continue
+            types = []
+            for p in value:
+                # create File object to get its type
+                fObj = File(name=p)
+                types.append(fObj.guess_type())
+            # remove duplicates from list
+            types = list(set(types))
+            lines_to_add += "Modification to {0}\n\n".format(",".join(types))
+            lines_to_add += "Details can be found in\nchangelog_details/" \
+                            "changelog_details_{0}_{1}\n\n".format(now_str1, state)
+        with open(ifile, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(lines_to_add.rstrip('\r\n') + '\n\n' + content)
+
+    def update_CHANGELOG(self, chlog_p, db, api):
         """
         Function to push the updated CHANGELOG file
         to FIRE. This function will do the following:
@@ -151,8 +153,8 @@ class ChangeEvents(object):
 
         Parameters
         ----------
-        chlog : File object
-                updated CHANGELOG file that will be pushed to FIRE
+        chlog_p : path to
+                  updated CHANGELOG file that will be pushed to FIRE
         db : DB connection object
         api : API connection object
 
@@ -162,15 +164,16 @@ class ChangeEvents(object):
         """
         dtstr = self.dtime.now().strftime('%Y_%m_%dT%H%M%S')
         # update the CHANGELOG metadata in the DB
-        chlog.md5 = chlog.calc_md5()
-        chlog.size = os.path.getsize(chlog.name)
-        db.update_file('md5', chlog.md5, chlog.name, dry=False)
-        db.update_file('size', chlog.size, chlog.name, dry=False)
+        chlog_obj = File(name=chlog_p)
+        chlog_obj.md5 = chlog_obj.calc_md5()
+        chlog_obj.size = os.path.getsize(chlog_obj.name)
+        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=True)
+        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=True)
 
         ce_logger.info("Pushing updated CHANGELOG file to API")
         # to push the updated CHANGELOG you need to delete it from FIRE first
         old_file = api.retrieve_object(firePath=CONFIG.get('ctree','chlog_fpath'),
-                                       outfile=f"{CONFIG.get('ctree','backup')}/{os.path.basename(chlog.name)}."
+                                       outfile=f"{CONFIG.get('ctree','backup')}/{os.path.basename(chlog_p)}."
                                                f"{dtstr}.backup")
         if old_file is None:
             raise Exception(f"No CHANGELOG file retrieved from the archive")
@@ -181,10 +184,10 @@ class ChangeEvents(object):
             raise Exception(f"No CHANGELOG file retrieved from the archive")
 
         ce_logger.info("Delete CHANGELOG to be updated from the archive")
-        api.delete_object(fireOid=fire_obj.fireOid, dry=False)
+        api.delete_object(fireOid=fire_obj.fireOid, dry=True)
 
         ce_logger.info("Push updated CHANGELOG file to the archive")
-        api.push_object(chlog, dry=False, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        api.push_object(chlog_obj, dry=True, fire_path=CONFIG.get('ctree','chlog_fpath'))
 
         return f"{CONFIG.get('ctree','chlog_fpath')}"
 
