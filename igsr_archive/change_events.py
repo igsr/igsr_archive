@@ -132,6 +132,7 @@ class ChangeEvents(object):
                 types.append(fObj.guess_type())
             # remove duplicates from list
             types = list(set(types))
+            types = [s.lower() for s in types]
             lines_to_add += "Modification to {0}\n\n".format(",".join(types))
             lines_to_add += "Details can be found in\nchangelog_details/" \
                             "changelog_details_{0}_{1}\n\n".format(now_str1, state)
