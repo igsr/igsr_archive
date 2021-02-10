@@ -67,7 +67,6 @@ class CurrentTree(object):
         """
         ct_logger.info("Starting CurrentTree.run() process")
 
-        wd = os.path.dirname(self.staging_tree)
         fields = ['name', 'size', 'updated', 'md5']
 
         ct_logger.info(f"Dumping files from DB to {self.staging_tree}")
@@ -89,7 +88,7 @@ class CurrentTree(object):
             return 0
         else:
             ct_logger.info("Changes detected in the data structures. Proceeding...")
-            ofiles = chgEvents.print_chlog_details(odir=wd)
+            ofiles = chgEvents.print_chlog_details(odir=CONFIG.get('ctree', 'temp'))
             ct_logger.info("Pushing changelog_details_* files to archive...")
             chlog_details_list = chgEvents.push_chlog_details(pathlist=ofiles, db=self.db, api=self.api)
             chgEvents.print_changelog(ifile=chlog_f)

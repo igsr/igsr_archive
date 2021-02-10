@@ -111,7 +111,7 @@ ctree = CurrentTree(db=db,
                     prod_tree=args.prod_tree)
 
 pushed_dict = ctree.run(chlog_f=chlogl_path)
-pdb.set_trace()
+
 if pushed_dict:
     logger.info(f"The following changelog_details_* files have geen generated and pushed to archive:")
     chglog_details_str = "\n".join(pushed_dict['chlog_details'])
@@ -119,5 +119,7 @@ if pushed_dict:
     logger.info(f"The current.tree file has been pushed to archive with FIRE path {pushed_dict['ctree_firepath']}")
     logger.info(f"The CHANGELOG file has been pushed to archive with FIRE path {pushed_dict['chlog_firepath']}")
 
-    # delete temp file
+    # delete temp files
     os.remove(chlogl_path)
+    for f in pushed_dict['chlog_details']:
+        os.remove(f)
