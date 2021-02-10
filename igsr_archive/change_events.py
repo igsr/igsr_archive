@@ -133,9 +133,9 @@ class ChangeEvents(object):
             # remove duplicates from list
             types = list(set(types))
             types = [s.lower() for s in types]
-            lines_to_add += "Modification to {0}\n\n".format(",".join(types))
-            lines_to_add += "Details can be found in\nchangelog_details/" \
-                            "changelog_details_{0}_{1}\n\n".format(now_str1, state)
+            lines_to_add += "Modification to: {0}\n\n".format(",".join(types))
+            lines_to_add += "Details can be found in\n" \
+                            "changelog_details/changelog_details_{0}_{1}\n\n".format(now_str1, state)
         with open(ifile, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
@@ -168,8 +168,8 @@ class ChangeEvents(object):
         chlog_obj = File(name=chlog_p)
         chlog_obj.md5 = chlog_obj.calc_md5()
         chlog_obj.size = os.path.getsize(chlog_obj.name)
-        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=True)
-        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=True)
+        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=False)
+        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=False)
 
         ce_logger.info("Pushing updated CHANGELOG file to API")
         # to push the updated CHANGELOG you need to delete it from FIRE first
@@ -185,10 +185,10 @@ class ChangeEvents(object):
             raise Exception(f"No CHANGELOG file retrieved from the archive")
 
         ce_logger.info("Delete CHANGELOG to be updated from the archive")
-        api.delete_object(fireOid=fire_obj.fireOid, dry=True)
+        api.delete_object(fireOid=fire_obj.fireOid, dry=False)
 
         ce_logger.info("Push updated CHANGELOG file to the archive")
-        api.push_object(chlog_obj, dry=True, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        api.push_object(chlog_obj, dry=False, fire_path=CONFIG.get('ctree','chlog_fpath'))
 
         return f"{CONFIG.get('ctree','chlog_fpath')}"
 

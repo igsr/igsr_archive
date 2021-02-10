@@ -120,8 +120,8 @@ class CurrentTree(object):
         """
         # updating metadata for existing staging_tree file in the DB
         staging_fobj = File(name=self.staging_tree)
-        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=True)
-        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=True)
+        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=False)
+        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=False)
 
         # create a backup for self.prod_tree
         basename = os.path.basename(self.prod_tree)
@@ -138,14 +138,14 @@ class CurrentTree(object):
 
         if fire_obj is None:
             raise Exception(f"No current.tree file retrieved from the archive")
-        self.api.delete_object(fireOid=fire_obj.fireOid, dry=True)
+        self.api.delete_object(fireOid=fire_obj.fireOid, dry=False)
 
         # push self.staging_tree to archive
         basename = os.path.basename(self.staging_tree)
         fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
         self.api.push_object(fileO=staging_fobj,
                              fire_path=fire_path,
-                             dry=True)
+                             dry=False)
         return fire_path
 
     def get_file_dict(self):
