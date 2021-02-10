@@ -97,4 +97,4 @@ for p in flist:
         fire_obj = None
         fire_obj = api.fetch_object(firePath=fire_path)
         if fire_obj is None:
-            print(f"ERROR: File with db name {f.name} is not archived in FIRE")
+            print(f"ERROR: File witH PATH {p} is not archived in FIRE")
