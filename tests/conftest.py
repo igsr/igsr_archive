@@ -150,6 +150,7 @@ def chObject_new(ct_obj, db_dict):
     Fixture returning a ChangeEvents object
     with a new path
     """
+    pdb.set_trace()
     ct_obj.prod_tree = os.getenv('DATADIR') + "ctree/current.minus1.tree"
     file_dict = ct_obj.get_file_dict()
     chObject = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)

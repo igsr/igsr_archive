@@ -17,6 +17,9 @@ parser.add_argument('--prod_tree', default='/nfs/1000g-archive/vol1/ftp/current.
                     help="Current.tree that is in the archive and against which the new current.tree will be compared")
 parser.add_argument('--CHANGELOG', default='/nfs/1000g-archive/vol1/ftp/CHANGELOG',
                     help="Path to CHANGELOG file used to record the changes between '--staging_tree' and '--prod_tree'")
+parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to run the current.tree process without "
+                                                "pushing any object to FIRE or modifying the DB."
+                                                "Default: True")
 
 # DB and FIRE API connection params
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess "
@@ -42,7 +45,7 @@ settingsO.read(args.settings)
 from igsr_archive.current_tree import CurrentTree
 from igsr_archive.db import DB
 from igsr_archive.api import API
-from igsr_archive.file import File
+from igsr_archive.utils import str2bool
 
 # logging
 loglevel = args.log
@@ -88,17 +91,25 @@ db = DB(pwd=dbpwd,
 # connection to FIRE api
 api = API(pwd=firepwd)
 
+# check if args.prod_tree is in DB and in FIRE
+ct = db.fetch_file(path=args.prod_tree)
+if ct is None:
+    raise Exception(f"--prod_tree: {args.prod_tree} does not exist in the DB. Can't continue!")
+ct_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.prod_tree)
+ct_fobj = api.fetch_object(firePath=ct_fpath)
+if ct_fobj is None:
+    raise Exception(f"--prod_tree file path: {args.prod_tree} is not archived in FIRE. Can't continue!")
+
 # check if CHANGELOG path is in the DB
 rf = db.fetch_file(path=args.CHANGELOG)
-
 if rf is None:
     raise Exception(f"CHANGELOG file path: {args.CHANGELOG} does not exist. Can't continue!")
 
 # make a copy of the chglogFobj file that will be modified, as the
 # version that is archived is read-only
-fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.CHANGELOG)
+changelog_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.CHANGELOG)
 # get fireOid for chglogFobj file
-f_obj = api.fetch_object(firePath=fire_path)
+f_obj = api.fetch_object(firePath=changelog_fpath)
 if f_obj is None:
     raise Exception(f"CHANGELOG file path: {args.CHANGELOG} is not archived in FIRE. Can't continue!")
 
@@ -110,7 +121,8 @@ ctree = CurrentTree(db=db,
                     staging_tree=args.staging_tree,
                     prod_tree=args.prod_tree)
 
-pushed_dict = ctree.run(chlog_f=chlogl_path)
+pushed_dict = ctree.run(chlog_f=chlogl_path,
+                        dry=str2bool(args.dry))
 
 if pushed_dict:
     logger.info(f"The following changelog_details_* files have geen generated and pushed to archive:")
@@ -122,4 +134,5 @@ if pushed_dict:
     # delete temp files
     os.remove(chlogl_path)
     for f in pushed_dict['chlog_details']:
-        os.remove(f)
+        new_p = "{0}/{1}".format(settingsO.get('ctree', 'temp'), os.path.basename(f))
+        os.remove(new_p)

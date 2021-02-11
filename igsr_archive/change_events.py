@@ -133,15 +133,18 @@ class ChangeEvents(object):
             # remove duplicates from list
             types = list(set(types))
             types = [s.lower() for s in types]
+            # get the changelog_details dir from config
+            dirname = CONFIG.get('ctree', 'chlog_details_dir')
             lines_to_add += "Modification to: {0}\n\n".format(",".join(types))
             lines_to_add += "Details can be found in\n" \
-                            "changelog_details/changelog_details_{0}_{1}\n\n".format(now_str1, state)
+                            "{0}/changelog_details_{1}_{2}\n\n".format(dirname,
+                                                                       now_str1, state)
         with open(ifile, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
             f.write(lines_to_add.rstrip('\r\n') + '\n\n' + content)
 
-    def update_CHANGELOG(self, chlog_p, db, api):
+    def update_CHANGELOG(self, chlog_p, db, api, dry=True):
         """
         Function to push the updated CHANGELOG file
         to FIRE. This function will do the following:
@@ -158,6 +161,8 @@ class ChangeEvents(object):
                   updated CHANGELOG file that will be pushed to FIRE
         db : DB connection object
         api : API connection object
+        dry: Bool
+             Perform a dry run. Default: True
 
         Returns
         -------
@@ -168,8 +173,8 @@ class ChangeEvents(object):
         chlog_obj = File(name=chlog_p)
         chlog_obj.md5 = chlog_obj.calc_md5()
         chlog_obj.size = os.path.getsize(chlog_obj.name)
-        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=False)
-        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=False)
+        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=dry)
+        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=dry)
 
         ce_logger.info("Pushing updated CHANGELOG file to API")
         # to push the updated CHANGELOG you need to delete it from FIRE first
@@ -185,14 +190,14 @@ class ChangeEvents(object):
             raise Exception(f"No CHANGELOG file retrieved from the archive")
 
         ce_logger.info("Delete CHANGELOG to be updated from the archive")
-        api.delete_object(fireOid=fire_obj.fireOid, dry=False)
+        api.delete_object(fireOid=fire_obj.fireOid, dry=dry)
 
         ce_logger.info("Push updated CHANGELOG file to the archive")
-        api.push_object(chlog_obj, dry=False, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        api.push_object(chlog_obj, dry=dry, fire_path=CONFIG.get('ctree','chlog_fpath'))
 
         return f"{CONFIG.get('ctree','chlog_fpath')}"
 
-    def push_chlog_details(self, pathlist, db, api):
+    def push_chlog_details(self, pathlist, db, api, dry=True):
         """
         Function to push the change changelog_details_* files to the archive.
         This function will do the following:
@@ -207,6 +212,8 @@ class ChangeEvents(object):
                    (resulting from running self.print_chlog_details)
         db : DB connection object
         api : API connection object
+        dry: Bool
+             Dry-run. Default: True
 
         Returns
         -------
@@ -219,11 +226,11 @@ class ChangeEvents(object):
             basename= os.path.basename(p)
             fObj = File(name=p, type="CHANGELOG")
             new_path = f"{CONFIG.get('ftp','ftp_mount')}{CONFIG.get('ctree','chlog_details_dir')}/{basename}"
-            db.load_file(fObj, dry=False)
-            api.push_object(fObj, dry=False, publish=True,
+            db.load_file(fObj, dry=dry)
+            api.push_object(fObj, dry=dry, publish=True,
                             fire_path=f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
             pushed_files.append(f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
-            db.update_file('name', new_path, fObj.name, dry=False)
+            db.update_file('name', new_path, fObj.name, dry=dry)
 
         return pushed_files
 
