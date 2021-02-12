@@ -11,10 +11,6 @@ parser = argparse.ArgumentParser(description='Script to generate a new current.t
 
 parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
-parser.add_argument('--staging_tree', default='/nfs/1000g-work/G1K/archive_staging/ftp/current.tree',
-                    help="File where the new current.tree will be dumped from the RESEQTRACK DB")
-parser.add_argument('--prod_tree', default='/nfs/1000g-archive/vol1/ftp/current.tree',
-                    help="Current.tree that is in the archive and against which the new current.tree will be compared")
 parser.add_argument('--CHANGELOG', default='/nfs/1000g-archive/vol1/ftp/CHANGELOG',
                     help="Path to CHANGELOG file used to record the changes between '--staging_tree' and '--prod_tree'")
 parser.add_argument('--dry', default=True, help="Perform a dry-run and attempt to run the current.tree process without "
@@ -90,14 +86,19 @@ db = DB(pwd=dbpwd,
 # connection to FIRE api
 api = API(pwd=firepwd)
 
-# check if args.prod_tree is in DB and in FIRE
-ct = db.fetch_file(path=args.prod_tree)
+prod_tree = f"{settingsO.get('ftp', 'ftp_mount')}/{settingsO.get('ctree', 'ctree_fpath')}/current.tree"
+prod_tree = prod_tree.replace('//','/')
+staging_tree = f"{settingsO.get('ctree', 'temp')}/current.tree"
+staging_tree = staging_tree.replace('//','/')
+
+# check if prod_tree is in DB and in FIRE
+ct = db.fetch_file(path=prod_tree)
 if ct is None:
-    raise Exception(f"--prod_tree: {args.prod_tree} does not exist in the DB. Can't continue!")
-ct_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.prod_tree)
+    raise Exception(f"Prod_tree: {prod_tree} does not exist in the DB. Can't continue!")
+ct_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', prod_tree)
 ct_fobj = api.fetch_object(firePath=ct_fpath)
 if ct_fobj is None:
-    raise Exception(f"--prod_tree file path: {args.prod_tree} is not archived in FIRE. Can't continue!")
+    raise Exception(f"Prod_tree file path: {prod_tree} is not archived in FIRE. Can't continue!")
 
 # check if CHANGELOG path is in the DB
 rf = db.fetch_file(path=args.CHANGELOG)
@@ -117,12 +118,11 @@ api.retrieve_object(fireOid=f_obj.fireOid, outfile=chlogl_path)
 
 ctree = CurrentTree(db=db,
                     api=api,
-                    staging_tree=args.staging_tree,
-                    prod_tree=args.prod_tree)
+                    staging_tree=staging_tree,
+                    prod_tree=prod_tree)
 
 pushed_dict = ctree.run(chlog_f=chlogl_path,
                         dry=str2bool(args.dry))
-
 
 if pushed_dict:
     logger.info(f"The following changelog_details_* files have geen generated and pushed to archive:")
@@ -133,6 +133,7 @@ if pushed_dict:
 
     # delete temp files
     os.remove(chlogl_path)
+    os.remove(staging_tree)
     for f in pushed_dict['chlog_details']:
         new_p = "{0}/{1}".format(settingsO.get('ctree', 'temp'), os.path.basename(f))
         os.remove(new_p)
