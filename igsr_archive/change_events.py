@@ -173,8 +173,10 @@ class ChangeEvents(object):
         chlog_obj = File(name=chlog_p)
         chlog_obj.md5 = chlog_obj.calc_md5()
         chlog_obj.size = os.path.getsize(chlog_obj.name)
-        db.update_file('md5', chlog_obj.md5, chlog_obj.name, dry=dry)
-        db.update_file('size', chlog_obj.size, chlog_obj.name, dry=dry)
+         # get the current path to CHANGELOG so it is updated in DB
+        chglog_p = f"{CONFIG.get('ftp', 'ftp_mount')}{CONFIG.get('ctree', 'chlog_fpath')}"
+        db.update_file('md5', chlog_obj.md5, chglog_p, dry=dry)
+        db.update_file('size', chlog_obj.size, chglog_p, dry=dry)
 
         ce_logger.info("Pushing updated CHANGELOG file to API")
         # to push the updated CHANGELOG you need to delete it from FIRE first

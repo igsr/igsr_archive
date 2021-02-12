@@ -90,7 +90,6 @@ class CurrentTree(object):
             os.remove(self.staging_tree)
             return 0
         else:
-            pdb.set_trace()
             ct_logger.info("Changes detected in the data structures. Proceeding...")
             ofiles = chgEvents.print_chlog_details(odir=CONFIG.get('ctree', 'temp'))
             ct_logger.info("Pushing changelog_details_* files to archive...")
@@ -126,8 +125,8 @@ class CurrentTree(object):
         """
         # updating metadata for existing staging_tree file in the DB
         staging_fobj = File(name=self.staging_tree)
-        self.db.update_file('md5',staging_fobj.md5, staging_fobj.name, dry=dry)
-        self.db.update_file('size',staging_fobj.size, staging_fobj.name, dry=dry)
+        self.db.update_file('md5',staging_fobj.md5, self.prod_tree, dry=dry)
+        self.db.update_file('size',staging_fobj.size, self.prod_tree, dry=dry)
 
         # create a backup for self.prod_tree
         basename = os.path.basename(self.prod_tree)

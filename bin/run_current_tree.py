@@ -41,7 +41,6 @@ os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 settingsO = ConfigParser()
 settingsO.read(args.settings)
 
-
 from igsr_archive.current_tree import CurrentTree
 from igsr_archive.db import DB
 from igsr_archive.api import API
@@ -123,6 +122,7 @@ ctree = CurrentTree(db=db,
 
 pushed_dict = ctree.run(chlog_f=chlogl_path,
                         dry=str2bool(args.dry))
+
 
 if pushed_dict:
     logger.info(f"The following changelog_details_* files have geen generated and pushed to archive:")
