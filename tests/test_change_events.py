@@ -96,7 +96,7 @@ def test_print_chlog_details_replacement(chObject_replacement, clean_tmp):
     assert os.path.exists(ofiles[0]) == 1
     assert m_seen is True
 
-def test_print_changelog_new(chObject_new, clean_tmp):
+def test_print_changelog_new(chObject_new, changelog_file, clean_tmp):
     """
     Test function 'print_changelog'
 
@@ -108,10 +108,9 @@ def test_print_changelog_new(chObject_new, clean_tmp):
     log.debug('Testing the \'print_changelog\' function'
               ' with a new file')
 
-    chglog_f = os.getenv('DATADIR') + "/CHANGELOG"
-    chObject_new.print_changelog(ifile=chglog_f)
+    chObject_new.print_changelog(ifile=changelog_file.name)
 
-def test_print_changelog_withdrawn(chObject_withdrawn, clean_tmp):
+def test_print_changelog_withdrawn(chObject_withdrawn, changelog_file, clean_tmp):
     """
     Test function 'print_changelog'
 
@@ -123,10 +122,9 @@ def test_print_changelog_withdrawn(chObject_withdrawn, clean_tmp):
     log.debug('Testing the \'print_changelog\' function'
               ' with a withdrawn file')
 
-    chglog_f = os.getenv('DATADIR') + "/CHANGELOG"
-    chObject_withdrawn.print_changelog(ifile=chglog_f)
+    chObject_withdrawn.print_changelog(ifile=changelog_file.name)
 
-def test_print_changelog_moved(chObject_moved, clean_tmp):
+def test_print_changelog_moved(chObject_moved, changelog_file, clean_tmp):
     """
     Test function 'print_changelog'
 
@@ -138,10 +136,9 @@ def test_print_changelog_moved(chObject_moved, clean_tmp):
     log.debug('Testing the \'print_changelog\' function'
               ' with a moved file')
 
-    chglog_f = os.getenv('DATADIR') + "/CHANGELOG"
-    chObject_moved.print_changelog(ifile=chglog_f)
+    chObject_moved.print_changelog(ifile=changelog_file.name)
 
-def test_print_changelog_replacement(chObject_replacement, clean_tmp):
+def test_print_changelog_replacement(chObject_replacement, changelog_file, clean_tmp):
     """
     Test function 'print_changelog'
 
@@ -153,12 +150,12 @@ def test_print_changelog_replacement(chObject_replacement, clean_tmp):
     log.debug('Testing the \'print_changelog\' function'
               ' with a replacement file')
 
-    chglog_f = os.getenv('DATADIR') + "/CHANGELOG"
-    chObject_replacement.print_changelog(ifile=chglog_f)
+    chObject_replacement.print_changelog(ifile=changelog_file.name)
 
 def test_update_CHANGELOG(chObject_new, load_changelog_file,
                           push_changelog_file, db_obj, conn_api,
                           dearchive_file, del_from_db, clean_tmp):
+
     log = logging.getLogger('test_update_CHANGELOG')
     log.debug('Testing the \'update_CHANGELOG\' function')
 
@@ -166,7 +163,7 @@ def test_update_CHANGELOG(chObject_new, load_changelog_file,
     CONFIG.set('ctree', 'chlog_fpath','/ctree/MOCK_CHANGELOG')
 
     chObject_new.print_changelog(ifile=load_changelog_file.name)
-    chObject_new.update_CHANGELOG(load_changelog_file, db=db_obj,
+    chObject_new.update_CHANGELOG(load_changelog_file.name, db=db_obj,
                                   api=conn_api)
 
     del_from_db.append(load_changelog_file.name)
@@ -174,13 +171,14 @@ def test_update_CHANGELOG(chObject_new, load_changelog_file,
 
 def test_push_chlog_details(chObject_new, del_from_db, dearchive_file,
                             db_obj, conn_api, clean_tmp):
+
     log = logging.getLogger('test_push_chlog_details')
     log.debug('Testing the \'push_chlog_details\' function')
 
     ofiles = chObject_new.print_chlog_details(os.getenv('DATADIR')+"/ctree")
 
     chObject_new.push_chlog_details(pathlist=ofiles,db=db_obj,
-                                    api=conn_api)
+                                    api=conn_api, dry=False)
 
     for path in ofiles:
         basename = os.path.basename(path)
