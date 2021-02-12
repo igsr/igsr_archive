@@ -41,14 +41,14 @@ class CurrentTree(object):
         self.staging_tree = staging_tree
         self.dtime = datetime.now().strftime('%Y_%m_%dT%H%M%S')
 
-    def run(self, chlog_f, dry=True, limit =None):
+    def run(self, chlog_f, dry=True, limit=None):
         """
         Function to perform all operations involved in the comparison
         between the current.tree in the DB and the current.tree in the FTP
 
         Parameters
         ----------
-        chlog_f:  Str
+        chlog_f:  str
                   Path for CHANGELOG file that will be modified. Required
         dry: Bool
              If False, then objects will be actually pushed to the archive

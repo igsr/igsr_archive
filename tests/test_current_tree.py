@@ -40,7 +40,7 @@ def test_cmp_dicts_new(ct_obj, db_dict):
     log.debug('Testing \'cmp_dicts\' function in which staging current.tree '
               'contains an additional record')
 
-    ct_obj.prod_tree = os.getenv('DATADIR')+"/current.minus1.tree"
+    ct_obj.prod_tree = os.getenv('DATADIR')+"/ctree/current.minus1.tree"
     file_dict = ct_obj.get_file_dict()
     changeObj = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
 
@@ -51,7 +51,7 @@ def test_cmp_dicts_withdrawn(ct_obj, db_dict):
     log.debug('Testing \'cmp_dicts\' function in which staging current.tree '
               'contains 1 record less than in production current.tree')
 
-    ct_obj.prod_tree = os.getenv('DATADIR')+"/current.plus1.tree"
+    ct_obj.prod_tree = os.getenv('DATADIR')+"/ctree/current.plus1.tree"
 
     file_dict = ct_obj.get_file_dict()
     changeObj = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
@@ -66,7 +66,7 @@ def test_cmp_dicts_replacement(ct_obj, db_dict):
               'production current.tree (its md5 has been modified but path '
               'stays the same')
 
-    ct_obj.prod_tree = os.getenv('DATADIR')+"/current.mod.tree"
+    ct_obj.prod_tree = os.getenv('DATADIR')+"/ctree/current.mod.tree"
     file_dict = ct_obj.get_file_dict()
     changeObj = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
 
@@ -85,7 +85,7 @@ def test_cmp_dicts_moved(ct_obj, db_dict):
               'production current.tree (its md5 stays the same but path'
               'has changed')
 
-    ct_obj.prod_tree = os.getenv('DATADIR')+"/current.moved.tree"
+    ct_obj.prod_tree = os.getenv('DATADIR')+"/ctree/current.moved.tree"
     file_dict = ct_obj.get_file_dict()
     changeObj = ct_obj.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
 
@@ -93,18 +93,23 @@ def test_cmp_dicts_moved(ct_obj, db_dict):
 
     assert changeObj.moved == expected
 
-def test_run_nochges(db_obj):
+def test_run_nochges(db_obj, conn_api, load_changelog_file, del_from_db):
     log = logging.getLogger('test_run_nochges')
 
     log.debug('Testing \'run\' function when there are no changes/alteration between '
               'the CurrentTree.prod_tree and CurrentTree.staging_tree')
 
-    ctree = CurrentTree(db=db_obj,
-                        staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
-                        prod_tree=os.getenv('DATADIR') + "/ctree/current.prod.tree")
+    ctree = CurrentTree(
+        api=conn_api,
+        db=db_obj,
+        staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
+        prod_tree=os.getenv('DATADIR') + "/ctree/current.prod.tree")
 
-    exit_code = ctree.run()
+    exit_code = ctree.run(chlog_f=load_changelog_file.name, limit=10)
+
     assert 0 == exit_code
+
+    del_from_db.append(load_changelog_file.name)
 
 def test_run_new(db_obj, conn_api, load_changelog_file,
                  push_changelog_file, push_prod_tree,
@@ -121,8 +126,9 @@ def test_run_new(db_obj, conn_api, load_changelog_file,
 
     CONFIG.set('ctree', 'backup', os.getenv('DATADIR') + "/ctree/")
     CONFIG.set('ctree', 'chlog_fpath','/ctree/MOCK_CHANGELOG')
+    CONFIG.set('ctree', 'chlog_details_dir','/ftp/changelog_details_test')
 
-    pushed_dict = ctree.run(chlog_fobj=load_changelog_file)
+    pushed_dict = ctree.run(chlog_f=load_changelog_file.name, limit=10, dry=False)
 
     for k in pushed_dict.keys():
         if k == "chlog_details":
