@@ -26,7 +26,7 @@ def test_f_wo_md5():
         type="TYPE_F"
     )
 
-    assert f.md5 == "369ccfaf31586363bd645d48b72c09c4"
+    assert f.md5 == "0b1578b3dbfca89caa03a88949d68fa4"
 
 def test_f_w_size():
     log = logging.getLogger('test_f_w_size')
@@ -48,7 +48,7 @@ def test_f_wo_size():
         type="TYPE_F"
         )
 
-    assert f.size == 7
+    assert f.size == 8
 
 def test_f_wo_creation_date():
     log = logging.getLogger('test_f_wo_creation_date')
@@ -78,7 +78,7 @@ def test_guess_type():
 
     f = File(name=f"{os.getenv('DATADIR')}/test.txt")
 
-    assert f.guess_type() == "TEST_TXT"
+    assert f.guess_type() == "TXT"
 
 def test_guess_type1(rand_file):
     log = logging.getLogger('test_guess_type1')
@@ -90,7 +90,7 @@ def test_guess_type1(rand_file):
 
     # delete test type
     os.remove(new_fname)
-    assert f.guess_type() == "TEST_TXT"
+    assert f.guess_type() == "TXT"
 
 def test_guess_type_default():
     log = logging.getLogger('test_guess_type_default')

@@ -202,7 +202,7 @@ def test_push_object_w_fpath(del_obj):
 
     # creating File object
     f = File(
-        name=os.getenv('DATADIR')+"test.txt",
+        name=os.getenv('DATADIR')+"/test.txt",
         type="TEST_F",
         md5sum="f5aa4f4f1380b71acc56750e9f8ff825")
 
@@ -223,7 +223,7 @@ def test_push_comp_object_w_fpath(del_obj):
 
     # creating File object
     f = File(
-        name=os.getenv('DATADIR')+"test.txt.gz",
+        name=os.getenv('DATADIR')+"/test.txt.gz",
         type="TEST_F",
         md5sum="a32c5f11391b49b0788def64d28f8807")
 

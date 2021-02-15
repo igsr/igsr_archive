@@ -24,7 +24,7 @@ def test_single_file(rand_file, delete_file):
 
     print('Load a single file using -f and --dry False options')
 
-    settings_f = os.getenv("DATADIR") + "settings.ini"
+    settings_f = os.getenv("DATADIR") + "/settings.ini"
 
     cmd = f"{os.getenv('SCRIPTSDIR')}/load_files.py -f {rand_file.name} --dry False --settings {settings_f}" \
           f" --dbname {os.getenv('DBNAME')} --pwd {os.getenv('DBPWD')}"
@@ -51,7 +51,7 @@ def test_single_file_w_type(db_obj, rand_file, delete_file):
 
     print('Load a single file using -f, --type TEST_TYPE and --dry False options')
 
-    settings_f = os.getenv("DATADIR") + "settings.ini"
+    settings_f = os.getenv("DATADIR") + "/settings.ini"
 
     cmd = f"{os.getenv('SCRIPTSDIR')}/load_files.py -f {rand_file.name} --dry False --settings {settings_f}" \
           f" --dbname {os.getenv('DBNAME')} --type TEST_TYPE --pwd {os.getenv('DBPWD')}"
@@ -83,7 +83,7 @@ def test_file_list(rand_filelst, delete_file):
 
     print('Load a list of files using -l and --dry False options')
 
-    settings_f = os.getenv("DATADIR") + "settings.ini"
+    settings_f = os.getenv("DATADIR") + "/settings.ini"
 
     cmd = f"{os.getenv('SCRIPTSDIR')}/load_files.py -l {rand_filelst} --dry False --settings {settings_f}" \
           f" --dbname {os.getenv('DBNAME')} --pwd {os.getenv('DBPWD')}"
@@ -113,7 +113,7 @@ def test_file_list(rand_filelst, delete_file):
 def test_w_md5_file(rand_filelst_md5, delete_file):
     print('Load a single file using --md5_file and --dry False options')
 
-    settings_f = os.getenv("DATADIR") + "settings.ini"
+    settings_f = os.getenv("DATADIR") + "/settings.ini"
 
     cmd = f"{os.getenv('SCRIPTSDIR')}/load_files.py --md5_file {rand_filelst_md5} --dry False --settings {settings_f}" \
           f" --dbname {os.getenv('DBNAME')} --pwd {os.getenv('DBPWD')}"

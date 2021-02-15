@@ -155,7 +155,7 @@ def test_push_ctree(db_obj, conn_api, load_staging_tree, push_prod_tree,
                         staging_tree=os.getenv('DATADIR') + "/ctree/current.staging.tree",
                         prod_tree=os.getenv('DATADIR') + "/ctree/current.minus1.tree")
 
-    fire_path = ctree.push_ctree()
+    fire_path = ctree.push_ctree(dry=False)
 
     del_from_db.append(load_staging_tree.name)
     dearchive_file.append(fire_path)

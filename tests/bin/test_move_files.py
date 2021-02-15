@@ -58,7 +58,9 @@ def test_single_file(push_file, modify_settings, delete_arch_file):
 
     print('Move a single file using -f and --dry False options')
 
-    dest_path = os.path.abspath('../../data/out/test_arch.txt')
+    dirname = os.getenv("DATADIR")
+
+    dest_path = f"{os.getenv('DATADIR')}/out/test_arch.txt"
 
     cmd = f"{os.getenv('SCRIPTSDIR')}/move_files.py --origin {push_file} --dest {dest_path} --dry False --settings {modify_settings}" \
           f" --dbname {os.getenv('DBNAME')} --dbpwd {os.getenv('DBPWD')} --firepwd {os.getenv('FIREPWD')}"

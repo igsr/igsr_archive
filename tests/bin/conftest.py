@@ -9,13 +9,23 @@ from igsr_archive.file import File
 def random_generator(size=600, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
+@pytest.fixture(autouse=True)
+def env_setup(monkeypatch):
+    """
+    Defining the environment
+    """
+    assert os.getenv('DBNAME'), "$DBNAME undefined. You need to test this env variable to run the tests"
+    assert os.getenv('DBPWD'), "$DBPWD undefined. You need to test this env variable to run the tests"
+    assert os.getenv('FIREPWD'), "$FIREPWD undefined. You need to test this env variable to run the tests"
+    monkeypatch.setenv('SCRIPTSDIR', os.path.abspath('../../bin/'))
+    monkeypatch.setenv('DATADIR',  os.path.abspath('../../data/'))
+
 @pytest.fixture(scope="function")
 def load_file(rand_file, db_obj):
     """
     Fixture to load a file to the RESEQTRACK DB
     """
     print('Running fixture to load test file in the DB')
-
     fObj = File(
         name=rand_file.name,
         type="TYPE_F")
@@ -25,11 +35,10 @@ def load_file(rand_file, db_obj):
     return rand_file.name
 
 @pytest.fixture(scope="function")
-def load_file_list(rand_filelst, conn_db):
+def load_file_list(rand_filelst, db_obj):
     """
     Fixture to load a list of files to the RESEQTRACK DB
     """
-
     print('Running fixture to load a list of test files in the DB')
     with open(rand_filelst) as f:
         for p in f:

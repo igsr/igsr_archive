@@ -110,7 +110,7 @@ def test_fetch_f_exists_w_path(db_obj, del_obj):
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its path')
 
-    rel_path = os.getenv('DATADIR')+"test.txt"
+    rel_path = os.getenv('DATADIR')+"/test.txt"
     # First, load file entry in the database
     f = File(
         name=rel_path,
@@ -143,7 +143,7 @@ def test_fetch_f_exists_w_basename(db_obj, del_obj):
     log.debug('Testing \'fetch_file\' function to fetch an existing'
               'file from the DB using its basename')
 
-    rel_path = os.getenv('DATADIR')+"test.txt"
+    rel_path = os.getenv('DATADIR')+"/test.txt"
 
     # First, load file entry in the database
     f = File(
