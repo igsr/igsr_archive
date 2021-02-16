@@ -111,13 +111,24 @@ if origin_seen is True:
     logger.info('--origin and --dest args defined')
     files.append((args.origin, args.dest))
 elif src_dir_seen is True:
+    recursive_seen = False
+    p=re.compile(".*\/\*\*\/.*")
+    basedir = None
+    if p.match(args.src_dir):
+        basedir=args.src_dir.split("**")[0]
+        recursive_seen = True
     logger.info('--src_dir and --tg_dir args defined')
-    for origin in glob.glob(f"{args.src_dir}"):
-        # get absolute paths
-        origin = os.path.abspath(origin)
-        basename = os.path.basename(origin)
-        dest = f"{os.path.abspath(args.tg_dir)}/{basename}"
-        files.append((origin, dest))
+    for origin in glob.glob(f"{args.src_dir}",recursive=recursive_seen):
+        if not os.path.isdir(origin):
+            # get absolute paths
+            origin = os.path.abspath(origin)
+            basename = ""
+            if recursive_seen is True:
+                basename = origin.replace(basedir, "")
+            else:           
+                basename = os.path.basename(origin)
+            dest = f"{os.path.abspath(args.tg_dir)}/{basename}"
+            files.append((origin, dest))
 
 # check if user has passed any file
 if len(files) == 0:
