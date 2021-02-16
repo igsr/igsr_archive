@@ -320,13 +320,28 @@ By default, the script will perform a dry run and the files will not be moved. Y
 
 3) Move the contents of an entire directory in the public IGSR FTP area
 
-Use the the ``--src_dir`` and ``--tg_dir`` options like this::
+Use the ``--src_dir`` and ``--tg_dir`` options like this:
+
+3.1) Move only the files in ``--src_dir`` without moving the files in subdirectories
+
+To move the files that are located in ``--src_dir`` without moving the files within any of the ``--src_dir`` subdirectories
+you need to run the script doing::
 
  move_files.py --settings settings.ini --src_dir "/nfs/1000g-archive/vol1/dir1/*" --tg_dir /nfs/1000g-archive/vol1/dir2/ \
   --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--src_dir`` is the directory in the FTP area containing the files to be moved. You can use the wildcard to define the pattern for searching the files, i.e. ``--src_dir "*.txt"``. Note the double quotes.
 - ``--tg_dir`` is the directory in the FTP area where the files specified by ``--src_dir`` will be moved.
+
+3.2) Move the files in ``--src_dir`` and any of the files in its subdirectories
+
+To move the files that are located in ``--src_dir`` and any of the files within any of the ``--src_dir`` subdirectories,
+you need to run the script doing::
+
+  move_files.py --settings settings.ini --src_dir "/nfs/1000g-archive/vol1/dir1/**/*" --tg_dir /nfs/1000g-archive/vol1/dir2/ \
+  --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
+
+Note the double asterisk, which indicates any subdirectory included in the parent directory ``/nfs/1000g-archive/vol1/dir1/``
 
 By default, the script will perform a dry run and the files will not be moved. You need to run
 ``move_files.py`` with the option ``--dry False`` to move them.
