@@ -15,15 +15,15 @@ from setuptools import find_packages, setup, Command
 NAME = 'igsr_archive'
 DESCRIPTION = 'Contains code to perform several operations involving files ' \
               'in the IGSR (1000 genomes) FTP archive.'
-URL = 'https://github.com/igsr/igsr_archive/archive/0.2.6.tar.gz'
+URL = 'https://github.com/igsr/igsr_archive/archive/0.2.7.tar.gz'
 EMAIL = 'ernestolowy@gmail.com'
 AUTHOR = 'Ernesto Lowy'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.2.6'
+VERSION = '0.2.7'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    'requests', 'pymysql'
+    'requests', 'pymysql', 'responses'
 ]
 
 # What packages are optional?
@@ -112,7 +112,8 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     scripts=['bin/load_files.py', 'bin/archive_files.py', 'bin/dearchive_files.py',
-             'bin/fetch_fire_object.py', 'bin/delete_files.py', 'bin/move_files.py'],
+             'bin/fetch_fire_object.py', 'bin/delete_files.py', 'bin/move_files.py',
+             'bin/run_current_tree.py'],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
