@@ -1,6 +1,7 @@
 import logging
 import pdb
 import os
+import re;
 
 from igsr_archive.file import File
 from datetime import datetime
@@ -56,7 +57,7 @@ class ChangeEvents(object):
             elif type(value) is dict:
                 size = size + len(value.keys())
         return size
-
+    
     def print_chlog_details(self, odir):
         """
         Function to generate the changelog_details files

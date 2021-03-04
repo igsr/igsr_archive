@@ -2,6 +2,7 @@ import logging
 import pdb
 import os
 import datetime
+import re
 
 from igsr_archive.change_events import ChangeEvents
 from igsr_archive.file import File
@@ -83,7 +84,6 @@ class CurrentTree(object):
         ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}")
         chgEvents = self.cmp_dicts(db_dict=db_dict, file_dict=file_dict)
         ct_logger.info(f"Looking for differences between {self.staging_tree} and {self.prod_tree}. DONE!")
-
         if chgEvents.size() == 0:
             ct_logger.info("No changes detected, nothing will be done. "
                            "The current.tree file in the staging area will be removed")
@@ -220,8 +220,15 @@ class CurrentTree(object):
         new = d1_keys - d2_keys
         withdrawn = d2_keys - d1_keys
         moved = {} # initialise dict
-        ct_logger.info(f"Number of records that are new in the DB: {len(new_in_db)}")
+        
+        # this regex will be used to skip the changelog_details_* files, as considering
+        # them would be self-referential
+        patt = f".*changelog_details_.*_.*"
+        p = re.compile(patt)
         for r in new_in_db:
+            if p.match(r):
+                new.remove(r)
+                continue
             md5 = db_dict[r]
             # check if file_dict or db_dict contain different records with the same 'md5'. Which basically
             # means that file is the same but dir or filename has changed
@@ -236,7 +243,11 @@ class CurrentTree(object):
 
         # { 'path' : tuple ('new_md5', 'old_md5')}
         replacement = {o: (db_dict[o], file_dict[o]) for o in shared_keys if db_dict[o] != file_dict[o]}
+        # the current.tree and CHANGELOG files will change but these ones will not be reported
+        replacement.pop('ftp/CHANGELOG', None)
+        replacement.pop('ftp/current.tree', None)
 
+        ct_logger.info(f"Number of records that are new in the DB: {len(new)}")
         return ChangeEvents(new, withdrawn, moved, replacement)
 
     # object introspection
