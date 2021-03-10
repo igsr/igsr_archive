@@ -7,8 +7,12 @@ bin/delete_files.py
 bin/fetch_fire_object.py
 bin/load_files.py
 bin/move_files.py
+bin/run_current_tree.py
 igsr_archive/__init__.py
 igsr_archive/api.py
+igsr_archive/change_events.py
+igsr_archive/config.py
+igsr_archive/current_tree.py
 igsr_archive/db.py
 igsr_archive/file.py
 igsr_archive/object.py
