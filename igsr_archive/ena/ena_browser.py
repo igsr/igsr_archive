@@ -4,17 +4,17 @@ import pdb
 import xmltodict
 
 from igsr_archive.config import CONFIG
-from igsr_archive.ena_record import ENArecord
+from igsr_archive.ena.ena_record import ENArun
 from requests.exceptions import HTTPError
 
 # create logger
 ena_logger = logging.getLogger(__name__)
 
-class ENA(object):
+class ENAbrowser(object):
     """
     Class used to fetch the different records from
     the European Nucleotide Archive (https://www.ebi.ac.uk/ena/browser/home)
-    using its rest API
+    using its REST API
 
     Class variables
     ---------------
@@ -25,8 +25,7 @@ class ENA(object):
     def __init__(self):
 
         ena_logger.debug('Creating an ENA object')
-        self.url = f"{CONFIG.get('ena', 'endpoint')}"
-
+        self.url = f"{CONFIG.get('ena_browser', 'endpoint')}"
     
     def query(self, id):
         """
@@ -53,7 +52,6 @@ class ENA(object):
             print(f'Error message: {res.text}')
         else:
             xmld = xmltodict.parse(res.content)
-            #er=ENArecord(type,id=primary_id)
             if res.status_code == 404:
                 ena_logger.info('No ENA record found')
             elif res.status_code != 200:
@@ -72,16 +70,44 @@ class ENA(object):
         ----------
         id : string
              ENA run id
+        
+        Returns
+        -------
+        ENArun object
         """
         xmld = self.query(id)
         id = self.fetch_primary_id('RUN', xmld)
         attrb_dict = self.fetch_attrbs('RUN', xmld)
         xref_dict = self.fetch_xrefs('RUN', xmld)
+        file_dict = self.fetch_datablock(xmld)
 
-        ena_run = ENArun(type='RUN', id=id, attrbs=attrb_dict, xrefs=xref_dict)
+        ena_run = ENArun(type='RUN', id=id, attrbs=attrb_dict, xrefs=xref_dict, file='a')
 
-        print("hello")
+        return ena_run
+
+    def get_study_by_id(self, id):
+        """
+        Function to get an ENAstudy object by its ID
+
+        Parameters
+        ----------
+        id : string
+             ENA study id
+        
+        Returns
+        -------
+        ENAstudy object
+        """
         pdb.set_trace()
+        xmld = self.query(id)
+        id = self.fetch_primary_id('STUDY', xmld)
+        attrb_dict = self.fetch_attrbs('STUDY', xmld)
+        xref_dict = self.fetch_xrefs('STUDY', xmld)
+
+        ena_study = ENArun(type='STUDY', id=id, attrbs=attrb_dict, xrefs=xref_dict, file='a')
+
+        return ena_study
+
 
     def fetch_primary_id(self, type, xml_dict):
         """
@@ -124,6 +150,27 @@ class ENA(object):
             raise Exception(f"{type} is not valid ENA record type")
         
         return type
+
+    def fetch_datablock(self, xml_dict):
+        """
+        Function to fetch the <DATA_BLOCK> information
+
+        This is relevant for runs only
+
+        Returns
+        -------
+        list : list of OrderedDict
+        """
+        pdb.set_trace()
+        files = xml_dict['RUN_SET']['RUN']['DATA_BLOCK']["FILES"]
+        
+        flist = []
+        for k in files.keys():
+            fdict = files[k]
+            flist.append(fdict)
+        
+        return flist
+
 
     def fetch_attrbs(self, type, xml_dict):
         """
@@ -170,9 +217,7 @@ class ENA(object):
               Dictionary in the format {'DB' : 'ID'}
         """
 
-        #attrb_lst = xml_dict[f"{type}_SET"][f"{type}"][f"{type}_ATTRIBUTES"][f"{type}_ATTRIBUTE"]
-        xref_lst = xml_dict['RUN_SET']['RUN']['RUN_LINKS']['RUN_LINK']
-        pdb.set_trace()
+        xref_lst = xml_dict[f"{type}_SET"][f"{type}"][f"{type}_LINKS"][f"{type}_LINK"]
 
         f_dict =  {}
         for item in xref_lst:
