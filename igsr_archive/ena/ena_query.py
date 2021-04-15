@@ -4,46 +4,41 @@ import pdb
 import xmltodict
 
 from igsr_archive.config import CONFIG
-from igsr_archive.ena.ena_record import ENArun
+from igsr_archive.ena.ena_record import ENArecord
 from requests.exceptions import HTTPError
 
 # create logger
 ena_logger = logging.getLogger(__name__)
-
-class ENAbrowser(object):
+class ENAquery(object):
     """
-    Class used to fetch the different records from
-    the European Nucleotide Archive (https://www.ebi.ac.uk/ena/browser/home)
-    using its REST API
-
+    Super class representing a query the ENA (https://www.ebi.ac.uk/ena/) API
+    
     Class variables
     ---------------
-    url : string
-          the url used to connect the ENA:
-          {CONFIG.get('ena', 'endpoint')}
+    url : string 
+          URL used for the query
     """
-    def __init__(self):
+    def __init__(self, url):
+        """
+        Constructor
+        -----------
+        url : string 
+              URL used for the query
+        """
+        ena_logger.debug('Creating an ENAquery object')
+        self.url = url
 
-        ena_logger.debug('Creating an ENA object')
-        self.url = f"{CONFIG.get('ena_browser', 'endpoint')}"
-    
-    def query(self, id):
+    def query(self):
         """
         Function to query the ENA api
-
-        Parameters
-        ----------
-        id: string
-            ID used to query the API
         
         Returns
         -------
-        dict: Dict obtained after parsing the XML returned 
-              from requests after parsing with xmltodict() function
+        res : requests.models.Response
         """
         res=None
         try:
-            res = requests.get(self.url+f"/{id}")
+            res = requests.get(self.url)
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
             print(f'Error message: {res.text}')
@@ -51,63 +46,65 @@ class ENAbrowser(object):
             print(f'Other error occurred: {err}')
             print(f'Error message: {res.text}')
         else:
-            xmld = xmltodict.parse(res.content)
             if res.status_code == 404:
                 ena_logger.info('No ENA record found')
             elif res.status_code != 200:
                 ena_logger.info('There was an issue in the ENA API request')
                 raise Exception(f"Error: {res.text}")
             else:
-                ena_logger.debug('Fetched ENA record')
-            
-            return xmld
-    
-    def get_run_by_id(self, id):
-        """
-        Function to get an ENArun object by its ID
+                ena_logger.debug('Query was successful')
+                return res
 
-        Parameters
-        ----------
-        id : string
-             ENA run id
+class ENAbrowser(ENAquery):
+    """
+    Class used to fetch the different records from
+    the European Nucleotide Archive (https://www.ebi.ac.uk/ena/browser/home)
+    using its REST API
+    """
+    def __init__(self, acc):
+        """
+        Constructor
+        -----------
+        acc: string
+              accession to query the API
+        """
+        ena_logger.debug('Creating an ENAbrowser object')
+        
+        url = f"{CONFIG.get('ena', 'endpoint_browser')}/{acc}"
+
+        ENAquery.__init__(self, url)
+    
+    def query(self):
+        """
+        Function overriding 'query' parent class
+
+        Returns
+        ------
+        dict : containing the result of converting the XML response
+               to dict
+        """
+        res = ENAquery.query(self)
+        return xmltodict.parse(res.content)
+    
+    def get_record(self):
+        """
+        Function to get a ENArecord object
         
         Returns
         -------
         ENArun object
         """
-        xmld = self.query(id)
+        pdb.set_trace()
+        xmld = self.query(self.url,
+                         format="XML_DICT")
+        
         id = self.fetch_primary_id('RUN', xmld)
         attrb_dict = self.fetch_attrbs('RUN', xmld)
         xref_dict = self.fetch_xrefs('RUN', xmld)
-        file_dict = self.fetch_datablock(xmld)
 
-        ena_run = ENArun(type='RUN', id=id, attrbs=attrb_dict, xrefs=xref_dict, file='a')
+        ena_run = ENArecord(type='RUN', id=id, attrbs=attrb_dict, xrefs=xref_dict)
 
         return ena_run
-
-    def get_study_by_id(self, id):
-        """
-        Function to get an ENAstudy object by its ID
-
-        Parameters
-        ----------
-        id : string
-             ENA study id
-        
-        Returns
-        -------
-        ENAstudy object
-        """
-        pdb.set_trace()
-        xmld = self.query(id)
-        id = self.fetch_primary_id('STUDY', xmld)
-        attrb_dict = self.fetch_attrbs('STUDY', xmld)
-        xref_dict = self.fetch_xrefs('STUDY', xmld)
-
-        ena_study = ENArun(type='STUDY', id=id, attrbs=attrb_dict, xrefs=xref_dict, file='a')
-
-        return ena_study
-
 
     def fetch_primary_id(self, type, xml_dict):
         """
@@ -224,3 +221,20 @@ class ENAbrowser(object):
             f_dict[item['XREF_LINK']['DB']] = item['XREF_LINK']['ID']
         
         return f_dict
+
+class ENAportal(object):
+    """
+    Class used to fetch the different records from
+    the European Nucleotide Archive (https://www.ebi.ac.uk/ena/portal/home)
+    using its REST API
+
+    Class variables
+    ---------------
+    url : string
+          the url used to connect the ENA:
+          {CONFIG.get('ena_portal', 'endpoint')}
+    """
+    def __init__(self):
+
+        ena_logger.debug('Creating an ENAportal object')
+        self.url = f"{CONFIG.get('ena_portal', 'endpoint')}"

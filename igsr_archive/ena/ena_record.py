@@ -27,32 +27,4 @@ class ENArecord(object):
         self.attrbs = attrbs
         self.xrefs = xrefs
 
-class ENArun(ENArecord):
-    """
-    Class used to encapsulate an ENA run record
-
-    Class variables
-    ---------------
-    data_block
-    """
-    def __init__(self, type, id, attrbs, xrefs, file):
-        self.file = file
-  
-        # invoking the __init__ of the parent class 
-        ENArecord.__init__(self, type, id, attrbs, xrefs)
-
-class ENAstudy(ENArecord):
-    """
-    Class used to encapsulate an ENA study record
-
-    Class variables
-    ---------------
-    file
-    """
-    def __init__(self, type, id, attrbs, xrefs, file):
-        self.file = file
-  
-        # invoking the __init__ of the parent class 
-        ENArecord.__init__(self, type, id, attrbs, xrefs)
-
   
