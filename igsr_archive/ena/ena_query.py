@@ -9,9 +9,9 @@ from requests.exceptions import HTTPError
 
 # create logger
 ena_logger = logging.getLogger(__name__)
-class ENAquery(object):
+class ENA(object):
     """
-    Super class representing a query the ENA (https://www.ebi.ac.uk/ena/) API
+    Super class representing a connection to the ENA (https://www.ebi.ac.uk/ena/) API
     
     Class variables
     ---------------
@@ -23,7 +23,7 @@ class ENAquery(object):
         Constructor
         -----------
         url : string 
-              URL used for the query
+              URL used in the query function
         """
         ena_logger.debug('Creating an ENAquery object')
         self.url = url
@@ -55,7 +55,7 @@ class ENAquery(object):
                 ena_logger.debug('Query was successful')
                 return res
 
-class ENAbrowser(ENAquery):
+class ENAbrowser(ENA):
     """
     Class used to fetch the different records from
     the European Nucleotide Archive (https://www.ebi.ac.uk/ena/browser/home)
@@ -72,7 +72,7 @@ class ENAbrowser(ENAquery):
         
         url = f"{CONFIG.get('ena', 'endpoint_browser')}/{acc}"
 
-        ENAquery.__init__(self, url)
+        ENA.__init__(self, url)
     
     def query(self):
         """
@@ -83,28 +83,31 @@ class ENAbrowser(ENAquery):
         dict : containing the result of converting the XML response
                to dict
         """
-        res = ENAquery.query(self)
+        res = ENA.query(self)
         return xmltodict.parse(res.content)
     
-    def get_record(self):
+    def get_record(self, xmld):
         """
         Function to get a ENArecord object
+
+        Parameters
+        ----------
+        xmld : dict
+               containing the result of converting the XML response
+               to dict
         
         Returns
         -------
-        ENArun object
-        """
-        pdb.set_trace()
-        xmld = self.query(self.url,
-                         format="XML_DICT")
-        
-        id = self.fetch_primary_id('RUN', xmld)
-        attrb_dict = self.fetch_attrbs('RUN', xmld)
-        xref_dict = self.fetch_xrefs('RUN', xmld)
+        ENArecord object
+        """       
+        type = self.guess_type(xmld)
+        id = self.fetch_primary_id(type, xmld)
+        attrb_dict = self.fetch_attrbs(type, xmld)
+        xref_dict = self.fetch_xrefs(type, xmld)
 
-        ena_run = ENArecord(type='RUN', id=id, attrbs=attrb_dict, xrefs=xref_dict)
+        ena_record = ENArecord(type=type, id=id, attrbs=attrb_dict, xrefs=xref_dict)
 
-        return ena_run
+        return ena_record
 
     def fetch_primary_id(self, type, xml_dict):
         """
