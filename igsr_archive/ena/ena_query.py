@@ -171,7 +171,6 @@ class ENAbrowser(ENA):
         
         return flist
 
-
     def fetch_attrbs(self, type, xml_dict):
         """
         Function to fetch each of the attributes for this ENA record
@@ -225,19 +224,67 @@ class ENAbrowser(ENA):
         
         return f_dict
 
-class ENAportal(object):
+class ENAportal(ENA):
     """
-    Class used to fetch the different records from
+    Class used to fetch the different filereports from
     the European Nucleotide Archive (https://www.ebi.ac.uk/ena/portal/home)
-    using its REST API
+    using its filereport REST API
 
     Class variables
     ---------------
     url : string
           the url used to connect the ENA:
-          {CONFIG.get('ena_portal', 'endpoint')}
+          {CONFIG.get('ena', 'endpoint_portal')}
     """
-    def __init__(self):
+    def __init__(self, acc):
+        """
+        Constructor
+        -----------
+        acc: string
+             accession to query the API
+        """
 
         ena_logger.debug('Creating an ENAportal object')
-        self.url = f"{CONFIG.get('ena_portal', 'endpoint')}"
+        url = f"{CONFIG.get('ena', 'endpoint_portal')}{acc}"
+
+        ENA.__init__(self, url)
+
+    def query(self, type='read_run', fields=None):
+        """
+        Function overriding 'query' parent class
+
+        Parameters
+        ----------
+        type : str
+               Report type: 'read_run', 'analysis'
+               Default: 'read_run'
+        fields : str
+                 comma-sep string with fields to fetch
+                 in this filereport. Default : none
+
+        Returns
+        -------
+        list : List with ENArecord objects
+        """
+        if fields is None:
+            self.url = f"{self.url}&result={type}"
+        else :
+            self.url = f"{self.url}&result={type}&fields={fields}"
+        res = ENA.query(self)
+
+        text_res = res.content.decode("utf-8")
+        data = [x.split('\t') for x in text_res.split('\n') if len(x.split('\t'))>1]
+        fields = data[0]
+        # getting the 'type' of this file record
+        type = fields[0].replace('_accession','').upper()
+        data = data[1::]
+
+        records = []
+        for rec in data:
+            record = {}
+            if len(rec) != len(fields):
+                raise Exception("Different number of data columns and fields")
+            record = dict(zip(fields, rec))
+            records.append(ENArecord(type, record['run_accession'], **record))
+
+        return records

@@ -22,6 +22,21 @@ if not os.path.isfile(args.settings):
 
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
+
+from igsr_archive.ena.ena_query import ENAportal
+
+# Create logger
+logger = logging.getLogger(__name__)
+logger.info(f"Running {__name__}")
+
+# logging
+loglevel = args.log
+numeric_level = getattr(logging, loglevel.upper(), None)
+if not isinstance(numeric_level, int):
+    raise ValueError('Invalid log level: %s' % loglevel)
+
+logging.basicConfig(level=numeric_level)
+
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settings)
@@ -62,3 +77,18 @@ def generate_header():
 
 header=generate_header()
 pdb.set_trace()
+
+eportal = ENAportal(acc=args.study)
+
+logger.info('Querying the ENA portal endpoint')
+record_lst = eportal.query()
+logger.info(f"Obtained {len(record_lst)} records from the ENA portal endpoint")
+
+rows = []
+for r in record_lst:
+    s_row = []
+    
+    print("h")
+
+print("h")
+
