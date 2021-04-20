@@ -152,7 +152,6 @@ class API(object):
             print(f'Other error occurred: {err}')
             print(f'Error message: {res.text}')
         else:
-            pdb.set_trace()
             fireObj = None
             if res.status_code == 404:
                 api_logger.info('No FIRE object found')
