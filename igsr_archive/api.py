@@ -152,8 +152,7 @@ class API(object):
             print(f'Other error occurred: {err}')
             print(f'Error message: {res.text}')
         else:
-            json_res = res.json()
-
+            pdb.set_trace()
             fireObj = None
             if res.status_code == 404:
                 api_logger.info('No FIRE object found')
@@ -162,6 +161,7 @@ class API(object):
                 api_logger.info('There was an issue in the FIRE API request')
                 raise Exception(f"Error: {res.text}")
             else:
+                json_res = res.json()
                 fireObj = self.__parse_json_response(json_res)
                 api_logger.debug('Fetched FIRE object')
                 return fireObj
