@@ -31,6 +31,8 @@ def test_ENArecord_split(enarecord_obj):
 
     log.debug('Test the split function from ENArecord')
 
-    
+    rec1, rec2 = enarecord_obj.split()
 
-    assert 0
+    assert rec1.fastq_ftp == 'ftp.sra.ebi.ac.uk/vol1/fastq/ERR159/ERR159209/ERR159209_1.fastq.gz'
+    assert rec2.fastq_ftp == 'ftp.sra.ebi.ac.uk/vol1/fastq/ERR159/ERR159209/ERR159209_2.fastq.gz'
+

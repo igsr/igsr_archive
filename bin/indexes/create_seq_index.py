@@ -23,7 +23,7 @@ if not os.path.isfile(args.settings):
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 
-from igsr_archive.ena.ena_query import ENAportal
+from igsr_archive.ena.ena_query import ENAportal, ENAbrowser
 
 # Create logger
 logger = logging.getLogger(__name__)
@@ -81,14 +81,34 @@ pdb.set_trace()
 eportal = ENAportal(acc=args.study)
 
 logger.info('Querying the ENA portal endpoint')
-record_lst = eportal.query()
+
+# list of attributes to get from ENA
+attributes = ['fastq_ftp','fastq_md5','accession', 'secondary_study_accession', 'study_title', 'center_name', 
+'submission_accession', 'first_created', 'secondary_study_accession', 'sample_alias']
+
+record_lst = eportal.query(fields=",".join(attributes))
 logger.info(f"Obtained {len(record_lst)} records from the ENA portal endpoint")
 
-rows = []
+def get_population(sample_id):
+    """
+    Function to get the population for 
+    a certain sample_id
+    """
+
+    ebrowser = ENAbrowser(acc=sample_id)
+    xmld = ebrowser.query()
+    ena_record = ebrowser.get_record(xmld)
+
+    print("hello")
+
+
 for r in record_lst:
-    s_row = []
-    
-    print("h")
+    r1, r2 = r.split()
+    get_population(r1.sample_accession)
+    row = ""
+    for attrb in attributes:
+        row += f"{getattr(r1, attrb)}\t"
+
 
 print("h")
 

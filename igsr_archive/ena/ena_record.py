@@ -1,5 +1,8 @@
 import logging
 import pdb
+import inspect
+
+from igsr_archive.config import CONFIG
 
 # create logger
 ena_rec = logging.getLogger(__name__)
@@ -25,10 +28,8 @@ class ENArecord(object):
        
         self.type = type
         self.accession = id
-        allowed_keys = {'attrbs', 'xrefs','fastq_ftp', 
-                        'fastq_bytes', 'fastq_md5', 
-                        'submitted_ftp', 'submitted_bytes',
-                        'submitted_md5', 'sra_ftp', 'sra_bytes', 'sra_md5'}
+        allowed_keys_str = CONFIG.get('ena', 'fields').replace('\n', '')
+        allowed_keys = set(allowed_keys_str.split(","))
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
 
@@ -45,17 +46,31 @@ class ENArecord(object):
 
         Returns
         -------
-        tuple : tuple of ENArecords
+        tuple : tuple of 2 ENArecord objects
         """
-        pdb.set_trace()
-        for attr in fields:
-            value = getattr(self, attr, None)        
-            if value is None:
-                raise Exception(f"Attribute {attr} could not be found in the ENArecord instance")
 
-        print("h")
+        dict1 = {}
+        dict2 = {}
 
+        # get all attributes from self
+        for i in inspect.getmembers(self):
+            # to remove private and protected
+            # functions
+            if not i[0].startswith('_'):
+                # To remove other methods that
+                # doesnot start with a underscore
+                if not inspect.ismethod(i[1]) and not i[0]=='type' and not i[0]=='accession':
+                    if i[0] in fields:
+                        bits = i[1].split(";")
+                        dict1[i[0]] = bits[0]
+                        dict2[i[0]] = bits[1]
+                    else:
+                        dict1[i[0]] = i[1]
+                        dict2[i[0]] = i[1]
 
+        e1 = ENArecord(type=self.type, id=self.accession, **dict1)
+        e2 = ENArecord(type=self.type, id=self.accession, **dict2)
+        return e1, e2
     
     # object introspection
     def __str__(self):
