@@ -111,10 +111,12 @@ for path in files:
                                     f"Can't proceed"
     # download the file
     # construct path to store the dearchived file
+    logger.info(f"Downloading file to be dearchived: {abs_path}")
     basename = os.path.basename(abs_path)
     downloaded_path = os.path.join(args.directory, basename)
     api.retrieve_object(fireOid=dearch_fobj.fireOid,
                         outfile=downloaded_path)
+    logger.info(f"Download completed!")
 
     if str2bool(args.md5check) is True:
         logger.info("Checking if the md5sum of the retrieved and archived"
