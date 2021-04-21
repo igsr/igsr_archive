@@ -14,6 +14,8 @@ parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
 parser.add_argument('--study', required=True,
                     help="ENA study id. Example: ERP125611")
+parser.add_argument('--analysis_group', required=True,
+                    help="Analysis group used to identify groups, or sets, of data. Further information may be available with the data collection.")
 
 args = parser.parse_args()
 
@@ -76,7 +78,6 @@ def generate_header():
     return header
 
 header=generate_header()
-pdb.set_trace()
 
 eportal = ENAportal(acc=args.study)
 
@@ -84,7 +85,9 @@ logger.info('Querying the ENA portal endpoint')
 
 # list of attributes to get from ENA
 attributes = ['fastq_ftp','fastq_md5','accession', 'secondary_study_accession', 'study_title', 'center_name', 
-'submission_accession', 'first_created', 'secondary_study_accession', 'sample_alias']
+'submission_accession', 'first_created', 'secondary_study_accession', 'sample_alias', 'experiment_accession',
+'instrument_platform','instrument_model','library_name','run_alias','nominal_length','library_layout', 
+'read_count','base_count']
 
 record_lst = eportal.query(fields=",".join(attributes))
 logger.info(f"Obtained {len(record_lst)} records from the ENA portal endpoint")
@@ -93,21 +96,56 @@ def get_population(sample_id):
     """
     Function to get the population for 
     a certain sample_id
-    """
 
+    It will return None if not defined
+    """
     ebrowser = ENAbrowser(acc=sample_id)
     xmld = ebrowser.query()
-    ena_record = ebrowser.get_record(xmld)
+    attrbs = ebrowser.fetch_attrbs('SAMPLE', xmld, alist=['population'])
 
-    print("hello")
-
+    if 'population' in attrbs:
+        return attrbs['population']
+    else:
+        return None
 
 for r in record_lst:
-    r1, r2 = r.split()
-    get_population(r1.sample_accession)
-    row = ""
-    for attrb in attributes:
-        row += f"{getattr(r1, attrb)}\t"
+    attributes.append('analysis_group')
+    r.analysis_group = args.analysis_group
+    pop = get_population(r.sample_accession)
+    if pop is not None:
+        r.population = pop
+        attributes.append('population')
+    if r.library_layout == 'PAIRED':
+        attributes.append('paired_fastq')
+        r1, r2 = r.split()
+        r1.paired_fastq = r2.fastq_ftp
+        r2.paired_fastq = r1.fastq_ftp
+        row1 = ""
+        row2 = ""
+        for attrb in attributes:
+            if attrb in ['fastq_ftp', 'paired_fastq']:
+                # adding 'ftp://' to some attributes
+                newattr1 = f"ftp://{getattr(r1, attrb)}"
+                newattr2 = f"ftp://{getattr(r2, attrb)}"
+                setattr(r1, attrb, newattr1)
+                setattr(r2, attrb, newattr2)
+            row1 += f"{getattr(r1, attrb)}\t"
+            row2 += f"{getattr(r2, attrb)}\t"
+        print(f"{row1}\n{row2}")
+        pdb.set_trace()
+    elif r.library_layout == 'SINGLE':
+        row = ""
+        for attrb in attributes:
+            if attrb in ['fastq_ftp', 'paired_fastq']:
+                # adding 'ftp://' to some attributes
+                newattr = f"ftp://{getattr(r, attrb)}"
+                setattr(r, attrb, newattr)
+            row += f"{getattr(r, attrb)}\t"
+        print(f"{row}\n")
+    else:
+        raise Exception(f"Error: {r.library_layout} is not valid! ")
+    pdb.set_trace()
+
 
 
 print("h")

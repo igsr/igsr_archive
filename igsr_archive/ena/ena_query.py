@@ -99,7 +99,7 @@ class ENAbrowser(ENA):
         Returns
         -------
         ENArecord object
-        """       
+        """
         type = self.guess_type(xmld)
         id = self.fetch_primary_id(type, xmld)
         attrb_dict = self.fetch_attrbs(type, xmld)
@@ -161,7 +161,6 @@ class ENAbrowser(ENA):
         -------
         list : list of OrderedDict
         """
-        pdb.set_trace()
         files = xml_dict['RUN_SET']['RUN']['DATA_BLOCK']["FILES"]
         
         flist = []
@@ -171,7 +170,7 @@ class ENAbrowser(ENA):
         
         return flist
 
-    def fetch_attrbs(self, type, xml_dict):
+    def fetch_attrbs(self, type, xml_dict, alist=None):
         """
         Function to fetch each of the attributes for this ENA record
 
@@ -183,6 +182,9 @@ class ENAbrowser(ENA):
         xml_dict : dict 
                    Dict obtained from the ENA response 
                    after parsing with xmltodict function
+        alist : list
+                Return only the attributes specified by
+                this argument
         
         Returns
         -------
@@ -193,8 +195,14 @@ class ENAbrowser(ENA):
 
         f_dict = {}
         for item in attrb_lst:
-            f_dict[item['TAG']] = item['VALUE']
-        
+            if alist is not None:
+                if item['TAG'] not in alist:
+                    continue
+            if 'VALUE' in item:
+                f_dict[item['TAG']] = item['VALUE']
+            else:
+                f_dict[item['TAG']] = None
+
         return f_dict
     
     def fetch_xrefs(self, type, xml_dict):

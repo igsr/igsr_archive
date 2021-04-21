@@ -27,3 +27,29 @@ def test_get_record():
 
     assert ena_record.type == 'RUN'
     assert ena_record.primary_id == 'ERR001386'
+
+def test_fetch_attrbs():
+
+    log = logging.getLogger('test_fetch_attrbs')
+
+    log.debug('Fetch the {type}_ATTRIBUTES')
+
+    ebrowser = ENAbrowser(acc="SAMN00001598")
+    xmld = ebrowser.query()
+
+    a_dict = ebrowser.fetch_attrbs('SAMPLE', xmld)
+
+    assert len(a_dict.keys()) == 14
+
+def test_fetch_attrbs_w_alist():
+
+    log = logging.getLogger('test_fetch_attrbs_w_alist')
+
+    log.debug('Fetch the {type}_ATTRIBUTES with the alist parameter')
+
+    ebrowser = ENAbrowser(acc="SAMN00001598")
+    xmld = ebrowser.query()
+
+    a_dict = ebrowser.fetch_attrbs('SAMPLE', xmld, alist= ['population', 'Super Population Code'])
+
+    assert len(a_dict.keys()) == 2
