@@ -12,10 +12,12 @@ parser = argparse.ArgumentParser(description='Script to generate a sequence inde
 parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 parser.add_argument('-s', '--settings', required=True,
                     help="Path to .ini file with settings")
-parser.add_argument('--study', required=True,
-                    help="ENA study id. Example: ERP125611")
+parser.add_argument('--studies', required=True,
+                    help="Comma-sep string with ENA study ids. Example: ERP125611,ERP123307")
 parser.add_argument('--analysis_group', required=True,
                     help="Analysis group used to identify groups, or sets, of data. Further information may be available with the data collection.")
+parser.add_argument('--output', required=True,
+                    help="Name of output file with index.")
 
 args = parser.parse_args()
 
@@ -79,18 +81,30 @@ def generate_header():
 
 header=generate_header()
 
-eportal = ENAportal(acc=args.study)
-
-logger.info('Querying the ENA portal endpoint')
+ofile = open(args.output, 'w')
+ofile.write(header)
 
 # list of attributes to get from ENA
 attributes = ['fastq_ftp','fastq_md5','accession', 'secondary_study_accession', 'study_title', 'center_name', 
-'submission_accession', 'first_created', 'secondary_study_accession', 'sample_alias', 'experiment_accession',
+'submission_accession', 'first_created', 'secondary_sample_accession', 'sample_alias', 'experiment_accession',
 'instrument_platform','instrument_model','library_name','run_alias','nominal_length','library_layout', 
 'read_count','base_count']
 
-record_lst = eportal.query(fields=",".join(attributes))
-logger.info(f"Obtained {len(record_lst)} records from the ENA portal endpoint")
+study_lst = args.studies.split(",")
+
+record_lst = []
+for study in study_lst:
+    eportal = ENAportal(study)
+
+    logger.info('Querying the ENA portal endpoint')
+
+    record_lst_study = eportal.query(fields=",".join(attributes))
+    record_lst.append(record_lst_study)
+    logger.info(f"Obtained {len(record_lst_study)} records from the ENA portal endpoint for study:{study}")
+
+
+record_lst = [item for sublist in record_lst for item in sublist]
+
 
 def get_population(sample_id):
     """
@@ -108,13 +122,20 @@ def get_population(sample_id):
     else:
         return None
 
+# list of fields to print out in order
+fields = ['fastq_ftp','fastq_md5','run_accession', 'secondary_study_accession', 'study_title', 'center_name', 
+'submission_accession', 'first_created', 'secondary_sample_accession', 'sample_alias', 'population','experiment_accession',
+'instrument_platform','instrument_model','library_name','run_alias','nominal_length','library_layout', 
+'paired_fastq','read_count','base_count','analysis_group']
+
 for r in record_lst:
-    attributes.append('analysis_group')
     r.analysis_group = args.analysis_group
     pop = get_population(r.sample_accession)
     if pop is not None:
         r.population = pop
-        attributes.append('population')
+    else:
+        logger.info(f"No population defined for {r.sample_accession}. Will be set to 'NA'")
+        r.population = 'NA'
     if r.library_layout == 'PAIRED':
         attributes.append('paired_fastq')
         r1, r2 = r.split()
@@ -122,7 +143,7 @@ for r in record_lst:
         r2.paired_fastq = r1.fastq_ftp
         row1 = ""
         row2 = ""
-        for attrb in attributes:
+        for attrb in fields:
             if attrb in ['fastq_ftp', 'paired_fastq']:
                 # adding 'ftp://' to some attributes
                 newattr1 = f"ftp://{getattr(r1, attrb)}"
@@ -131,22 +152,20 @@ for r in record_lst:
                 setattr(r2, attrb, newattr2)
             row1 += f"{getattr(r1, attrb)}\t"
             row2 += f"{getattr(r2, attrb)}\t"
-        print(f"{row1}\n{row2}")
-        pdb.set_trace()
+        ofile.write(f"{row1}\n{row2}\n")
     elif r.library_layout == 'SINGLE':
         row = ""
-        for attrb in attributes:
-            if attrb in ['fastq_ftp', 'paired_fastq']:
+        for attrb in fields:
+            if attrb == 'fastq_ftp':
                 # adding 'ftp://' to some attributes
                 newattr = f"ftp://{getattr(r, attrb)}"
                 setattr(r, attrb, newattr)
+            elif attrb == 'paired_fastq':
+                setattr(r, attrb, '')
             row += f"{getattr(r, attrb)}\t"
-        print(f"{row}\n")
+        ofile.write(f"{row}\n")
     else:
         raise Exception(f"Error: {r.library_layout} is not valid! ")
-    pdb.set_trace()
 
-
-
-print("h")
-
+logger.info("Index creation. Done...")
+ofile.close()
