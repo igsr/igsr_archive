@@ -105,7 +105,6 @@ for study in study_lst:
 
 record_lst = [item for sublist in record_lst for item in sublist]
 
-
 def get_population(sample_id):
     """
     Function to get the population for 
