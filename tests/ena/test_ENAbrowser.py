@@ -53,3 +53,29 @@ def test_fetch_attrbs_w_alist():
     a_dict = ebrowser.fetch_attrbs('SAMPLE', xmld, alist= ['population', 'Super Population Code'])
 
     assert len(a_dict.keys()) == 2
+
+def test_fetch_xrefs_run():
+
+    log = logging.getLogger('test_fetch_xrefs_run')
+
+    log.debug('Fetch the XREF_LINK attributes for a particular run accession')
+
+    ebrowser = ENAbrowser(acc="ERR001386")
+    xmld = ebrowser.query()
+
+    a_dict = ebrowser.fetch_xrefs('RUN', xmld)
+
+    assert len(list(a_dict.keys())) == 5
+
+def test_fetch_xrefs_analysis():
+
+    log = logging.getLogger('test_fetch_xrefs_analysis')
+
+    log.debug('Fetch the XREF_LINK attributes for a particular analysis accession')
+
+    ebrowser = ENAbrowser(acc="ERZ1669093")
+    xmld = ebrowser.query()
+
+    a_dict = ebrowser.fetch_xrefs('ANALYSIS', xmld)
+
+    assert 0

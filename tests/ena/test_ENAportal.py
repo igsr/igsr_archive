@@ -16,6 +16,17 @@ def test_ENAportal_query_run():
 
     assert record_lst[0].accession == "ERR001386"
 
+def test_ENAportal_query_analysis():
+    log = logging.getLogger('test_ENAportal_query_analysis')
+
+    log.debug('Test the query function from ENAportal to fetch a file record for a particular run acc')
+
+    eportal = ENAportal(acc="ERZ1669096")
+
+    record_lst = eportal.query(q_type='analysis')
+
+    assert record_lst[0].accession == "ERZ1669096"
+
 def test_ENAportal_query_fields():
     log = logging.getLogger('test_ENAportal_query_fields')
 

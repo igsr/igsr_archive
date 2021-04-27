@@ -223,12 +223,13 @@ class ENAbrowser(ENA):
         dict 
               Dictionary in the format {'DB' : 'ID'}
         """
-
+        pdb.set_trace()
         xref_lst = xml_dict[f"{type}_SET"][f"{type}"][f"{type}_LINKS"][f"{type}_LINK"]
 
         f_dict =  {}
-        for item in xref_lst:
-            f_dict[item['XREF_LINK']['DB']] = item['XREF_LINK']['ID']
+        if isinstance(xref_lst, list):
+            for item in xref_lst:
+                f_dict[item['XREF_LINK']['DB']] = item['XREF_LINK']['ID']
         
         return f_dict
 
@@ -257,13 +258,13 @@ class ENAportal(ENA):
 
         ENA.__init__(self, url)
 
-    def query(self, type='read_run', fields=None):
+    def query(self, q_type='read_run', fields=None):
         """
         Function overriding 'query' parent class
 
         Parameters
         ----------
-        type : str
+        q_type : str
                Report type: 'read_run', 'analysis'
                Default: 'read_run'
         fields : str
@@ -274,17 +275,25 @@ class ENAportal(ENA):
         -------
         list : List with ENArecord objects
         """
+        if q_type != 'read_run' and q_type != 'analysis':
+            raise TypeError(f"Non valid 'q_type' parameter:{q_type}")
+
         if fields is None:
-            self.url = f"{self.url}&result={type}"
+            self.url = f"{self.url}&result={q_type}"
         else :
-            self.url = f"{self.url}&result={type}&fields={fields}"
+            self.url = f"{self.url}&result={q_type}&fields={fields}"
         res = ENA.query(self)
 
         text_res = res.content.decode("utf-8")
         data = [x.split('\t') for x in text_res.split('\n') if len(x.split('\t'))>1]
         fields = data[0]
         # getting the 'type' of this file record
-        type = fields[0].replace('_accession','').upper()
+        type = None
+        if q_type == 'read_run':
+            type = fields[0].replace('_accession','').upper()
+        else:
+            type = 'ANALYSIS'
+        
         data = data[1::]
 
         records = []
@@ -293,6 +302,9 @@ class ENAportal(ENA):
             if len(rec) != len(fields):
                 raise Exception("Different number of data columns and fields")
             record = dict(zip(fields, rec))
-            records.append(ENArecord(type, record['run_accession'], **record))
+            if q_type == 'read_run':
+                records.append(ENArecord(type, record['run_accession'], **record))
+            elif q_type == "analysis":
+                records.append(ENArecord(type, record['analysis_accession'], **record))
 
         return records

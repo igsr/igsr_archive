@@ -41,10 +41,6 @@ if not isinstance(numeric_level, int):
 
 logging.basicConfig(level=numeric_level)
 
-# Parse config file
-settingsO = ConfigParser()
-settingsO.read(args.settings)
-
 def generate_header():
     """
     Function to generate the header of the index file

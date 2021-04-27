@@ -1,1 +1,3 @@
 python -m pdb add_missing_pop.py -i out.txt --host mysql-igsr-web -u g1kro -P 4641 -d igsr_website_v2
+
+python create_analysis_index.py --studies ERP124807 --output out.txt -s /Users/ernesto/lib/igsr_archive/data/settings.ini
