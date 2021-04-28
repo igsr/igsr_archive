@@ -78,4 +78,4 @@ def test_fetch_xrefs_analysis():
 
     a_dict = ebrowser.fetch_xrefs('ANALYSIS', xmld)
 
-    assert 0
+    assert a_dict['ENA-SUBMISSION'] == 'ERA3062116'

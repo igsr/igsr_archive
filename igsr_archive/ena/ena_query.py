@@ -223,14 +223,15 @@ class ENAbrowser(ENA):
         dict 
               Dictionary in the format {'DB' : 'ID'}
         """
-        pdb.set_trace()
         xref_lst = xml_dict[f"{type}_SET"][f"{type}"][f"{type}_LINKS"][f"{type}_LINK"]
 
         f_dict =  {}
         if isinstance(xref_lst, list):
             for item in xref_lst:
                 f_dict[item['XREF_LINK']['DB']] = item['XREF_LINK']['ID']
-        
+        else:
+            f_dict[xref_lst['XREF_LINK']['DB']] = xref_lst['XREF_LINK']['ID']
+                
         return f_dict
 
 class ENAportal(ENA):

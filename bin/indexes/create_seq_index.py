@@ -133,7 +133,9 @@ for r in record_lst:
         r.population = 'NA'
     if r.library_layout == 'PAIRED':
         attributes.append('paired_fastq')
-        r1, r2 = r.split()
+        a_list = r.split()
+        r1 = a_list[0]
+        r2 = a_list[1]
         r1.paired_fastq = r2.fastq_ftp
         r2.paired_fastq = r1.fastq_ftp
         row1 = ""

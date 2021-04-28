@@ -1,15 +1,3 @@
-"""
-submitted_ftp, submitted_md5, analysis_accession, secondary_study_accession, study_title, center_name,XML(<XREF_LINK>
-<DB>ENA-SUBMISSION</DB>
-<ID>ERA3062116</ID>
-</XREF_LINK>),first_public,secondary_sample_accession,sample_alias,population,<ANALYSIS_TYPE>
-<GENOME_MAP>
-<PLATFORM>BioNano</PLATFORM>
-</GENOME_MAP>,<ANALYSIS_TYPE>
-<GENOME_MAP>
-<PROGRAM>Saphyr</PROGRAM>
-</GENOME_MAP>
-"""
 #!/usr/bin/env python
 import argparse
 import logging
@@ -100,8 +88,11 @@ def get_metadata(id):
     Parameter
     ---------
     id : accession id
+
+    Returns
+    -------
+    dict
     """
-    pdb.set_trace()
     ebrowser = ENAbrowser(acc=id)
     xmld = ebrowser.query()
 
@@ -109,9 +100,11 @@ def get_metadata(id):
 
     metadata_d = {
         'program' : xmld['ANALYSIS_SET']['ANALYSIS']['ANALYSIS_TYPE']['GENOME_MAP']['PROGRAM'],
-        'platform' : xmld['ANALYSIS_SET']['ANALYSIS']['ANALYSIS_TYPE']['GENOME_MAP']['PLATFORM']
-
+        'platform' : xmld['ANALYSIS_SET']['ANALYSIS']['ANALYSIS_TYPE']['GENOME_MAP']['PLATFORM'],
+        'ena_submission' : xrefs['ENA-SUBMISSION']
     }
+
+    return metadata_d
 
 header=generate_header()
 
@@ -134,9 +127,28 @@ for study in study_lst:
 
 record_lst = [item for sublist in record_lst for item in sublist]
 
-for r in record_lst:
-    print("h")
-    get_metadata(id=r.accession)
-    print("h\n")
+# list of fields to print out in order
+fields = ['submitted_ftp','submitted_md5','accession','secondary_study_accession', 'study_title', 'center_name',
+'ena_submission', 'first_public', 'secondary_sample_accession', 'sample_alias', 'population', 'platform', 'program' ]
 
-print("hello")
+for r in record_lst:
+    m_dict = get_metadata(id=r.accession)
+    r.ena_submission = m_dict['ena_submission']
+    r.program = m_dict['program']
+    r.platform = m_dict['platform']
+    pop = get_population(r.sample_accession)
+    if pop is not None:
+        r.population = pop
+    else:
+        logger.info(f"No population defined for {r.sample_accession}. Will be set to 'NA'")
+        r.population = 'NA'
+    lst_objs = r.split(fields = ['submitted_ftp', 'submitted_md5'])
+    [ setattr(x, 'submitted_ftp', f"ftp://{x.submitted_ftp}") for x in lst_objs]
+
+    for obj in lst_objs:
+        row = ""
+        for attrb in fields:
+            row += f"{getattr(obj, attrb)}\t"
+        ofile.write(f"{row}\n")
+
+

@@ -32,7 +32,6 @@ class ENArecord(object):
         allowed_keys = set(allowed_keys_str.split(","))
         self.__dict__.update((k, v) for k, v in kwargs.items() if k in allowed_keys)
 
-
     def split(self, fields = ['fastq_ftp', 'fastq_bytes', 'fastq_md5']):
         """
         Function to split the record having more than one piece 
@@ -46,12 +45,11 @@ class ENArecord(object):
 
         Returns
         -------
-        tuple : tuple of 2 ENArecord objects
+        list : list of ENArecord objects
         """
-
-        dict1 = {}
-        dict2 = {}
-
+        n = len(self.__getattribute__(fields[0]).split(";"))
+        list_d = [{} for _ in range(n)]
+        
         # get all attributes from self
         for i in inspect.getmembers(self):
             # to remove private and protected
@@ -62,15 +60,16 @@ class ENArecord(object):
                 if not inspect.ismethod(i[1]) and not i[0]=='type' and not i[0]=='accession':
                     if i[0] in fields:
                         bits = i[1].split(";")
-                        dict1[i[0]] = bits[0]
-                        dict2[i[0]] = bits[1]
+                        ix = 0
+                        for data in list_d:
+                            data[i[0]] = bits[ix]
+                            ix += 1
                     else:
-                        dict1[i[0]] = i[1]
-                        dict2[i[0]] = i[1]
+                        for data in list_d:
+                            data[i[0]] = i[1]
 
-        e1 = ENArecord(type=self.type, id=self.accession, **dict1)
-        e2 = ENArecord(type=self.type, id=self.accession, **dict2)
-        return e1, e2
+        lst_objs = [ENArecord(type=self.type, id=self.accession, **adict) for adict in list_d]
+        return lst_objs
     
     # object introspection
     def __str__(self):
