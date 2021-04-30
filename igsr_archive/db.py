@@ -16,17 +16,27 @@ class DB(object):
     """
     Class to represent a Reseqtrack db
 
-    Class variables
-    ---------------
+    Attributes
+    ----------
     conn : Connection object
-           Connection to MySQL db
-    pwd : srt, Required
-          Password used for MySQL server connection
-    dbname: str, Required
-            Reseqtrack db name
+           Connection to MySQL db.
+    pwd : str
+          Password used for MySQL server connection.
+    dbname : str
+            Reseqtrack db name.
     """
 
     def __init__(self, pwd, dbname):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        pwd : str
+              Password for API.
+        dbname: str
+                Reseqtrack db name.
+        """
 
         db_logger.debug('Creating DB object')
 
@@ -41,7 +51,7 @@ class DB(object):
 
         Returns
         -------
-        Connection object
+        conn: Connection object
         """
 
         db_logger.debug('Setting connection...')
@@ -67,15 +77,16 @@ class DB(object):
         Parameters
         ----------
         f : File object
-            File that will be stored in this DB
-        dry : Bool, Optional
-              If dry=True then it will not try to store the file in the DB. Default True
+            File that will be stored in this DB.
+        dry : bool, default=True
+              If True then it will not try to store the file in the DB.
 
         Returns
         -------
-        int: Return code
-             0 : Success
-             1 : False
+        int
+            Return code
+                0 : Success
+                1 : Error
 
         Raises
         ------
@@ -111,8 +122,6 @@ class DB(object):
         else:
             raise Exception(f"dry option: {dry} not recognized")
 
-        return f.name
-
     def delete_file(self, f, dry=True):
         """
         Function to delete a certain entry
@@ -121,15 +130,19 @@ class DB(object):
         Parameters
         ----------
         f : File object
-            File to be deleted from the DB
-        dry : Bool, Optional
+            File to be deleted from the DB.
+        dry : bool, default=True
               If dry=True then it will not delete the file
-              from the self.dbname. Default True
+              from the self.dbname.
+        
+        Returns
+        -------
+        None
 
         Raises
         ------
         pymysql.Error
-        If there was some kind of error
+            If there was some kind of error
         """
 
         db_logger.info(f"Deleting file: {f.name}")
@@ -166,15 +179,20 @@ class DB(object):
 
         Parameters
         ----------
-        path : str, Optional
-               Path of file to be retrieved
-        basename : str, Optional
-                   Basename of file to be retrieved
+        path : str, optional
+               Path of file to be retrieved.
+        basename : str, optional
+                   Basename of file to be retrieved.
 
         Returns
         -------
-        file.file.File object retrieved from DB
-        None if no file was retrieved
+        f : file.file.File or None
+            object retrieved from DB
+            None if no file was retrieved.
+        
+        Raises
+        ------
+        pymysql.Error
         """
         cursor = self.conn.cursor(pymysql.cursors.DictCursor)
         if path is not None:
@@ -208,11 +226,17 @@ class DB(object):
 
         Parameters
         ----------
-        pattern : str, Required
+        pattern : str
+                  Pattern used to find files
 
         Returns
         -------
-        A list with all paths returned by the query
+        file_list : list of str
+                    List with all paths returned by the query
+        
+        Raises
+        ------
+        pymysql.Error
         """
 
         db_logger.debug(f"Fetching all files for pattern: {pattern}")
@@ -233,6 +257,7 @@ class DB(object):
             db_logger.error("Exception occurred", exc_info=True)
             # Rollback in case there is any error
             self.conn.rollback()
+
         return file_list
 
     def get_ctree(self, fields, outfile, limit=None):
@@ -245,20 +270,23 @@ class DB(object):
 
         Parameter
         --------
-        fields: list
+        fields: list of str
                 List with the fields from the 'file' table to
                 be dumped. The order of the fields in the dumped
-                file will be preserved
+                file will be preserved.
         outfile: str
-                 File path for the current.same.tree output
-        limit: int, Optional
+                 File path for the current.same.tree output.
+        limit: int, default = None
                Limit current.same.tree file to this int number of records
-               Default: None (all records will be dumped)
+               If None then (all records will be dumped).
 
         Return
         ------
-        string, dict
-        path with current.tree file, dict with md5s
+        outfile : str
+                  path with current.tree.
+        data_dict : dict
+                    Dict with md5s
+                    { 'path' : md5 }
         """
         assert isinstance(fields, list)
 
@@ -312,15 +340,15 @@ class DB(object):
         Parameters
         ----------
         attr_name : str
-                    Attribute name to modify
+                    Attribute name to modify.
         value : str
-                New value for 'attr_name'
+                New value for `attr_name`.
         name : str
                'name' (path) of entry that
-               will be updated
-        dry : Bool, Optional
+               will be updated.
+        dry : bool, default=True
               If dry=True then it will not delete the file
-              from the self.dbname. Default True
+              from the self.dbname.
 
         Returns
         -------

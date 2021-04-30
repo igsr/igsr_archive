@@ -52,14 +52,15 @@ class API(object):
         
         Returns
         -------
-        str
-            filename
+        fname[0] : str
+                   filename
         """
         if not cd:
             return None
         fname = re.findall('filename=(.+)', cd)
         if len(fname) == 0:
             return None
+
         return fname[0]
 
     def retrieve_object(self, fireOid=None, firePath=None, outfile=None):
@@ -77,8 +78,8 @@ class API(object):
 
         Returns
         -------
-        str 
-            Downloaded file
+        outfile : str
+                  Downloaded file
 
         Raises
         ------
@@ -114,6 +115,7 @@ class API(object):
             api_logger.debug('Retrieved object')
 
             return outfile
+
         except HTTPError as http_err:
             print(f'HTTP error occurred: {http_err}')
         except Exception as err:
@@ -133,7 +135,8 @@ class API(object):
 
         Returns
         -------
-        fire.object.fObject : Object with metadata or None.
+        fireObj : fire.object.fObject
+                  Object with metadata or None.
 
         Raises
         ------
@@ -175,6 +178,7 @@ class API(object):
                 json_res = res.json()
                 fireObj = self.__parse_json_response(json_res)
                 api_logger.debug('Fetched FIRE object')
+
                 return fireObj
 
     def __parse_json_response(self, json_res):
@@ -189,7 +193,8 @@ class API(object):
 
         Returns
         -------
-        fire.object
+        fireObj : fire.object.fObject
+                  Object instantiated from json
         """
 
         metadata_dict = {}
@@ -227,8 +232,8 @@ class API(object):
 
         Returns
         -------
-        fire.object.fObject
-                fObject with metadata on the stored FIRE object
+        fire_obj : fire.object.fObject
+                  fObject with metadata on the stored FIRE object.
 
         Raises
         ------
@@ -302,8 +307,8 @@ class API(object):
 
         Returns
         -------
-        fire.object.fObject 
-                    fObject with updated `attr_name`.
+        fireObj : fire.object.fObject 
+                  fObject with updated `attr_name`.
 
         Raises
         ------
@@ -374,6 +379,10 @@ class API(object):
                   FIRE object id.
         dry : bool, default=True
               If True then it will not try to delete the FIRE object.
+        
+        Returns
+        -------
+        None
         
         Raises
         ------

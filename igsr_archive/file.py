@@ -13,37 +13,33 @@ class File(object):
     """
     Class to represent a File
 
-    Class variables
-    ---------------
-    name : str, Required
-           File path
-    file_id : int, Optional,
+    Attributes
+    ----------
+    name : str
+           File path.
+    file_id : int
               Internal DB id if the file is
-              stored in the DB
-    type : str, Optional
-                Type of the file.
-                i.e. FASTQ, BAM, CRAM
-    host_id : int, Optional
-              Host id. Host is the name
-              of the host which the
-              filesystem is visible
-              to so 1000genomes.ebi.ac.uk
-              for ebi files. Default : 1
-    withdrawn : int, Optional
+              stored in the DB.
+    type : str
+           Type of the file.
+           i.e. FASTQ, BAM, CRAM.
+    host_id : int
+              Host id. Host is the name of the host which the
+              filesystem is visible to 1000genomes.ebi.ac.uk
+              for ebi files.
+    withdrawn : int
                 1 if self is withdrawn.
-                0 otherwise. Default: 0
-    md5  : str, Optional
+                0 otherwise.
+    md5  : str
              md5sum of this file
-             It will be calculated
-             if not defined
-    size : int, Optional
-           Size in bytes
-           It will calculated
-           if not defined
-    created : str, Optional
+             It will be calculated if not defined.
+    size : int
+           Size in bytes. It will calculated
+           if not defined.
+    created : str
               Stringified date representation
               It will calculated if not defined
-              in the format (%Y-%m-%d %H:%M:%S)
+              in the format (%Y-%m-%d %H:%M:%S).
     """
 
     def __init__(self, name, host_id=1, type=None,

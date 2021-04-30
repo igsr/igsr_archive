@@ -72,8 +72,8 @@ class ChangeEvents(object):
 
         Returns
         -------
-        int
-            Number of changes
+        size : int
+               Number of changes
         """
         size = 0
         for state, value in self.__dict__.items():
@@ -96,8 +96,8 @@ class ChangeEvents(object):
 
         Returns
         -------
-        list : list of str 
-               File paths of the new changelog_details_* files
+        ofiles_lst : list of str 
+                     File paths of the new changelog_details_* files
         """
         now_str = self.dtime.strftime('%Y%m%d')
 
@@ -255,8 +255,8 @@ class ChangeEvents(object):
 
         Returns
         -------
-        list of str
-            list with the Fire paths of the pushed changelog_details_*.
+        pushed_files : list of str
+                       list with the Fire paths of the pushed changelog_details_*.
         """
         
         ce_logger.info("Pushing changelog_details_* files to the archive")

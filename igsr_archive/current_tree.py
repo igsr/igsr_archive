@@ -30,7 +30,7 @@ class CurrentTree(object):
                   be the query in the comparison, i.e. New tree generated from
                   the Reseqtrack DB that is located in the 'staging area'.
     dtime: str
-              Str with the datetime this object was instantiated.
+           Str with the datetime this object was instantiated.
     """
     def __init__(self, db, api, prod_tree, staging_tree):
         """
@@ -132,12 +132,15 @@ class CurrentTree(object):
         3) Delete self.prod_tree
         4) Push self.staging_tree to the archive
 
-        Returns
-        -------
-        path : str
-            Fire path of the pushed current.tree.
+        Parameters
+        ----------
         dry: bool, default=True
              Perform a dry run.
+
+        Returns
+        -------
+        fire_path : str
+                    Fire path of the pushed current.tree.
         """
         # updating metadata for existing staging_tree file in the DB
         staging_fobj = File(name=self.staging_tree)
@@ -182,8 +185,8 @@ class CurrentTree(object):
 
         Returns
         -------
-        dict
-             { 'path' : md5 }
+        data_dict: dict of str: str
+                  { 'path' : md5 }
         """
         data_dict = {}  # dict {'path' : 'md5' }
         with open(self.prod_tree) as f:
@@ -270,6 +273,7 @@ class CurrentTree(object):
         replacement.pop('ftp/current.tree', None)
 
         ct_logger.info(f"Number of records that are new in the DB: {len(new)}")
+        
         return ChangeEvents(new, withdrawn, moved, replacement)
 
     # object introspection
