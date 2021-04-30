@@ -15,22 +15,46 @@ class ChangeEvents(object):
     Container encapsulating a change/s in the state of self.staging_tree vs
     self.prod_tree
 
-    Class variables
-    ---------------
-    new : set containing the paths that are new in staging vs prod ctree files
-    withdrawn : set containing the paths that are removed in staging vs prod ctree files
-    moved : containing the file paths (and not the file content) that have
+    Attributes
+    ----------
+    new : set 
+          set containing the paths that are new in staging vs prod ctree files.
+    withdrawn : set
+                set containing the paths that are removed in staging vs prod ctree files.
+    moved : set
+            set containing the file paths (and not the file content) that have
             been modified. This category will contain a dict with the
             following format:
-            { 'new_path' : 'old_path'}
-    replacement : containing the paths for which the file contents have changed, even
+            { 'new_path' : 'old_path'}.
+    replacement : set 
+                  set containing the paths for which the file contents have changed, even
                   if the path stays the same. This category will contain a dict with the
                   following format:
-                  { 'path' : tuple ('new_md5', 'old_md5')}
+                  { 'path' : tuple ('new_md5', 'old_md5')}.
     dtime: str
-              Str with the datetime this object was instantiated
+           datetime when this object was instantiated.
     """
     def __init__(self, new, withdrawn, moved, replacement):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        new : set
+            set containing the paths that are new in staging vs prod ctree files.
+        withdrawn : set
+                set containing the paths that are removed in staging vs prod ctree files.
+        moved : set
+            set containing the file paths (and not the file content) that have
+            been modified. This category will contain a dict with the
+            following format:
+            { 'new_path' : 'old_path'}.
+        replacement : set 
+                  set containing the paths for which the file contents have changed, even
+                  if the path stays the same. This category will contain a dict with the
+                  following format:
+                  { 'path' : tuple ('new_md5', 'old_md5')}.
+        """
 
         ce_logger.debug('Creating ChangeEvents object')
 
@@ -48,7 +72,8 @@ class ChangeEvents(object):
 
         Returns
         -------
-        int: Number of changes
+        int
+            Number of changes
         """
         size = 0
         for state, value in self.__dict__.items():
@@ -66,12 +91,13 @@ class ChangeEvents(object):
 
         Parameters
         ----------
-        odir : directory name for placing the changelog_details files
+        odir : str 
+               Directory name for placing the changelog_details files.
 
         Returns
         -------
-        list : list with the file paths of the new
-               changelog_details_* files
+        list : list of str 
+               File paths of the new changelog_details_* files
         """
         now_str = self.dtime.strftime('%Y%m%d')
 
@@ -113,7 +139,12 @@ class ChangeEvents(object):
 
         Parameters
         ----------
-        ifile : path to CHANGELOG file that will be updated
+        ifile : str
+                path to CHANGELOG file that will be updated.
+        
+        Returns
+        -------
+        None
         """
         now_str = self.dtime.strftime('%Y-%m-%d')
         now_str1 = self.dtime.strftime('%Y%m%d')
@@ -158,16 +189,20 @@ class ChangeEvents(object):
 
         Parameters
         ----------
-        chlog_p : path to
-                  updated CHANGELOG file that will be pushed to FIRE
-        db : DB connection object
-        api : API connection object
-        dry: Bool
-             Perform a dry run. Default: True
+        chlog_p : str
+                  path to updated CHANGELOG file that will be pushed to FIRE.
+        db : DB connection object.
+        api : API connection object.
+        dry: bool, default=True
+             Perform a dry run.
 
         Returns
         -------
-        path : Fire path of the updated CHANGELOG files
+        str : Fire path of the updated CHANGELOG files
+
+        Raises
+        ------
+        Exception
         """
         dtstr = self.dtime.now().strftime('%Y_%m_%dT%H%M%S')
         # update the CHANGELOG metadata in the DB
@@ -210,18 +245,20 @@ class ChangeEvents(object):
 
         Parameters
         ----------
-        pathlist : list
-                   List with the paths of the changelog_details_* files
-                   (resulting from running self.print_chlog_details)
-        db : DB connection object
-        api : API connection object
-        dry: Bool
-             Dry-run. Default: True
+        pathlist : list pf str
+                   List with paths of the changelog_details_* files
+                   (resulting from running self.print_chlog_details).
+        db : DB connection object.
+        api : API connection object.
+        dry: bool, default=True
+             Perform a dry run.
 
         Returns
         -------
-        list : list with the Fire paths of the pushed changelog_details_*
+        list of str
+            list with the Fire paths of the pushed changelog_details_*.
         """
+        
         ce_logger.info("Pushing changelog_details_* files to the archive")
 
         pushed_files = []

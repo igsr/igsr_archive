@@ -17,23 +17,38 @@ class CurrentTree(object):
     Container for all operations aimed to generate the current.tree and
     related files
 
-    Class variables
-    ---------------
-    db: DB object. Required
-    api: FIRE api object. Required
+    Attributes
+    ----------
+    db: DB object.
+    api: FIRE api object.
     prod_tree: str
                Path to the 'production tree' file. This is the tree that will
                be the reference in the comparison, i.e. Tree that could
-               be allocated in the FTP area. Required
+               be allocated in the FTP area.
     staging_tree: str
                   Path to the 'staging tree' file. This is the tree that will
                   be the query in the comparison, i.e. New tree generated from
-                  the Reseqtrack DB that is located in the 'staging area'. Required
+                  the Reseqtrack DB that is located in the 'staging area'.
     dtime: str
-              Str with the datetime this object was instantiated
+              Str with the datetime this object was instantiated.
     """
     def __init__(self, db, api, prod_tree, staging_tree):
+        """
+        Constructor
 
+        Parameters
+        ----------
+        db: DB object.
+        api: FIRE api object.
+        prod_tree: str
+               Path to the 'production tree' file. This is the tree that will
+               be the reference in the comparison, i.e. Tree that could
+               be allocated in the FTP area.
+        staging_tree: str
+                  Path to the 'staging tree' file. This is the tree that will
+                  be the query in the comparison, i.e. New tree generated from
+                  the Reseqtrack DB that is located in the 'staging area'.
+        """
         ct_logger.debug('Creating CurrentTree object')
 
         self.db = db
@@ -50,24 +65,24 @@ class CurrentTree(object):
         Parameters
         ----------
         chlog_f:  str
-                  Path for CHANGELOG file that will be modified. Required
-        dry: Bool
+                  Path for CHANGELOG file that will be modified.
+        dry: bool, default=True
              If False, then objects will be actually pushed to the archive
-             and database will be modified. Default: True
-        limit: int
+             and database will be modified.
+        limit: int, optional
                Limit the number of records to retrieve from DB.
-               Default: None
               
         Returns
         -------
-        If there is a ChangeEvents with entries in it then it will generate a dict
-        with the following format:
+        dict or 0
+            If there is a ChangeEvents with entries in it then it will generate a dict
+            with the following format:
 
-         {'chlog_details' : chlog_details_list,
-         'chlog_firepath' : chlog_firepath,
-         'ctree_firepath' : ctree_firepath}
+            {'chlog_details' : chlog_details_list,
+            'chlog_firepath' : chlog_firepath,
+            'ctree_firepath' : ctree_firepath}
 
-        If the ChangeEvents object has size = 0 then it will return 0
+            If the ChangeEvents object has size = 0 then it will return 0
         """
         ct_logger.info("Starting CurrentTree.run() process")
 
@@ -119,9 +134,10 @@ class CurrentTree(object):
 
         Returns
         -------
-        path : Fire path of the pushed current.tree
-        dry: Bool
-             Perform a dry run. Default: True
+        path : str
+            Fire path of the pushed current.tree.
+        dry: bool, default=True
+             Perform a dry run.
         """
         # updating metadata for existing staging_tree file in the DB
         staging_fobj = File(name=self.staging_tree)
@@ -167,6 +183,7 @@ class CurrentTree(object):
         Returns
         -------
         dict
+             { 'path' : md5 }
         """
         data_dict = {}  # dict {'path' : 'md5' }
         with open(self.prod_tree) as f:
@@ -187,6 +204,11 @@ class CurrentTree(object):
     def getKeysByValue(dictOfElements, valueToFind):
         """
         Get a list of keys from dictionary which has the given value
+
+        Returns
+        -------
+        list
+            list of str
         """
         listOfKeys = list()
         listOfItems = dictOfElements.items()
@@ -204,10 +226,10 @@ class CurrentTree(object):
         ----------
         db_dict : dict
                   Dict in the format { 'name' : 'md5sum' } generated
-                  by self.db.get_ctree
+                  by self.db.get_ctree.
         file_dict : dict
                     Dict in the format { 'name' : 'md5sum' } generated
-                    by self.get_file_dict
+                    by self.get_file_dict.
         Returns
         -------
         ChangeEvents object
