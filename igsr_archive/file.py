@@ -31,19 +31,36 @@ class File(object):
                 1 if self is withdrawn.
                 0 otherwise.
     md5  : str
-             md5sum of this file
-             It will be calculated if not defined.
+            md5sum of this filenIt will be calculated if not defined.
     size : int
            Size in bytes. It will calculated
            if not defined.
     created : str
               Stringified date representation
-              It will calculated if not defined
-              in the format (%Y-%m-%d %H:%M:%S).
+              It will be calculated if not defined in the format (%Y-%m-%d %H:%M:%S).
     """
 
     def __init__(self, name, host_id=1, type=None,
                  withdrawn=0, **kwargs):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        name : str
+               File path.
+        host_id: int, default=1
+                 Host id. Host is the name of the host which the filesystem is visible to 
+                 1000genomes.ebi.ac.uk for ebi files.
+        type : str, default=None
+               Type of the file. i.e. FASTQ, BAM, CRAM.
+        withdrawn : int, default=0
+                    1 if self is withdrawn.
+                    0 otherwise.
+        **kwargs : dict, optional
+                   Extra arguments to `File`: refer to each File documentation for a
+                   list of all possible arguments.
+        """
 
         file_logger.debug('Creating File object')
 
@@ -80,7 +97,12 @@ class File(object):
 
         Returns
         -------
-        md5sum string
+        md5sum : str
+                 md5sum of `self`.
+        
+        Raises
+        ------
+        Exception
         """
         file_logger.info(f"Calculating md5 checksum with file: {self.name}")
 
@@ -142,10 +164,10 @@ class File(object):
 
         Returns
         -------
-        True if file exists. False otherwise
+        bool
+             True if file exists. False otherwise.
         """
         return os.path.isfile(self.name)
-
 
     # object introspection
     def __str__(self):

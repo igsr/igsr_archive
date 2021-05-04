@@ -9,25 +9,34 @@ class fObject(object):
     Class to represent a FIRE object. An Object is
     the encapsulation of a file which was successfully archived.
 
-    Class variables
-    ---------------
-    objectId : int, Required
+    Attributes
+    ----------
+    objectId : int
                The numerical unique identifier of an object.
                Intended for making paging queries easier.
-    fireOid : str, Required
+    fireOid : str
               The unique identifier in the string form of an object.
-    md5 : str, Required
-          md5sum
-    size : int, Required
-           Size of objects in bytes
-    createTime : str, Required
-                 Representing datetime: i.e. '2020-02-17 16:44:55'
-    path : str, Required
-           Fire path of the object
-    published : bool, Required
-                True if associated object is exposed by the FUSE layer
+    md5 : str
+          md5sum.
+    size : int
+           Size of objects in bytes.
+    createTime : str
+                 Representing datetime: i.e. '2020-02-17 16:44:55'.
+    path : str
+           Fire path of the object.
+    published : bool
+                True if associated object is exposed by the FUSE layer.
     """
     def __init__(self, **kwargs):
+        """
+        Constructor
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+                   Extra arguments to `fObject`: refer to each fObject documentation for a
+                   list of all possible arguments.
+        """
 
         object_logger.debug('Creating a FIRE Object')
 

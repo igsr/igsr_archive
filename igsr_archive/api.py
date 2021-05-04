@@ -73,7 +73,7 @@ class API(object):
                   FIRE object id.
         firePath : str, optional
                    FIRE path id.
-        outfile : file, optional
+        outfile : str, optional
                   Output file name.
 
         Returns
