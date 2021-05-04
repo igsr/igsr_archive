@@ -20,3 +20,7 @@ And you are ready to go!
 ## Documentation
 
 Go to https://igsr-archive.readthedocs.io/en/latest/
+
+### Indexing scripts
+
+The docs on how to generate the different index files we use in our project can be found [here](https://github.com/igsr/igsr_archive/wiki/Indexing-scripts)
