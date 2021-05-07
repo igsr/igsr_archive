@@ -18,6 +18,7 @@ igsr_archive/config.py
 igsr_archive/current_tree.py
 igsr_archive/db.py
 igsr_archive/file.py
+igsr_archive/index.py
 igsr_archive/object.py
 igsr_archive/utils.py
 igsr_archive.egg-info/PKG-INFO
