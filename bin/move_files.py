@@ -158,10 +158,6 @@ for tup in files:
     assert db.fetch_file(path=tup[1]) is None, f"File entry with path {tup[1]} already exists in the DB."\
                                                f"It will not continue"
 
-    assert os.path.basename(tup[0]) == os.path.basename(tup[1]), f"{ os.path.basename(tup[0])} and" \
-                                                                 f" {os.path.basename(tup[1])}" \
-                                                                 f" does not match. Can't continue!"
-
     # getting the fire_path to be moved
     f_path_origin = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', tup[0])
     f_path_dest = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', tup[1])
