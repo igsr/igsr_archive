@@ -150,13 +150,17 @@ for f in files:
     if f.check_if_exists() is False:
         print(f"There was an error when trying to load: {f.name}. Wrong file path")
         sys.exit(1)
-    if str2bool(args.unique) is True:
-        # get basename and check if it already exists in DB
-        basename = os.path.basename(f.name)
-        rf = db.fetch_file(basename=basename)
-        assert rf is None, f"A file with the name '{basename}' already exists in the DB. You need to change the name " \
-                           f"'{basename}' so it is unique."
-
-    db.load_file(f, dry=str2bool(args.dry))
+    basename = os.path.basename(f.name)
+    # get basename and check if it already exists in DB
+    rf = db.fetch_file(basename=basename)
+    if str2bool(args.unique) is True and rf is not None:
+        logger.warning(f"The following file with the same basename:'{f.name}' already exists in the DB.\nYou need to change the name " \
+                       f"'{basename}' so it is unique. This file will be skipped.")
+    elif str2bool(args.unique) is False and rf is not None:
+        logger.warning(f"A file with the name '{basename}' already exists in the DB but --unique option is {args.unique}. "
+                       "This file will be saved in the database.")
+        db.load_file(f, dry=str2bool(args.dry))
+    else:
+        db.load_file(f, dry=str2bool(args.dry))
 
 logger.info('Running completed')
