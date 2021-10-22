@@ -152,9 +152,9 @@ for f in files:
         sys.exit(1)
     basename = os.path.basename(f.name)
     # get basename and check if it already exists in DB
-    rf = db.fetch_file(basename=basename)
+    rf = db.fetch_file(basename=basename)  
     if str2bool(args.unique) is True and rf is not None:
-        logger.warning(f"The following file with the same basename:'{f.name}' already exists in the DB.\nYou need to change the name " \
+        logger.warning(f"The following file with the same basename:'{rf.name}' already exists in the DB.\nYou need to change the name " \
                        f"'{basename}' so it is unique. This file will be skipped.")
     elif str2bool(args.unique) is False and rf is not None:
         logger.warning(f"A file with the name '{basename}' already exists in the DB but --unique option is {args.unique}. "
