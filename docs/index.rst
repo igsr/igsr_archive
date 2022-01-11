@@ -196,10 +196,11 @@ to pre-load them in the ``RESEQTRACK`` database.
 
 Use the ``-f``/``--file`` option like this::
 
- archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/file.txt --dbname $DBNAME
- --firepwd $FIREPWD --dbpwd $DBPWD
+ archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/file.txt  --md5check False --dbname $DBNAME
+ --firepwd $FIREPWD --dbpwd $DBPWD 
 
 - ``-f/--file`` is the path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK`` database
+- ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
 - ``--dbpwd`` is the password for connecting the MYSQL server
@@ -215,9 +216,10 @@ database for the archived file. If you do not specify a type then it will preser
 You can provide the script with a list of files (one file per line) to archive. For this, use the
 ``-l``/``--list_file`` option::
 
-  archive_files.py --settings settings.ini --list_file file_list.txt --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
+  archive_files.py --settings settings.ini --list_file file_list.txt --md5check False --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--list_file file_list.txt`` file containing the list of file paths to archive
+- ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
 - ``--dbpwd`` is the password for connecting the MYSQL server
