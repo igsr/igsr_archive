@@ -101,7 +101,7 @@ class API(object):
                   f"path/{firePath}"
 
         try:
-            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
+            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True, stream=True)
             if outfile is None:
                 # if outfile is not provided then it will not change the original filename
                 # and will place the file in workdir
