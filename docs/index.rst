@@ -229,6 +229,9 @@ By default, the script will perform a dry run and the files will not be archived
 database for the archived files. If you do not specify a type then it will preserve the type that was present
 previously.
 
+**Note:** Use the ``--update_existing`` option. Set it to True, if you want to update a file that is already archived in 
+the FTP with a file still in the staging area
+
 Errors
 ^^^^^^
 * When you are trying to archive a certain file in FIRE you can get
