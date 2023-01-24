@@ -91,13 +91,13 @@ class API(object):
 
             api_logger.debug('Retrieving a FIRE object through its FIRE object id')
 
-            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/blob/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
                   f"{fireOid}"
         elif firePath is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE path')
 
-            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/blob/" \
+            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
                   f"path/{firePath}"
 
         try:
