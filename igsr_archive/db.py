@@ -195,7 +195,7 @@ class DB(object):
         pymysql.Error
         """
         cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-        if path is not None:
+        if path is not None and basename is None:
             db_logger.debug(f"Fetching file with path: {path}")
             abs_path = os.path.abspath(path)
             query = "SELECT * FROM file WHERE name = %s"
