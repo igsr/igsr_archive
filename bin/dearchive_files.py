@@ -104,7 +104,6 @@ for path in files:
     # there is no need for it to take the abspath 
     #abs_path = os.path.abspath(path)
     #fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', os.path.abspath(path))
-     
 
     if re.search("/", path) is True:
         #adding a die if the path does not start with nfs
@@ -116,8 +115,8 @@ for path in files:
     else:
         dearch_f = db.fetch_file(basename=path)
     
-    fire_path = dearch_f.name
-    not_path, path_file = fire_path.split("ftp/", 1)
+    fire_path = dearch_f.name # getting the file's name from the object dearch
+    not_path, path_file = fire_path.split("ftp/", 1) # splitting based on ftp 
     path_file = "ftp/" + path_file
     dearch_fobj = api.fetch_object(firePath=path_file)
     assert dearch_fobj is not None, f"File entry with firePath {path_file} is not archived in FIRE. " \
