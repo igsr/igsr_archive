@@ -4,7 +4,6 @@ import os
 import re
 import logging
 import sys
-import sys
 
 from configparser import ConfigParser
 
@@ -23,8 +22,7 @@ parser.add_argument('--md5check', default=True,
 parser.add_argument('-f', '--file', help="Path to file to be dearchived. It must exists in the g1k_archive_staging_track DB")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing the paths of the files to"
                                                                            "be dearchived")                                                                  
-parser.add_argument('-d', '--directory', required=True,
-                    help="Directory used for storing the dearchived file")
+parser.add_argument('-d', '--directory', required=True, help="Directory used for storing the dearchived file")
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
@@ -42,12 +40,11 @@ if not os.path.isfile(args.settings):
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 
 from igsr_archive.utils import str2bool
-#from igsr_archive.db import DB
+from igsr_archive.db import DB
+from igsr_archive.api import API
 from igsr_archive.file import File
 
-sys.path.append('/hps/software/users/ensembl/repositories/olaaustine/igsr_archive/igsr_archive/')
-from api import API
-from db import DB
+
 # logging
 loglevel = args.log
 numeric_level = getattr(logging, loglevel.upper(), None)
