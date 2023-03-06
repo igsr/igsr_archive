@@ -99,6 +99,9 @@ class API(object):
         elif firePath is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE path')
+            url = f"{endpoint}" \
+                  f"{firePath}"
+
             result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
         
             if result.returncode == 0: 
