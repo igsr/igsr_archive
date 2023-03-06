@@ -3,7 +3,7 @@ import re
 import pdb
 import sys
 import json
-from subprocess import Popen, PIPE
+import subprocess
 from igsr_archive.utils import is_tool
 
 import requests
@@ -85,41 +85,29 @@ class API(object):
         ------
         HTTPError
         """
-
+        endpoint = "s3://g1k-public/"
+        endpoint_url="https://hl.fire.sdo.ebi.ac.uk"
         # construct url
         if fireOid is not None:
 
-            api_logger.debug('Retrieving a FIRE object through its FIRE object id')
+            api_logger.debug('Retrieving a FIRE object through its FIRE object id is no lomnger possible. You will only get the metadata of this object.')
+            sys.exit()
+            #url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
+             #     f"{fireOid}"
 
-            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
-                  f"{fireOid}"
+            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
         elif firePath is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE path')
-
-            url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
-                  f"path/{firePath}"
-
-        try:
-            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
-            if outfile is None:
-                # if outfile is not provided then it will not change the original filename
-                # and will place the file in workdir
-                outfile = self.get_filename_from_cd(r.headers.get('content-disposition'))
-
-            open(outfile, 'wb').write(r.content)
-
-            # If the response was successful, no Exception will be raised
-            r.raise_for_status()
-
-            api_logger.debug('Retrieved object')
-
-            return outfile
-
-        except HTTPError as http_err:
-            print(f'HTTP error occurred: {http_err}')
-        except Exception as err:
-            print(f'Other error occurred: {err}')
+            result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
+        
+            if result.returncode == 0: 
+                api_logger.debug("File was retrieved successfully")
+                return outfile
+            else:
+                api_logger.debug("Issues copying: " + result.stderr.decode())
+                pass
+                sys.exit()
 
     def fetch_object(self, fireOid=None, firePath=None):
         """
