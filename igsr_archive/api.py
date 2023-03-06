@@ -86,7 +86,7 @@ class API(object):
         HTTPError
         """
         endpoint = "s3://g1k-public/"
-        endpoint_url="https://hl.fire.sdo.ebi.ac.uk"
+        endpoint_url= CONFIG.get('fire', 'root_endpoint')
         # construct url
         if fireOid is not None:
 
