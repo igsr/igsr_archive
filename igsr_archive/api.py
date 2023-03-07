@@ -85,17 +85,13 @@ class API(object):
         ------
         HTTPError
         """
-        endpoint = "s3://g1k-public/"
+        endpoint = CONFIG.get('fire', 's3_endpoint')
         endpoint_url= CONFIG.get('fire', 'root_endpoint')
         # construct url
         if fireOid is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE object id is no lomnger possible. You will only get the metadata of this object.')
             sys.exit()
-            #url = f"{CONFIG.get('fire', 'root_endpoint')}/{CONFIG.get('fire', 'version')}/objects/" \
-             #     f"{fireOid}"
-
-            r = requests.get(url, auth=(self.user, self.pwd), allow_redirects=True)
         elif firePath is not None:
 
             api_logger.debug('Retrieving a FIRE object through its FIRE path')
