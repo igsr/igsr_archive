@@ -71,8 +71,9 @@ class API(object):
         ----------
         fireOid : str, optional
                   FIRE object id.
+                  Retrieve object is not possible through FIRE ID anymore but this option remains available. 
         firePath : str, optional
-                   FIRE path id.
+                   FIRE path.
         outfile : str, optional
                   Output file name.
 
@@ -80,10 +81,7 @@ class API(object):
         -------
         outfile : str
                   Downloaded file
-
-        Raises
-        ------
-        HTTPError
+        
         """
         endpoint = CONFIG.get('fire', 's3_endpoint')
         endpoint_url= CONFIG.get('fire', 's3_root_endpoint')
