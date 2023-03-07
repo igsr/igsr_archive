@@ -90,7 +90,7 @@ class API(object):
         # construct url
         if fireOid is not None:
 
-            api_logger.debug('Retrieving a FIRE object through its FIRE object id is no lomnger possible. You will only get the metadata of this object.')
+            api_logger.debug('Retrieving a FIRE object through its FIRE object id is no longer possible. You will only get the metadata of this object using FIRE object ID.')
             sys.exit()
         elif firePath is not None:
 
