@@ -86,27 +86,28 @@ class API(object):
         HTTPError
         """
         endpoint = CONFIG.get('fire', 's3_endpoint')
-        endpoint_url= CONFIG.get('fire', 'root_endpoint')
+        endpoint_url= CONFIG.get('fire', 's3_root_endpoint')
         # construct url
         if fireOid is not None:
 
-            api_logger.debug('Retrieving a FIRE object through its FIRE object id is no longer possible. You will only get the metadata of this object using FIRE object ID.')
+            api_logger.info('Retrieving a FIRE object through its FIRE object id is no longer possible. You will only get the metadata of this object using FIRE object ID.')
             sys.exit()
         elif firePath is not None:
 
-            api_logger.debug('Retrieving a FIRE object through its FIRE path')
+            api_logger.info('Retrieving a FIRE object through its FIRE path')
             url = f"{endpoint}" \
                   f"{firePath}"
-
-            result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
+            
+            
+        result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
         
-            if result.returncode == 0: 
-                api_logger.debug("File was retrieved successfully")
-                return outfile
-            else:
-                api_logger.debug("Issues copying: " + result.stderr.decode())
-                pass
-                sys.exit()
+        if result.returncode == 0: 
+            api_logger.info("File was retrieved successfully")
+            return outfile
+        else:
+            api_logger.info("Issues copying: " + result.stderr.decode())
+            pass
+            sys.exit()
 
     def fetch_object(self, fireOid=None, firePath=None):
         """
