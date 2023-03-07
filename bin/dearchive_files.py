@@ -45,6 +45,7 @@ from igsr_archive.api import API
 from igsr_archive.file import File
 
 
+
 # logging
 loglevel = args.log
 numeric_level = getattr(logging, loglevel.upper(), None)
@@ -121,13 +122,13 @@ for path in files:
     dearch_fobj = api.fetch_object(firePath=path_file)
     assert dearch_fobj is not None, f"File entry with firePath {path_file} is not archived in FIRE. " \
                             f"Can't proceed"
-
+    
     # download the file
     # construct path to store the dearchived file
     logger.info(f"Downloading file to be dearchived: {path}")
     basename = os.path.basename(path)
     downloaded_path = os.path.join(args.directory, basename)
-    api.retrieve_object(fireOid=dearch_fobj.fireOid,
+    api.retrieve_object(firePath=path_file,
                         outfile=downloaded_path)
     logger.info(f"Download completed!")
 
