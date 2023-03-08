@@ -111,7 +111,7 @@ for path in files:
         if path.startswith("/nfs") is False :
             sys.exit()
         dearch_f = db.fetch_file(path=path)
-        assert dearch_f is not None, f"File entry with path {abs_path} does not exist in the DB. " \
+        assert dearch_f is not None, f"File entry with path {path} does not exist in the DB. " \
                                  f"Can't proceed"
     else:
         dearch_f = db.fetch_file(basename=path)
