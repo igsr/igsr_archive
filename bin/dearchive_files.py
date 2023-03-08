@@ -116,7 +116,7 @@ for path in files:
     else:
         dearch_f = db.fetch_file(basename=path)
     
-    assert dearch_f.name is not None, f"Fetching from database is not successful. " \
+    assert dearch_f.name is not None, f"Fetching from database is not successful. Name of the file is not defined " \
                             f"Can not proceed"
     fire_path = dearch_f.name # getting the file's name from the object dearch
     not_path, path_file = fire_path.split("ftp/", 1) # splitting based on ftp 
