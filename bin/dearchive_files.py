@@ -106,7 +106,7 @@ for path in files:
     #abs_path = os.path.abspath(path)
     #fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', os.path.abspath(path))
 
-    if re.search("/", path) is True:
+    if re.search("/", path) :
         #adding a die if the path does not start with nfs
         if path.startswith("/nfs") is False :
             sys.exit()
