@@ -197,7 +197,7 @@ to pre-load them in the ``RESEQTRACK`` database.
 Use the ``-f``/``--file`` option like this::
 
  archive_files.py --settings settings.ini -f /nfs/1000g-work/G1K/archive_staging/file.txt --dbname $DBNAME
- --firepwd $FIREPWD --dbpwd $DBPWD
+ --firepwd $FIREPWD --dbpwd $DBPWD 
 
 - ``-f/--file`` is the path to the file that will be archived. It needs to exist in the ``file`` table of the ``RESEQTRACK`` database
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
@@ -250,11 +250,12 @@ delete the entry from the ``file`` table in the ``RESEQTRACK`` database.
 
 Enter the following command::
 
- dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/vol1/path/file --directory /dir/to/put/file --dbname $DBNAME \
+ dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/vol1/path/file --md5check False --directory /dir/to/put/file --dbname $DBNAME \
  --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--file`` is the path to the file to be de-archived. ``/nfs/1000g-archive/vol1`` is the directory containing the IGSR FTP in our filesystem.
   This directory can be changed by modifying the ``ftp_mount`` parameter from the ``ftp`` section in the ``settings.ini`` file
+- ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--directory`` is the directory used to store the file to be de-archived
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
@@ -268,10 +269,11 @@ By default, the script will perform a dry run and the file will not be de-archiv
 You can provide the script with a list of files (one file per line) to de-archive. For this, use the
 ``-l``/``--list_file`` option::
 
- dearchive_files.py --settings settings.ini --list_file file_list.txt --directory /dir/to/put/file --dbname $DBNAME \
+ dearchive_files.py --settings settings.ini --list_file file_list.txt --md5check False --directory /dir/to/put/file --dbname $DBNAME \
  --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--list_file`` is the list of files to de-archive
+- ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--directory`` is the directory used to store the files to de-archive
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
