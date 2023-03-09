@@ -2,6 +2,7 @@ import logging
 import re
 import pdb
 import sys
+import os
 import json
 import subprocess
 from igsr_archive.utils import is_tool
@@ -95,10 +96,14 @@ class API(object):
             api_logger.info('Retrieving a FIRE object through its FIRE path')
             url = f"{endpoint}" \
                   f"{firePath}"
-            
-            
-        result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
         
+        #before using aws, check that aws is available in the environment 
+        if  os.environ.get('__LMOD_REF_COUNT_LOADEDMODULES') is None or "awscli-1.16.308-gcc-9.3.0-47v4b2x" not in os.environ['__LMOD_REF_COUNT_LOADEDMODULES']:
+            api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
+            sys.exit()
+       
+        result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
+    
         if result.returncode == 0: 
             api_logger.info("File was retrieved successfully")
             return outfile
