@@ -98,7 +98,7 @@ class API(object):
                   f"{firePath}"
         
         #before using aws, check that aws is available in the environment 
-        if  "awscli" not in os.environ.get('__LMOD_REF_COUNT_LOADEDMODULES') or "aws" not in str(os.environ):
+        if  "awscli" not in str(os.environ):
             api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
             sys.exit()
        
