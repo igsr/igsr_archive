@@ -3,6 +3,7 @@ import argparse
 import os
 import re
 import logging
+import sys
 
 from configparser import ConfigParser
 
@@ -20,9 +21,8 @@ parser.add_argument('--md5check', default=True,
                     help="Check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE")
 parser.add_argument('-f', '--file', help="Path to file to be dearchived. It must exists in the g1k_archive_staging_track DB")
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing the paths of the files to"
-                                                                           "be dearchived")
-parser.add_argument('-d', '--directory', required=True,
-                    help="Directory used for storing the dearchived file")
+                                                                           "be dearchived")                                                                  
+parser.add_argument('-d', '--directory', required=True, help="Directory used for storing the dearchived file")
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
@@ -43,6 +43,8 @@ from igsr_archive.utils import str2bool
 from igsr_archive.db import DB
 from igsr_archive.api import API
 from igsr_archive.file import File
+
+
 
 # logging
 loglevel = args.log
@@ -100,21 +102,35 @@ elif args.list_file:
         files.append(line)
 
 for path in files:
-    abs_path = os.path.abspath(path)
-    fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', abs_path)
-    dearch_f = db.fetch_file(path=abs_path)
-    assert dearch_f is not None, f"File entry with path {abs_path} does not exist in the DB. " \
+    # there is no need for it to take the abspath 
+    #abs_path = os.path.abspath(path)
+    #fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', os.path.abspath(path))
+
+    if re.search("/", path) :
+        #adding a die if the path does not start with nfs
+        if path.startswith("/nfs") is False :
+            sys.exit()
+        dearch_f = db.fetch_file(path=path)
+    else:
+        dearch_f = db.fetch_file(basename=path)
+    
+    assert dearch_f is not None, f"File entry with path {path} does not exist in the DB. " \
                                  f"Can't proceed"
-    # check if 'path' exists in FIRE
-    dearch_fobj = api.fetch_object(firePath=fire_path)
-    assert dearch_fobj is not None, f"File entry with firePath {fire_path} is not archived in FIRE. " \
-                                    f"Can't proceed"
+    
+    
+    fire_path = dearch_f.name # getting the file's name from the object dearch
+    not_path, path_file = fire_path.split("ftp/", 1) # splitting based on ftp 
+    path_file = "ftp/" + path_file
+    dearch_fobj = api.fetch_object(firePath=path_file)
+    assert dearch_fobj is not None, f"File entry with firePath {path_file} is not archived in FIRE. " \
+                            f"Can't proceed"
+    
     # download the file
     # construct path to store the dearchived file
-    logger.info(f"Downloading file to be dearchived: {abs_path}")
-    basename = os.path.basename(abs_path)
+    logger.info(f"Downloading file to be dearchived: {path}")
+    basename = os.path.basename(path)
     downloaded_path = os.path.join(args.directory, basename)
-    api.retrieve_object(fireOid=dearch_fobj.fireOid,
+    api.retrieve_object(firePath=path_file,
                         outfile=downloaded_path)
     logger.info(f"Download completed!")
 
@@ -126,7 +142,7 @@ for path in files:
                                                " not match. Can't continue"
         logger.info("md5sums match. Will continue dearchiving FIRE object")
 
-    # delete FIRE object
     api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
     # finally, delete de-archived file from RESEQTRACK DB
     db.delete_file(dearch_f, dry=str2bool(args.dry))
+
