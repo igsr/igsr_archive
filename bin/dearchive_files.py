@@ -111,13 +111,13 @@ for path in files:
         if path.startswith("/nfs") is False :
             sys.exit()
         dearch_f = db.fetch_file(path=path)
-        assert dearch_f is not None, f"File entry with path {path} does not exist in the DB. " \
-                                 f"Can't proceed"
     else:
         dearch_f = db.fetch_file(basename=path)
     
-    assert dearch_f.name is not None, f"Fetching from database is not successful. Name of the file is not defined " \
-                            f"Can not proceed"
+    assert dearch_f is not None, f"File entry with path {path} does not exist in the DB. " \
+                                 f"Can't proceed"
+    
+    
     fire_path = dearch_f.name # getting the file's name from the object dearch
     not_path, path_file = fire_path.split("ftp/", 1) # splitting based on ftp 
     path_file = "ftp/" + path_file
