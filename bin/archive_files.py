@@ -197,6 +197,10 @@ for f in files:
                                      value=ftp_path,
                                      name=f,
                                      dry=str2bool(args.dry))
+        f_indb_o_post = db.fetch_file(path=f)
+        print(f,f_indb_o_post)
+        if f_indb_o_post is not None:
+            raise Exception("Staging file in db exists even after archiving:{0}".format(f))
     elif f_indb_o is None and f_inftp_o is None:
         # 'f' does not exist neither the DB nor the FTP. Raise exception
         raise Exception(f"File entry with path {f} does not exist in the DB. "
