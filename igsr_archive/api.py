@@ -265,7 +265,7 @@ class API(object):
                     attempts += 1
                     continue
             else:
-                api_logger.info(f"Issue with loading Json after multiple attempts")
+                api_logger.info(f"Issues with parsing JSON after multiple attempts")
             if "statusCode" in d.keys():
                 err = f"{d['statusMessage']}\n{d['detail']}"
                 raise HTTPError(err)
