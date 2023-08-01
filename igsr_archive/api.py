@@ -254,7 +254,18 @@ class API(object):
             # FIRE api is down
             if res == "Service Unavailable":
                 raise HTTPError("FIRE Service Unavailable")
-            d = json.loads(stdout)
+            # this bit of code is just to check that it tries more than once because we are having issues with push object because of line 262
+            max_attempts = 3  
+            attempts = 0
+            while attempts < max_attempts:
+                try:
+                    d = json.loads(stdout)
+                    break
+                except json.JSONDecodeError:
+                    attempts += 1
+                    continue
+            else:
+                api_logger.info(f"Issues with parsing JSON after multiple attempts")
             if "statusCode" in d.keys():
                 err = f"{d['statusMessage']}\n{d['detail']}"
                 raise HTTPError(err)
