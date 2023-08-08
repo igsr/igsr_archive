@@ -19,7 +19,9 @@ parser.add_argument('--dbname', help="Database name. If not provided then it wil
                                      " from the $DBNAME env variable")
 parser.add_argument('--firepwd', help="FIRE api password. If not provided then it will try to guess the FIRE"
                                       " pwd from the $FIRE_PWD env variable")
+parser.add_argument('--directory', help="Directory to compare staging and archive" )
 parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
+
 
 args = parser.parse_args()
 
@@ -80,6 +82,9 @@ db = DB(pwd=dbpwd,
 api = API(pwd=firepwd)
 
 flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
+
+if args.directory:
+    flist = db.fetch_files_by_pattern(pattern=args.directory)
 
 logger.info(f"Number of files returned with this pattern {len(flist)}")
 
