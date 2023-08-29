@@ -183,8 +183,8 @@ for f in files:
     elif f_indb_o is not None and f_inftp_o is None:
         # 'f' does not exist in the FTP, archive it as a new file
         if f_in_fire_o is not None:
-            raise Exception("FTP path:{0} does not exist in the DB but there is a FIRE object with FIRE path {1}. "
-                            "Can't continue!".format(ftp_path, fire_path))
+            logger.info("Wrong FTP path has been added to FTP, this will be deleted")
+            api.delete_object(fireOid=f_in_fire_o.fireOid,dry=str2bool(args.dry))
 
         # push the file to FIRE where fire_path will the path in the FIRE
         # filesystem
