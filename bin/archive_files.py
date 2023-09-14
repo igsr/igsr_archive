@@ -197,7 +197,6 @@ for f in files:
                                      value=ftp_path,
                                      name=f,
                                      dry=str2bool(args.dry))
-        
     elif f_indb_o is None and f_inftp_o is None:
         # 'f' does not exist neither the DB nor the FTP. Raise exception
         raise Exception(f"File entry with path {f} does not exist in the DB. "
