@@ -29,7 +29,8 @@ if not os.path.isfile(args.settings):
     raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
-
+staging_path = '/nfs/1000g-work/G1K/archive_staging/' 
+archive_path ='/nfs/1000g-archive/vol1/'
 # Parse config file
 settingsO = ConfigParser()
 settingsO.read(args.settings)
@@ -70,36 +71,56 @@ if dbpwd is None:
     raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
                     "server containing the RESEQTRACK database using the --dbpwd option or set a $DBPWD environment "
                     "variable before running this script!")
-if firepwd is None:
-    raise Exception("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
-                    " or set a $FIRE_PWD environment variable before running this script!")
 
 # connection to Reseqtrack DB
 db = DB(pwd=dbpwd,
         dbname=dbname)
 
-# connection to FIRE api
-api = API(pwd=firepwd)
-
-flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
-
 if args.directory:
-    flist = db.fetch_files_by_pattern(pattern=args.directory)
+    #Files fetched in staging
+    #Files fetched from archive
+    basename = os.path.basename(args.directory.rstrip("/"))
+    staging_list = db.fetch_files_by_pattern(pattern=f"{staging_path}%{basename}")
+    len_staging_list = 0
+    len_archive_list = 0
+    if staging_list:
+        with open(f"{basename}_staging_files", 'w') as sf:
+            for staging_file in staging_list:
+                sf.write(f"{staging_file}\n")
+        len_staging_list = len(staging_list)
+    archive_list = db.fetch_files_by_pattern(pattern=f"{archive_path}%{basename}")
+    if archive_list:
+        with open(f"{basename}_archive_files", 'w') as af:
+            for archive_file in archive_list:
+                af.write(f"{archive_file}\n")
+        len_archive_list = len(archive_list)
+    logger.info(f"Number of files returned in staging: {len_staging_list}")
+    logger.info(f"Number of files returned in archive: {len_archive_list}")
+    if staging_list and archive_list:
+        logger.info(f"Staging files in {basename}_staging_files are not archived")
 
-logger.info(f"Number of files returned with this pattern {len(flist)}")
+else:
+    if firepwd is None:
+        raise Exception("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
+                    " or set a $FIRE_PWD environment variable before running this script!")
+    # connection to FIRE api
+    api = API(pwd=firepwd)
+    logger.info("No specific directory specified. Check all the files on ftp")
+    flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
+    logger.info(f"Number of files returned with this pattern {len(flist)}")
 
-tot_counter = 0
-count = 0
-for p in flist:
-    if count == 100:
-        logger.info(f"{tot_counter} lines processed!")
-        count = 0
-    tot_counter += 1
-    count += 1
+    tot_counter = 0
+    count = 0
+    for p in flist:
+        if count == 100:
+            logger.info(f"{tot_counter} lines processed!")
+            count = 0
+        tot_counter += 1
+        count += 1
 
-    if settingsO.get('ftp', 'ftp_mount') in p:
-        fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', p)
-        fire_obj = None
-        fire_obj = api.fetch_object(firePath=fire_path)
-        if fire_obj is None:
-            print(f"ERROR: File witH PATH {p} is not archived in FIRE")
+        if settingsO.get('ftp', 'ftp_mount') in p:
+            fire_path = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', p)
+            fire_obj = None
+            fire_obj = api.fetch_object(firePath=fire_path)
+            if fire_obj is None:
+                print(f"ERROR: File witH PATH {p} is not archived in FIRE")
