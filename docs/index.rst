@@ -355,6 +355,10 @@ you need to run the script doing::
 
   sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name
 
+- ``--directory`` is the directory in the FTP area to compare staging and archive.
+
+
+
 Indices and tables
 ==================
 
