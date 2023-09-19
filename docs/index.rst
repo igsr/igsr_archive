@@ -346,6 +346,15 @@ Note the double asterisk, which indicates any subdirectory included in the paren
 By default, the script will perform a dry run and the files will not be moved. You need to run
 ``move_files.py`` with the option ``--dry False`` to move them.
 
+Sanity check
+----------
+The script to perform certain checks on archived files. 
+
+To compare the files between the staging and archive folders,
+you need to run the script doing::
+
+sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name
+
 Indices and tables
 ==================
 
