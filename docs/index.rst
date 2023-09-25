@@ -357,7 +357,7 @@ you need to run the script doing::
 
 - ``--directory`` is the directory in the FTP area to compare staging and archive.
 
-To check if all the files reported as archived on DB are present in FIRE FTP ,
+To check if all the files reported as archived on DB are present on FIRE FTP ,
 you need to run the script doing::
 
   sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --firepwd fire_pwd
