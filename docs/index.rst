@@ -353,18 +353,18 @@ The script to perform certain checks on archived files.
 To compare the files between the staging and archive folders,
 you need to run the script doing::
 
-  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name
+  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name --firepwd $FIREPWD
 
 - ``--directory`` is the directory in the FTP area to compare staging and archive.
+- ``--firepwd`` is the password for connecting the FIRE API
 
 To check if all the files reported as archived on DB are present on FIRE FTP ,
 you need to run the script doing::
 
   sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --firepwd fire_pwd
 
-- if ``--directory`` is not called, ``--firepwd`` needs to be used and that checks all the files in the firepath,
- both can be used but ``--firepwd`` is not necessary when ``--directory`` is used. One of the options needs to 
- be used at the moment.
+Using ``--firepwd`` without ``--directory`` checks all the files in the firepath. 
+
 
 Indices and tables
 ==================
