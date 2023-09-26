@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+import sys
 import pdb
 import logging
 import re
@@ -27,7 +28,7 @@ parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, IN
 args = parser.parse_args()
 
 if not os.path.isfile(args.settings):
-    raise Exception(f"Config file provided using --settings option({args.settings}) not found!")
+    sys.exit(f"Config file provided using --settings option({args.settings}) not found!")
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 staging_path = '/nfs/1000g-work/G1K/archive_staging/' 
@@ -65,11 +66,11 @@ if args.firepwd is None:
     firepwd = os.getenv('FIRE_PWD')
 
 if dbname is None:
-    raise Exception("$DBNAME undefined. You need either to pass the name of the "
+    sys.exit("$DBNAME undefined. You need either to pass the name of the "
                     "RESEQTRACK database using the --dbname option or set a $DBNAME "
                     "environment variable before running this script!")
 if dbpwd is None:
-    raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
+    sys.exit("$DBPWD undefined. You need either to pass the password of the MYSQL "
                     "server containing the RESEQTRACK database using the --dbpwd option or set a $DBPWD environment "
                     "variable before running this script!")
 
@@ -102,7 +103,7 @@ if args.directory:
 
 elif not args.directory:
     if firepwd is None:
-        logger.warn("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
+        sys.exit("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
                     " or set a $FIRE_PWD environment variable before running this script!")
     # connection to FIRE api
     api = API(pwd=firepwd)
