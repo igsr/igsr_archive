@@ -353,7 +353,7 @@ The script to perform certain checks on archived files.
 To compare the files between the staging and archive folders,
 you need to run the script doing::
 
-  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name --firepwd $FIREPWD
+  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name
 
 - ``--directory`` is the directory in the FTP area to compare staging and archive.
 - ``--firepwd`` is the password for connecting the FIRE API
