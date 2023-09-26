@@ -351,6 +351,26 @@ Note the double asterisk, which indicates any subdirectory included in the paren
 By default, the script will perform a dry run and the files will not be moved. You need to run
 ``move_files.py`` with the option ``--dry False`` to move them.
 
+Sanity check
+----------
+The script to perform certain checks on archived files. 
+
+To compare the files between the staging and archive folders,
+you need to run the script doing::
+
+  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --directory dir_name
+
+- ``--directory`` is the directory in the FTP area to compare staging and archive.
+- ``--firepwd`` is the password for connecting the FIRE API
+
+To check if all the files reported as archived on DB are present on FIRE FTP ,
+you need to run the script doing::
+
+  sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --firepwd fire_pwd
+
+Using ``--firepwd`` without ``--directory`` checks all the files in the firepath. 
+
+
 Indices and tables
 ==================
 

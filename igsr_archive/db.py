@@ -238,11 +238,11 @@ class DB(object):
         ------
         pymysql.Error
         """
-
+        
         db_logger.debug(f"Fetching all files for pattern: {pattern}")
         cursor = self.conn.cursor(pymysql.cursors.DictCursor)
-        query = "SELECT * FROM file WHERE name like %s"
-        cursor.execute(query, [pattern+'%'])
+        query = f"SELECT * FROM file WHERE name like '{pattern}%'"
+        cursor.execute(query)
         file_list = []
         try:
             result_set = cursor.fetchall()
