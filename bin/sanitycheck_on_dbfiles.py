@@ -100,9 +100,9 @@ if args.directory:
     if staging_list and archive_list:
         logger.info(f"Staging files in {basename}_staging_files are not archived")
 
-else:
+elif not args.directory:
     if firepwd is None:
-        raise Exception("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
+        logger.warn("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
                     " or set a $FIRE_PWD environment variable before running this script!")
     # connection to FIRE api
     api = API(pwd=firepwd)
