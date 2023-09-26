@@ -108,7 +108,7 @@ else:
     api = API(pwd=firepwd)
     logger.info("No specific directory specified. Check all the files on ftp")
     flist = db.fetch_files_by_pattern(pattern='/nfs/1000g-archive/vol1/ftp/')
-    logger.info(f"Number of files returned with this pattern {len(flist)}")
+    logger.info(f"Number of files returned with this pattern /nfs/1000g-archive/vol1/ftp/ {len(flist)}")
 
     tot_counter = 0
     count = 0
