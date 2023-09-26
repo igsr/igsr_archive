@@ -362,7 +362,9 @@ you need to run the script doing::
 
   sanitycheck_on_dbfiles.py --settings settings.ini --dbpwd $DBPWD --dbname $DBNAME --firepwd fire_pwd
 
-
+- if ``--directory`` is not called, ``--firepwd`` needs to be used and that checks all the files in the firepath,
+ both can be used but ``--firepwd`` is not necessary when ``--directory`` is used. One of the options needs to 
+ be used at the moment.
 
 Indices and tables
 ==================
