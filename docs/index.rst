@@ -76,10 +76,12 @@ to use the script named ``load_files.py`` as follows:
 
 Use the ``-f``/``--file`` option like this::
 
- load_files.py --settings settings.ini --file /path/to/file.txt --type TEST_F --dbname $DBNAME --pwd $PWD
+ load_files.py --settings settings.ini --file /path/to/file.txt --tid 123 --dir path/to/directory --type TEST_F --dbname $DBNAME --pwd $PWD
 
 - ``--type`` is an arbitrary string describing the file that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``. If this option is not specified then the file type will be set depending on the parameters 
   in the ``[file_type_rules]`` section of ``settings.ini``.
+- ``--ticket`` is the number of the RT ticket 
+- ``--directory`` is the path to the directory starting from the datacollections, for example HGSVC3/working/test_files.
 - ``--dbname`` is the name of the ``RESEQTRACK`` MYSQL  database
 - ``--pwd`` is the password for connecting the MYSQL server
 
@@ -98,6 +100,8 @@ You can provide the script with a list of files (one file per line) to load. For
 
 - ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``. If this option is not specified then the file type will be set depending on the parameters
   specified in the ``[file_type_rules]`` section of ``settings.ini``.
+- ``--ticket`` is the number of the RT ticket 
+- ``--directory`` is the path to the directory starting from the datacollections, for example HGSVC3/working/test_files.
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--pwd`` is the password for connecting the MYSQL server
 

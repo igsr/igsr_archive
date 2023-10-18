@@ -171,10 +171,9 @@ for f in files:
     elif str2bool(args.unique) is False and rf is not None:
         logger.warning(f"A file with the name '{basename}' already exists in the DB but --unique option is {args.unique}. "
                        "This file will be saved in the database.")
-        db.add_ticket_track(ticket, dir, dry=str2bool(args.dry))
         db.load_file(f, dry=str2bool(args.dry))
     else:
-        db.add_ticket_track(ticket, dir, dry=str2bool(args.dry))
         db.load_file(f, dry=str2bool(args.dry))
 
+db.add_ticket_track(ticket, dir, dry=str2bool(args.dry))
 logger.info('Running completed')
