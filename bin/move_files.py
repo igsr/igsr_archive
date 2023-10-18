@@ -181,3 +181,4 @@ for tup in files:
                    dry=str2bool(args.dry))
     
 db.add_ticket_track(args.ticket, args.tg_dir)
+logger.info('Running completed')
