@@ -137,7 +137,7 @@ elif args.md5_file:
         cols = re.split(' +', line)
         if len (cols) != 2:
             raise Exception("Incorrect number of columns in file used for --md5_file. "
-                            "Check format. It should be: <md5sum>  <path>. First and second column should be"
+                            "Check format. It should be: <md5sum>  <path>. First and second column should be "
                             "separated by exactly 2 whitespaces.")
         md5sum, path = (cols[0], cols[1])
         if args.type is not None:
