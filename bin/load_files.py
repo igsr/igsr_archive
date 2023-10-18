@@ -157,6 +157,7 @@ elif args.md5_file:
 else:
     raise Exception("You need to provide the file/s to be loaded using either "
                     "the -f, -l or --md5_file options")
+    sys.exit(1)
 
 for f in files:
     if f.check_if_exists() is False:
@@ -168,6 +169,7 @@ for f in files:
     if str2bool(args.unique) is True and rf is not None:
         logger.warning(f"The following file with the same basename:'{rf.name}' already exists in the DB.\nYou need to change the name " \
                        f"'{basename}' so it is unique. This file will be skipped.")
+        sys.exit(1)
     elif str2bool(args.unique) is False and rf is not None:
         logger.warning(f"A file with the name '{basename}' already exists in the DB but --unique option is {args.unique}. "
                        "This file will be saved in the database.")

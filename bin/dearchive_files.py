@@ -23,6 +23,7 @@ parser.add_argument('-f', '--file', help="Path to file to be dearchived. It must
 parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="File containing the paths of the files to"
                                                                            "be dearchived")                                                                  
 parser.add_argument('-d', '--directory', required=True, help="Directory used for storing the dearchived file")
+parser.add_argument('-tid', '--ticket', help="The ticket number from the RT ticket created by the collaborator" )
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess"
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess"
@@ -77,6 +78,9 @@ assert dbpwd, "$DBPWD undefined"
 
 if not os.path.isdir(args.directory):
     raise Exception(f"{args.directory} does not exist. Can't continue!")
+
+if args.ticket is None:
+    raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
 
 # Parse config file
 settingsO = ConfigParser()
@@ -145,4 +149,6 @@ for path in files:
     api.delete_object(fireOid=dearch_fobj.fireOid, dry=str2bool(args.dry))
     # finally, delete de-archived file from RESEQTRACK DB
     db.delete_file(dearch_f, dry=str2bool(args.dry))
+
+db.add_ticket_track(args.ticket, args.directory)
 
