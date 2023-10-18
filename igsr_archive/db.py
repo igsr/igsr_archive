@@ -9,6 +9,7 @@ import pdb
 
 from igsr_archive.config import CONFIG
 
+
 # create logger
 db_logger = logging.getLogger(__name__)
 
@@ -389,6 +390,33 @@ class DB(object):
             return 0
         else:
             raise Exception(f"dry option: {dry} not recognized")
+    
+    def add_ticket_track(self, ticket_id, directory, dry=True):
+        db_logger.info(f"Adding the {ticket_id} associated with {directory} to the ticket_track table in the database")
+
+        add_ticket_sql = f"INSERT into ticket_track (ticket_track_id, RT_ticket_id, directory) " \
+                         f"VALUES (NULL, \'{ticket_id}\', '\{directory}\')"
+
+        if dry is False:
+            try:
+                cursor = self.conn.cursor()
+                # Execute the SQL command
+                cursor.execute(add_ticket_sql)
+                # Commit your changes in the database
+                self.conn.commit()
+                db_logger.info(f"{ticket_id} added to the ticket_track ")
+                return 0
+            except pymysql.Error as e:
+                db_logger.error("Exception occurred", exc_info=True)
+                # Rollback in case there is any error
+                self.conn.rollback()
+                return 1
+        elif dry is True:
+            db_logger.info(f"Add to ticket_track: {add_ticket_sql}, Not adding because dry is not False")
+        else:
+            raise Exception(f"dry option: {dry} not recognized")
+
+
 
 
 

@@ -6,6 +6,7 @@ import logging
 import pdb
 import re
 
+
 parser = argparse.ArgumentParser(description='Load file/s in a Reseqtrack database')
 
 parser.add_argument('-s', '--settings', required=True,
@@ -31,6 +32,8 @@ parser.add_argument('-p', '--pwd', help="Password for MYSQL server. If not provi
                                         "the password from the $PASSWORD env variable")
 parser.add_argument('-d', '--dbname', help="Database name. If not provided then it will try to guess"
                                            "the dbname from the $DBNAME env variable")
+parser.add_argument('-tid', '--ticket', help="The ticket number from the RT ticket created by the collaborator" )
+parser.add_argument('-dir', '--directory', help="The directory where the files in this RT ticket should go, for example HGSVC3/working/20220401_bionano_hgsvc/")
 parser.add_argument('--log', default='INFO', help="Logging level. i.e. DEBUG, INFO, WARNING, ERROR, CRITICAL")
 
 args = parser.parse_args()
@@ -61,6 +64,8 @@ if args.pwd is None:
     pwd = os.getenv('DBPWD')
 
 dbname = args.dbname
+dir = args.directory
+ticket = args.ticket
 if args.dbname is None:
     dbname = os.getenv('DBNAME')
 
@@ -72,6 +77,13 @@ if pwd is None:
     raise Exception("$DBPWD undefined. You need either to pass the password of the MYSQL "
                     "server containing the RESEQTRACK database using the --pwd option or set a $DBPWD environment "
                     "variable before running this script!")
+if ticket is None:
+    raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
+
+if dir is None:
+    raise Exception("$dir is undefined. You need this to keep track of the tickets. Please add this by using the option -dir or --directory")
+
+
 
 # Class to connect with Reseqtrack DB
 db = DB(pwd=pwd,
@@ -159,8 +171,10 @@ for f in files:
     elif str2bool(args.unique) is False and rf is not None:
         logger.warning(f"A file with the name '{basename}' already exists in the DB but --unique option is {args.unique}. "
                        "This file will be saved in the database.")
+        db.add_ticket_track(ticket, dir, dry=str2bool(args.dry))
         db.load_file(f, dry=str2bool(args.dry))
     else:
+        db.add_ticket_track(ticket, dir, dry=str2bool(args.dry))
         db.load_file(f, dry=str2bool(args.dry))
 
 logger.info('Running completed')
