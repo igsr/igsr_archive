@@ -151,4 +151,4 @@ for path in files:
     db.delete_file(dearch_f, dry=str2bool(args.dry))
 
 db.add_ticket_track(args.ticket, args.directory)
-
+logger.info('Running completed')
