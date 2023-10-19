@@ -150,5 +150,5 @@ for path in files:
     # finally, delete de-archived file from RESEQTRACK DB
     db.delete_file(dearch_f, dry=str2bool(args.dry))
 
-db.add_ticket_track(args.ticket, args.directory)
+db.add_ticket_track(args.ticket, args.directory, dry=str2bool(args.dry))
 logger.info('Running completed')
