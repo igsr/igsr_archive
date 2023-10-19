@@ -87,6 +87,9 @@ if firepwd is None:
 
 if args.ticket is None:
     raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
+
+if args.tg_dir is None:
+    raise Exception("$tg_dir undefined. You need this to keep track of the tickets and determine final target directory. Please add this by using the option --tg_dir")
 # list of tuples (origin, dest) for files to be archived
 files = []
 
