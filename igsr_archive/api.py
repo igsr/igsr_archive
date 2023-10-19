@@ -3,6 +3,7 @@ import re
 import pdb
 import sys
 import os
+import pprint
 import json
 from subprocess import Popen, PIPE
 import subprocess
@@ -95,16 +96,17 @@ class API(object):
         elif firePath is not None:
 
             api_logger.info('Retrieving a FIRE object through its FIRE path')
+            firePath.replace("//","/")
             url = f"{endpoint}" \
                   f"{firePath}"
-        
         #before using aws, check that aws is available in the environment 
         if  "awscli" not in str(os.environ):
             api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
             sys.exit()
        
         result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
-    
+        print(result)
+        print(result.returncode) 
         if result.returncode == 0: 
             api_logger.info("File was retrieved successfully")
             return outfile
@@ -198,7 +200,7 @@ class API(object):
                 metadata_dict[k] = v
 
         fireObj = fObject(**metadata_dict)
-
+        
         return fireObj
 
     def push_object(self, fileO, dry=True, publish=True, fire_path=None):
@@ -334,8 +336,12 @@ class API(object):
               f"{fireOid}/"
         if attr_name is 'firePath':
             api_logger.info(f"firePath will be modified")
-            url = url + "firePath"
+            print(url)
+            print(attr_name)
+            url = url + 'firePath'
             header = {"x-fire-path": f"{value}"}
+            print(url)
+            print(header)
         elif attr_name is 'publish':
             api_logger.info(f"publish will be set to {value} for this FIRE object")
             url = url + "publish"
@@ -353,6 +359,15 @@ class API(object):
                         res = requests.delete(url, auth=(self.user, self.pwd))
                 res.raise_for_status()
             except HTTPError as http_err:
+                if res.status_code == 409:
+                    original_fireOid = res.ownerResourceId if 'ownerResourceId' in res else json.loads(res._content)['conflict']['ownerResourceId']  
+                    self.delete_object(fireOid=original_fireOid,dry=dry)
+                    res_2 = requests.put(url, auth=(self.user, self.pwd), headers=header)
+                    json_res = res_2.json()
+                    fireObj = self.__parse_json_response(json_res)
+                    print(res_2.json())
+                    api_logger.info(f"Done FIRE object update")
+                    return fireObj    
                 print(f'HTTP error occurred: {http_err}')
                 print(f'Error message: {res.text}')
             except Exception as err:
