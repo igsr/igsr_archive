@@ -231,7 +231,10 @@ class ChangeEvents(object):
         api.delete_object(fireOid=fire_obj.fireOid, dry=dry)
 
         ce_logger.info("Push updated CHANGELOG file to the archive")
-        api.push_object(chlog_obj, dry=dry, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        try:
+            api.push_object(chlog_obj, dry=dry, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        except:
+            api.delete_object(fireOid=chlog_obj,dry=dry)
 
         return f"{CONFIG.get('ctree','chlog_fpath')}"
 
