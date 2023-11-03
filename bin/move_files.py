@@ -29,6 +29,7 @@ parser.add_argument('-l', '--list_file', type=argparse.FileType('r'), help="2-co
                                                                            "files in the FTP, one in each line")
 
 # DB and FIRE API connection params
+parser.add_argument('-tid', '--ticket', help="The ticket number from the RT ticket created by the collaborator" )
 parser.add_argument('--dbpwd', help="Password for MYSQL server. If not provided then it will try to guess "
                                     "the password from the $DBPWD env variable")
 parser.add_argument('--dbname', help="Database name. If not provided then it will try to guess the dbname"
@@ -84,6 +85,11 @@ if firepwd is None:
     raise Exception("$FIRE_PWD undefined. You need either to pass the FIRE API password using the --firepwd option"
                     " or set a $FIRE_PWD environment variable before running this script!")
 
+if args.ticket is None:
+    raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
+
+if args.tg_dir is None:
+    raise Exception("$tg_dir undefined. You need this to keep track of the tickets and determine final target directory. Please add this by using the option --tg_dir")
 # list of tuples (origin, dest) for files to be archived
 files = []
 
@@ -176,3 +182,6 @@ for tup in files:
                    value=tup[1],
                    name=tup[0],
                    dry=str2bool(args.dry))
+    
+db.add_ticket_track(args.ticket, args.tg_dir, dry=str2bool(args.dry))
+logger.info('Running completed')

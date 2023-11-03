@@ -76,10 +76,12 @@ to use the script named ``load_files.py`` as follows:
 
 Use the ``-f``/``--file`` option like this::
 
- load_files.py --settings settings.ini --file /path/to/file.txt --type TEST_F --dbname $DBNAME --pwd $PWD
+ load_files.py --settings settings.ini --file /path/to/file.txt --tid 123 --dir path/to/directory --type TEST_F --dbname $DBNAME --pwd $PWD
 
 - ``--type`` is an arbitrary string describing the file that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``. If this option is not specified then the file type will be set depending on the parameters 
   in the ``[file_type_rules]`` section of ``settings.ini``.
+- ``--ticket`` is the number of the RT ticket 
+- ``--directory`` is the path to the directory starting from the datacollections, for example HGSVC3/working/test_files.
 - ``--dbname`` is the name of the ``RESEQTRACK`` MYSQL  database
 - ``--pwd`` is the password for connecting the MYSQL server
 
@@ -94,10 +96,12 @@ the ``file`` table of the ``RESEQTRACK`` database with this  md5 checksum.
 You can provide the script with a list of files (one file per line) to load. For this, use the
 ``-l``/``--list_file`` option::
 
- load_files.py --settings settings.ini --list_file file_list.txt --type TEST_F --dbname $DBNAME --pwd $PWD
+ load_files.py --settings settings.ini --list_file file_list.txt --tid 123 --dir path/to/directory --type TEST_F --dbname $DBNAME --pwd $PWD
 
 - ``--type`` is an arbitrary string describing each of the files that will be loaded in the database. i.e. ``FASTQ`` or ``CRAM``. If this option is not specified then the file type will be set depending on the parameters
   specified in the ``[file_type_rules]`` section of ``settings.ini``.
+- ``--ticket`` is the number of the RT ticket 
+- ``--directory`` is the path to the directory starting from the datacollections, for example HGSVC3/working/test_files.
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--pwd`` is the password for connecting the MYSQL server
 
@@ -253,11 +257,12 @@ delete the entry from the ``file`` table in the ``RESEQTRACK`` database.
 
 Enter the following command::
 
- dearchive_files.py --settings settings.ini --file /nfs/1000g-archive/vol1/path/file --md5check False --directory /dir/to/put/file --dbname $DBNAME \
+ dearchive_files.py --settings settings.ini --tid 123 --file /nfs/1000g-archive/vol1/path/file --md5check False --directory /dir/to/put/file --dbname $DBNAME \
  --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--file`` is the path to the file to be de-archived. ``/nfs/1000g-archive/vol1`` is the directory containing the IGSR FTP in our filesystem.
   This directory can be changed by modifying the ``ftp_mount`` parameter from the ``ftp`` section in the ``settings.ini`` file
+- ``--ticket`` is the number of the RT ticket 
 - ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--directory`` is the directory used to store the file to be de-archived
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
@@ -272,10 +277,11 @@ By default, the script will perform a dry run and the file will not be de-archiv
 You can provide the script with a list of files (one file per line) to de-archive. For this, use the
 ``-l``/``--list_file`` option::
 
- dearchive_files.py --settings settings.ini --list_file file_list.txt --md5check False --directory /dir/to/put/file --dbname $DBNAME \
+ dearchive_files.py --settings settings.ini --tid 123 --list_file file_list.txt --md5check False --directory /dir/to/put/file --dbname $DBNAME \
  --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--list_file`` is the list of files to de-archive
+- ``--ticket`` is the number of the RT ticket 
 - ``--md5check`` is the way to check if md5sum of downloaded file and FIRE object matches before dearchiving from FIRE, default is set to True, change to False if no check is needed 
 - ``--directory`` is the directory used to store the files to de-archive
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
@@ -294,11 +300,12 @@ This script will also update the entry in the file table from the ``RESEQTRACK``
 
 Use the ``--origin`` and ``--dest`` options like this::
 
- move_files.py --settings settings.ini --origin /nfs/1000g-archive/vol1/dir1/test.txt --dest /nfs/1000g-archive/vol1/dir2/test.txt \
+ move_files.py --settings settings.ini --tid 123 --origin /nfs/1000g-archive/vol1/dir1/test.txt --dest /nfs/1000g-archive/vol1/dir2/test.txt \
   --dbname $DBNAME --firepwd $FIREPWD --dbpwd $DBPWD
 
 - ``--origin`` is the current path for the file to move
 - ``--dest`` is the final path for the moved file
+- ``--ticket`` is the number of the RT ticket 
 - ``--dbname`` is the name of the MYSQL ``RESEQTRACK`` database
 - ``--firepwd`` is the password for connecting the FIRE API
 - ``--dbpwd`` is the password for connecting the MYSQL server
