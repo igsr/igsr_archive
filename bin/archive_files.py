@@ -178,7 +178,7 @@ for f in files:
             # push the file to FIRE where fire_path will the path in the FIRE
             # filesystem
             fireObj = api.upload_s3_object(firePath=f_in_staging,
-                                           dry=str2bool(args.dry))
+                                           dry=str2bool(args.dry), md5sum=f_in_staging.md5,)
         elif str2bool(args.update_existing) is False:
             logger.info(f"It seems that file: {f} is already archived and --update_existing is False")
             logger.info(f"Archived file will not be updated with new file")
@@ -190,7 +190,7 @@ for f in files:
 
         file_name = Path(f_indb_o.name)
         fireObj = api.upload_s3_object(firePath=file_name,
-                                       dry=str2bool(args.dry))
+                                       dry=str2bool(args.dry), md5sum=f_indb_o.md5)
         # now, modify the file entry in the db and update its name (path)
         ret_db_code = db.update_file(attr_name='name',
                                      value=ftp_path,

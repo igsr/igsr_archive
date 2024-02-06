@@ -419,14 +419,14 @@ class API(object):
         else:
             raise Exception(f"dry option: {dry} not recognized")
         
-    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True):
+    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True, md5sum=None):
         if dry is False :
             bucket_name = CONFIG.get('fire', 's3_bucket')
             base_path = CONFIG.get('ftp', 'staging_mount')
             # Get the relative path
             object_name = os.path.relpath(firePath, base_path)
             try:
-                response = s3_client.upload_file(firePath, bucket_name, object_name)
+                response = s3_client.upload_file(firePath, bucket_name, object_name, ExtraArgs={'Metadata': {"fire-content-md5": md5sum }})
             except ClientError as e:
                 api_logger.error(e)
                 return False
