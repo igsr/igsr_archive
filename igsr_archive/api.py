@@ -6,6 +6,8 @@ import os
 import json
 from subprocess import Popen, PIPE
 import subprocess
+import boto3
+from botocore.exceptions import ClientError
 from igsr_archive.utils import is_tool
 
 import requests
@@ -15,6 +17,7 @@ from igsr_archive.config import CONFIG
 
 # create logger
 api_logger = logging.getLogger(__name__)
+s3_client = boto3.client('s3')
 
 class API(object):
     """
@@ -415,3 +418,16 @@ class API(object):
             api_logger.info(f"Use --dry False to deleted it")
         else:
             raise Exception(f"dry option: {dry} not recognized")
+        
+    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True):
+        if dry is False :
+            bucket_name = CONFIG.get('fire', 's3_bucket')
+            base_path = CONFIG.get('ftp', 'staging_mount')
+            # Get the relative path
+            object_name = os.path.relpath(firePath, base_path)
+            try:
+                response = s3_client.upload_file(firePath, bucket_name, object_name)
+            except ClientError as e:
+                api_logger.error(e)
+                return False
+            return True
