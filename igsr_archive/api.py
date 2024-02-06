@@ -420,14 +420,35 @@ class API(object):
             raise Exception(f"dry option: {dry} not recognized")
         
     def upload_s3_object(self, firePath=None, bucket_name=None, dry=True, md5sum=None):
+        """
+        Function to upload a certain FIRE object using boto3 AWS SDK 
+
+        Parameters
+        ----------
+        firePath : str
+        bucket_name : optional default is g1k-bucket
+        dry : bool, default=True
+              If True then it will not try to delete the FIRE object.
+        md5sum = Support for multiupload (Files more than 10MB)
+        
+        Returns
+        -------
+        None
+        
+        Raises
+        ------
+        ClientError
+        Exception
+        """
         if dry is False :
             bucket_name = CONFIG.get('fire', 's3_bucket')
             base_path = CONFIG.get('ftp', 'staging_mount')
+            
             # Get the relative path
+            # this is because we just want ftp/data_collections/******
             object_name = os.path.relpath(firePath, base_path)
             try:
                 response = s3_client.upload_file(firePath, bucket_name, object_name, ExtraArgs={'Metadata': {"fire-content-md5": md5sum }})
             except ClientError as e:
                 api_logger.error(e)
-                return False
-            return True
+     
