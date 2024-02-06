@@ -9,7 +9,6 @@ import pdb
 from pathlib import Path
 
 from configparser import ConfigParser
-#from igsr_archive.config import CONFIG
 s3_client = boto3.client('s3')
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
                                              'This script can be used for archiving files in the public '\
