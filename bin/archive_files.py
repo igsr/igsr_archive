@@ -178,9 +178,6 @@ for f in files:
             # Now, push the new file
             # push the file to FIRE where fire_path will the path in the FIRE
             # filesystem
-            #fireObj = api.push_object(fileO=f_in_staging,
-                                      #dry=str2bool(args.dry),
-                                      #fire_path=fire_path)
             fireObj = api.upload_s3_object(firePath=f_in_staging,
                                            dry=str2bool(args.dry))
         elif str2bool(args.update_existing) is False:
@@ -192,14 +189,7 @@ for f in files:
             logger.info("Wrong FTP path has been added to FTP, this will be deleted")
             api.delete_object(fireOid=f_in_fire_o.fireOid,dry=str2bool(args.dry))
 
-        # push the file to FIRE where fire_path will the path in the FIRE
-        # filesystem
-        #fireObj = api.push_object(fileO=f_indb_o,
-         #                         dry=str2bool(args.dry),
-         #                         fire_path=fire_path)
-        #base_path = settingsO.get('ftp', 'staging_mount') 
         file_name = Path(f_indb_o.name)
-        #relative_path = os.path.relpath(file_name, base_path)
         fireObj = api.upload_s3_object(firePath=file_name,
                                        dry=str2bool(args.dry))
         # now, modify the file entry in the db and update its name (path)
