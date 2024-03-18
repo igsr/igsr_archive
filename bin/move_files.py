@@ -88,8 +88,7 @@ if firepwd is None:
 if args.ticket is None:
     raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
 
-if args.tg_dir is None:
-    raise Exception("$tg_dir undefined. You need this to keep track of the tickets and determine final target directory. Please add this by using the option --tg_dir")
+
 # list of tuples (origin, dest) for files to be archived
 files = []
 
@@ -112,6 +111,8 @@ elif args.list_file:
         except Exception:
             raise Exception("Format of file provided with --list_file, -l option needs to be:"
                             "<origin>\\t<dest>")
+#if args.tg_dir is None:
+    #raise Exception("$tg_dir undefined. You need this to keep track of the tickets and determine final target directory. Please add this by using the option --tg_dir")
 
 if origin_seen is True:
     logger.info('--origin and --dest args defined')
