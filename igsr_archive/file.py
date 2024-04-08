@@ -2,9 +2,14 @@ import subprocess
 import os
 import pdb
 import datetime
+import sys
 import logging
-from igsr_archive.utils import is_tool
-from igsr_archive.config import CONFIG
+module_dir = "/hps/software/users/ensembl/repositories/olaaustine/igsr_archive/igsr_archive/"
+sys.path.append(module_dir)
+from utils import is_tool
+from config import CONFIG
+#from igsr_archive.utils import is_tool
+#from igsr_archive.config import CONFIG
 
 # create logger
 file_logger = logging.getLogger(__name__)

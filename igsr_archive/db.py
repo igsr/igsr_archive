@@ -1,5 +1,5 @@
-from igsr_archive.file import File
-
+#from igsr_archive.file import File
+from configparser import ConfigParser
 import pymysql
 import logging
 import datetime
@@ -7,8 +7,10 @@ import os
 import sys
 import pdb
 
-from igsr_archive.config import CONFIG
-
+#from igsr_archive.config import CONFIG
+sys.path.append("/hps/software/users/ensembl/repositories/olaaustine/igsr_archive/igsr_archive/")
+from file import File
+from config import CONFIG
 
 # create logger
 db_logger = logging.getLogger(__name__)
@@ -59,12 +61,16 @@ class DB(object):
 
         # initialise ConfigParser object with connection
         # settings
-
-        conn = pymysql.connect(host=CONFIG.get('mysql_conn', 'host'),
-                               user=CONFIG.get('mysql_conn', 'user'),
+        parser = ConfigParser()
+        parser.read("/nfs/production/flicek/ensembl/variation/data/IGSR/SETTINGS_IGSR/settings.ini")
+        host_name = parser.get('mysql_conn', 'host')
+        user_name = parser.get('mysql_conn', 'user')
+        port_name = parser.getint('mysql_conn', 'port')
+        conn = pymysql.connect(host=host_name,
+                               user=user_name,
                                password=self.pwd,
                                db=self.dbname,
-                               port=CONFIG.getint('mysql_conn', 'port'))
+                               port=port_name)
 
         db_logger.debug('Connection successful!')
 

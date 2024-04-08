@@ -9,6 +9,15 @@ import pdb
 import glob
 from configparser import ConfigParser
 
+#from igsr_archive.utils import str2bool
+#from igsr_archive.db import DB
+#from igsr_archive.api import API
+sys.path.append('/hps/software/users/ensembl/repositories/olaaustine/igsr_archive/igsr_archive/')
+from api import API
+from db import DB
+from utils import str2bool
+
+
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
                                              'This script can be used for moving files within the FTP.'
                                              'It will also update the file metadata for the moved file in the '
@@ -57,10 +66,6 @@ if not os.path.isfile(args.settings):
 # set the CONFIG_FILE env variable
 os.environ["CONFIG_FILE"] = os.path.abspath(args.settings)
 
-from igsr_archive.utils import str2bool
-from igsr_archive.db import DB
-from igsr_archive.api import API
-
 dbpwd = args.dbpwd
 if args.dbpwd is None:
     dbpwd = os.getenv('DBPWD')
@@ -88,8 +93,6 @@ if firepwd is None:
 if args.ticket is None:
     raise Exception("$ticket_id undefined. You need this to keep track of the tickets. Please add this by using the option -tid or --ticket")
 
-if args.tg_dir is None:
-    raise Exception("$tg_dir undefined. You need this to keep track of the tickets and determine final target directory. Please add this by using the option --tg_dir")
 # list of tuples (origin, dest) for files to be archived
 files = []
 
@@ -169,14 +172,15 @@ for tup in files:
     f_path_dest = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', tup[1])
 
     # getting the fire object that will be updated
-    fobject = api.fetch_object(firePath=f_path_origin)
+    #fobject = api.fetch_object(firePath=f_path_origin)
 
     # update the FIRE object with the new firePath
-    updated_obj = api.update_object(attr_name='firePath',
-                                    value=f_path_dest,
-                                    fireOid=fobject.fireOid,
-                                    dry=str2bool(args.dry))
-
+    #updated_obj = api.update_object(attr_name='firePath',
+     #                               value=f_path_dest,
+     #                               fireOid=fobject.fireOid,
+     #                               dry=str2bool(args.dry))
+    #updated_obj = api.move_s3_object(newPath=tup[1], FirePath=tup[0], dry=str2bool(args.dry))
+    updated_obj = api.move_s3_object(newPath=tup[1], FirePath=tup[0], dry=str2bool(args.dry))
     # now, modify the file entry in the db and update its name (path)
     db.update_file(attr_name='name',
                    value=tup[1],

@@ -6,11 +6,16 @@ import os
 import json
 from subprocess import Popen, PIPE
 import subprocess
-from igsr_archive.utils import is_tool
+from configparser import ConfigParser
+module_dir = "/hps/software/users/ensembl/repositories/olaaustine/igsr_archive/igsr_archive/"
+sys.path.append(module_dir)
+from utils import is_tool
+from object import fObject
+#from igsr_archive.utils import is_tool
 
 import requests
 from requests.exceptions import HTTPError
-from igsr_archive.object import fObject
+#from igsr_archive.object import fObject
 from igsr_archive.config import CONFIG
 
 # create logger
@@ -40,7 +45,9 @@ class API(object):
 
         api_logger.debug('Creating an API object')
 
-        self.user = CONFIG.get('fire', 'user')
+        parser = ConfigParser()
+        parser.read("/nfs/production/flicek/ensembl/variation/data/IGSR/SETTINGS_IGSR/settings.ini")
+        self.user = parser.get('fire', 'user')
         self.pwd = pwd
 
     def get_filename_from_cd(self, cd):
@@ -415,3 +422,69 @@ class API(object):
             api_logger.info(f"Use --dry False to deleted it")
         else:
             raise Exception(f"dry option: {dry} not recognized")
+        
+    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True, md5sum=None):
+        """
+        Function to upload a certain FIRE object using boto3 AWS SDK 
+
+        Parameters
+        ----------
+        firePath : str
+        bucket_name : optional default is g1k-bucket
+        dry : bool, default=True
+              If True then it will not try to delete the FIRE object.
+        md5sum = Support for multiupload (Files more than 10MB)
+        
+        Returns
+        -------
+        None
+        
+        Raises
+        ------
+        ClientError
+        Exception
+        """
+        if dry is False :
+            bucket_name = CONFIG.get('fire', 's3_bucket')
+            base_path = CONFIG.get('ftp', 'staging_mount')
+            
+            # Get the relative path
+            # this is because we just want ftp/data_collections/******
+            object_name = os.path.relpath(firePath, base_path)
+            try:
+                response = s3_client.upload_file(firePath, bucket_name, object_name, ExtraArgs={'Metadata': {"fire-content-md5": md5sum }})
+            except ClientError as e:
+                api_logger.error(e)
+        else :
+            api_logger.info("File will be uploaded using AWS SDK boto3")
+            api_logger.info("To push file, set --dry to False ")
+
+    def move_s3_object(self, newPath=None, FirePath=None, dry=True):
+        """
+        Function to move a certain FIRE object using bot3 AWS SDK 
+
+        Parameters 
+        ------------
+        newPath : str new Path the object should be moved to 
+        FirePath : FirePath of the object 
+    
+        """
+
+        if dry is False:
+            parser = ConfigParser()
+            parser.read("/nfs/production/flicek/ensembl/variation/data/IGSR/SETTINGS_IGSR/settings.ini")
+            bucket_name = parser.get('fire', 's3_bucket')
+            destbase_path = parser.get('ftp', 'ftp_mount')
+
+            destobject_name = os.path.relpath(newPath, destbase_path)
+            sourceobject_name = os.path.relpath(FirePath, destbase_path)
+            
+            try: 
+                response = s3_client.copy_object(Bucket=bucket_name, Key=destobject_name, CopySource=sourceobject_name)
+            except ClientError as e:
+                api_logger.error(e)
+        else: 
+            api_logger.info("Files will be moved using AWS SDK boto3")
+            api_logger.info("Move upload")
+        
+
