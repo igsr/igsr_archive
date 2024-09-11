@@ -451,4 +451,8 @@ class API(object):
                 response = s3_client.upload_file(firePath, bucket_name, object_name, ExtraArgs={'Metadata': {"fire-content-md5": md5sum }})
             except ClientError as e:
                 api_logger.error(e)
+                return 0
+            else: 
+                return 1
+            
      
