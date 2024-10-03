@@ -4,10 +4,12 @@ import os
 import logging
 import sys
 import re
+import boto3
 import pdb
+from pathlib import Path
 
 from configparser import ConfigParser
-
+s3_client = boto3.client('s3')
 parser = argparse.ArgumentParser(description='Script for interacting with the FIle REplication (FIRE) software. '\
                                              'This script can be used for archiving files in the public '\
                                              'IGSR FTP. Once a certain file is archived using this script, it will be '\
@@ -136,6 +138,7 @@ for f in files:
     
     # check if this fire_path is already in the FTP by
     # querying the FIRE API
+    #get just the basename to get the object using S3 API 
     f_in_fire_o = api.fetch_object(firePath=fire_path)
     if f_indb_o is None and f_inftp_o is not None:
         if str2bool(args.update_existing) is True:
@@ -174,9 +177,8 @@ for f in files:
             # Now, push the new file
             # push the file to FIRE where fire_path will the path in the FIRE
             # filesystem
-            fireObj = api.push_object(fileO=f_in_staging,
-                                      dry=str2bool(args.dry),
-                                      fire_path=fire_path)
+            fireObj = api.upload_s3_object(firePath=f_in_staging,
+                                           dry=str2bool(args.dry), md5sum=f_in_staging.md5,)
         elif str2bool(args.update_existing) is False:
             logger.info(f"It seems that file: {f} is already archived and --update_existing is False")
             logger.info(f"Archived file will not be updated with new file")
@@ -186,12 +188,9 @@ for f in files:
             logger.info("Wrong FTP path has been added to FTP, this will be deleted")
             api.delete_object(fireOid=f_in_fire_o.fireOid,dry=str2bool(args.dry))
 
-        # push the file to FIRE where fire_path will the path in the FIRE
-        # filesystem
-        fireObj = api.push_object(fileO=f_indb_o,
-                                  dry=str2bool(args.dry),
-                                  fire_path=fire_path)
-
+        file_name = Path(f_indb_o.name)
+        fireObj = api.upload_s3_object(firePath=file_name,
+                                       dry=str2bool(args.dry), md5sum=f_indb_o.md5)
         # now, modify the file entry in the db and update its name (path)
         ret_db_code = db.update_file(attr_name='name',
                                      value=ftp_path,
