@@ -108,8 +108,8 @@ class CurrentTree(object):
             ct_logger.info("Changes detected in the data structures. Proceeding...")
             ofiles = chgEvents.print_chlog_details(odir=CONFIG.get('ctree', 'temp'))
             ct_logger.info("Pushing changelog_details_* files to archive...")
-            chlog_details_list = chgEvents.push_chlog_details(pathlist=ofiles, db=self.db,
-                                                              api=self.api, dry=dry)
+            # chlog_details_list = chgEvents.push_chlog_details(pathlist=ofiles, db=self.db,
+            #                                                   api=self.api, dry=dry)
             chgEvents.print_changelog(ifile=chlog_f)
             ct_logger.info("Updating and pushing to archive the updated CHANGELOG file...")
             chlog_firepath = chgEvents.update_CHANGELOG(chlog_f, db=self.db,
@@ -158,17 +158,17 @@ class CurrentTree(object):
             raise Exception(f"No current.tree file retrieved from the archive")
 
         # delete self.prod_tree from archive
-        fire_obj = self.api.fetch_object(firePath=fire_path)
+        fire_obj = self.api.fetch_s3_object(firePath=fire_path)
 
         if fire_obj is None:
             raise Exception(f"No current.tree file retrieved from the archive")
-        self.api.delete_object(fireOid=fire_obj.fireOid, dry=dry)
+        self.api.delete_object(fireOid=fire_path, dry=dry)
 
         # push self.staging_tree to archive
         basename = os.path.basename(self.staging_tree)
         fire_path = f"{CONFIG.get('ctree', 'ctree_fpath')}/{basename}"
-        self.api.push_object(fileO=staging_fobj,
-                             fire_path=fire_path,
+        self.api.upload_s3_object(
+                             firePath=self.staging_tree,
                              dry=dry)
         return fire_path
 

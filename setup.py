@@ -15,11 +15,11 @@ from setuptools import find_packages, setup, Command
 NAME = 'igsr_archive'
 DESCRIPTION = 'Contains code to perform several operations involving files ' \
               'in the IGSR (1000 genomes) FTP archive.'
-URL = 'https://github.com/igsr/igsr_archive/archive/refs/tags/0.3.0.tar.gz'
+URL = 'https://github.com/igsr/igsr_archive/archive/refs/tags/0.3.1.tar.gz'
 EMAIL = 'ernestolowy@gmail.com'
 AUTHOR = 'Ernesto Lowy'
 REQUIRES_PYTHON = '>=3.6.0'
-VERSION = '0.3.0'
+VERSION = '0.3.4'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -112,8 +112,9 @@ setup(
     #     'console_scripts': ['mycli=mymodule:cli'],
     # },
     scripts=['bin/load_files.py', 'bin/archive_files.py', 'bin/dearchive_files.py',
-             'bin/fetch_fire_object.py', 'bin/delete_files.py', 'bin/move_files.py',
-             'bin/run_current_tree.py', 'bin/indexes/add_missing_pop.py', 'bin/indexes/create_analysis_index.py',
+             'bin/fetch_fire_object.py', 'bin/delete_files.py', 'bin/move_files.py', 
+             'bin/sanitycheck_on_dbfiles.py', 'bin/run_current_tree.py', 
+             'bin/indexes/add_missing_pop.py', 'bin/indexes/create_analysis_index.py',
              'bin/indexes/create_seq_index.py'],
     install_requires=REQUIRED,
     extras_require=EXTRAS,

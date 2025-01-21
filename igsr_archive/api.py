@@ -6,9 +6,10 @@ import os
 import json
 from subprocess import Popen, PIPE
 import subprocess
+import hashlib
+from igsr_archive.utils import is_tool
 import boto3
 from botocore.exceptions import ClientError
-from igsr_archive.utils import is_tool
 
 import requests
 from requests.exceptions import HTTPError
@@ -102,10 +103,10 @@ class API(object):
                   f"{firePath}"
         
         #before using aws, check that aws is available in the environment 
-        if  "awscli" not in str(os.environ):
-            api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
-            sys.exit()
-       
+        # if  "awscli" not in str(os.environ):
+        #     api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
+        #     sys.exit()
+
         result = subprocess.run(['aws', 's3', 'cp', url, outfile, '--no-sign-request', '--endpoint-url', endpoint_url], capture_output=True)
     
         if result.returncode == 0: 
@@ -115,6 +116,48 @@ class API(object):
             api_logger.info("Issues copying: " + result.stderr.decode())
             pass
             sys.exit()
+
+    def fetch_s3_object(self, firePath=None):
+        """
+        Function to fetch the metadata associated to a particular
+        FIRE object without downloading the archived s3 file
+
+        Parameters
+        ----------
+        firePath : str, optional
+                   FIRE virtual path.
+
+        Returns
+        -------
+        fireObj : fire.object.fObject
+                  Object with metadata or None.
+
+        Raises
+        ------
+        HTTPError
+        """
+        endpoint = CONFIG.get('fire', 's3_endpoint')
+        endpoint_url= CONFIG.get('fire', 's3_root_endpoint')
+        if firePath is not None:
+            api_logger.debug('Fetching FIRE object\'s metadata through its FIRE path')
+            url = f"{endpoint}" \
+                  f"{firePath}"
+        #before using aws, check that aws is available in the environment 
+        # if  "awscli" not in str(os.environ):
+        #     api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
+        #     sys.exit()
+        api_logger.info(firePath)
+        result = subprocess.run(['aws', '--endpoint', endpoint_url, '--no-sign-request', 's3api', 'head-object', '--bucket', 'g1k-public', '--key',firePath], capture_output=True)
+        api_logger.info(result)
+        metadata = json.loads(result.stdout.decode("utf-8"))
+        if result.returncode == 0: 
+            api_logger.info("File metadata was fetched successfully")
+            return metadata
+        else:
+            api_logger.info("Issues fetching metadata: " + result.stderr.decode())
+            pass
+            sys.exit()
+
 
     def fetch_object(self, fireOid=None, firePath=None):
         """
@@ -419,8 +462,9 @@ class API(object):
             api_logger.info(f"Use --dry False to deleted it")
         else:
             raise Exception(f"dry option: {dry} not recognized")
-        
-    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True, md5sum=None):
+
+         
+    def upload_s3_object(self, firePath=None, bucket_name=None, dry=True, md5sum=None, object_name=None):
         """
         Function to upload a certain FIRE object using boto3 AWS SDK 
 
@@ -441,13 +485,18 @@ class API(object):
         ClientError
         Exception
         """
+        endpoint = CONFIG.get('fire', 's3_endpoint')
+
         if dry is False :
+
             bucket_name = CONFIG.get('fire', 's3_bucket')
-            base_path = CONFIG.get('ftp', 'staging_mount')
-            
+            base_path = CONFIG.get('ftp', 'staging_mount') 
+
             # Get the relative path
             # this is because we just want ftp/data_collections/******
-            object_name = os.path.relpath(firePath, base_path)
+            object_name = os.path.relpath(firePath, base_path) if not object_name else object_name
+            if not md5sum:
+                md5sum = hashlib.md5(open(firePath,'rb').read()).hexdigest()
             try:
                 response = s3_client.upload_file(firePath, bucket_name, object_name, ExtraArgs={'Metadata': {"fire-content-md5": md5sum }})
             except ClientError as e:
@@ -455,5 +504,3 @@ class API(object):
                 return 0
             else: 
                 return 1
-            
-     
