@@ -222,7 +222,7 @@ class ChangeEvents(object):
         if old_file is None:
             raise Exception(f"No CHANGELOG file retrieved from the archive")
 
-        fire_obj = api.fetch_object(firePath=CONFIG.get('ctree','chlog_fpath'))
+        fire_obj = api.fetch_s3_object(firePath=CONFIG.get('ctree','chlog_fpath'))
 
         if fire_obj is None:
             raise Exception(f"No CHANGELOG file retrieved from the archive")
@@ -231,7 +231,7 @@ class ChangeEvents(object):
         api.delete_object(fireOid=fire_obj.fireOid, dry=dry)
 
         ce_logger.info("Push updated CHANGELOG file to the archive")
-        api.push_object(chlog_obj, dry=dry, fire_path=CONFIG.get('ctree','chlog_fpath'))
+        api.upload_s3_object(dry=dry, firePath=CONFIG.get('ctree','chlog_fpath'))
 
         return f"{CONFIG.get('ctree','chlog_fpath')}"
 
@@ -266,9 +266,11 @@ class ChangeEvents(object):
             basename= os.path.basename(p)
             fObj = File(name=p, type="CHANGELOG")
             new_path = f"{CONFIG.get('ftp','ftp_mount')}{CONFIG.get('ctree','chlog_details_dir')}/{basename}"
+
             db.load_file(fObj, dry=dry)
-            api.push_object(fObj, dry=dry, publish=True,
-                            fire_path=f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
+            ce_logger.info(f"Pushing {p}")
+            api.upload_s3_object(dry=dry, 
+                                 firePath=p,object_name=f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
             pushed_files.append(f"{CONFIG.get('ctree', 'chlog_details_dir')}/{basename}")
             db.update_file('name', new_path, fObj.name, dry=dry)
 

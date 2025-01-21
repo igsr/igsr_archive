@@ -4,6 +4,7 @@ import os
 import logging
 import pdb
 import re
+import sys
 
 from configparser import ConfigParser
 
@@ -86,6 +87,8 @@ db = DB(pwd=dbpwd,
 # connection to FIRE api
 api = API(pwd=firepwd)
 
+if not os.path.isdir(settingsO.get('ftp', 'ftp_mount')):
+    sys.exit("FTP mount is not accessible") 
 prod_tree = f"{settingsO.get('ftp', 'ftp_mount')}/{settingsO.get('ctree', 'ctree_fpath')}/current.tree"
 prod_tree = prod_tree.replace('//','/')
 staging_tree = f"{settingsO.get('ctree', 'temp')}/current.tree"
@@ -96,7 +99,7 @@ ct = db.fetch_file(path=prod_tree)
 if ct is None:
     raise Exception(f"Prod_tree: {prod_tree} does not exist in the DB. Can't continue!")
 ct_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', prod_tree)
-ct_fobj = api.fetch_object(firePath=ct_fpath)
+ct_fobj = api.fetch_s3_object(firePath=ct_fpath)
 if ct_fobj is None:
     raise Exception(f"Prod_tree file path: {prod_tree} is not archived in FIRE. Can't continue!")
 
@@ -109,12 +112,12 @@ if rf is None:
 # version that is archived is read-only
 changelog_fpath = re.sub(settingsO.get('ftp', 'ftp_mount') + "/", '', args.CHANGELOG)
 # get fireOid for chglogFobj file
-f_obj = api.fetch_object(firePath=changelog_fpath)
+f_obj = api.fetch_s3_object(firePath=changelog_fpath)
 if f_obj is None:
     raise Exception(f"CHANGELOG file path: {args.CHANGELOG} is not archived in FIRE. Can't continue!")
 
 chlogl_path = f"{settingsO.get('ctree', 'temp')}/{os.path.basename(args.CHANGELOG)}"
-api.retrieve_object(fireOid=f_obj.fireOid, outfile=chlogl_path)
+api.retrieve_object(firePath=changelog_fpath, outfile=chlogl_path)
 
 ctree = CurrentTree(db=db,
                     api=api,
