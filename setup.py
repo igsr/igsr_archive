@@ -15,9 +15,9 @@ from setuptools import find_packages, setup, Command
 NAME = 'igsr_archive'
 DESCRIPTION = 'Contains code to perform several operations involving files ' \
               'in the IGSR (1000 genomes) FTP archive.'
-URL = 'https://github.com/igsr/igsr_archive/archive/refs/tags/0.3.0.tar.gz'
-EMAIL = 'ernestolowy@gmail.com'
-AUTHOR = 'Ernesto Lowy'
+URL = 'https://github.com/igsr/igsr_archive/archive/refs/tags/0.3.4.tar.gz'
+EMAIL = 'ensembl-variation@ebi.ac.uk'
+AUTHOR = 'Ensembl Variation'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.3.0'
 

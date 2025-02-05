@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'igsr_archive'
-copyright = '2020, IGSR'
-author = 'Ernesto Lowy'
+copyright = '2025, IGSR'
+author = 'Ensembl Variation'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = '0.3.4'
 
 
 # -- General configuration ---------------------------------------------------
