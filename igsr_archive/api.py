@@ -9,6 +9,7 @@ import subprocess
 import boto3
 from botocore.exceptions import ClientError
 from igsr_archive.utils import is_tool
+import glob
 
 import requests
 from requests.exceptions import HTTPError
@@ -455,5 +456,43 @@ class API(object):
                 return 0
             else: 
                 return 1
-            
+    
+    def split_file_to_5GB(self, chunk_size="4999M", firePath=None, output_prefix="chunk_"):
+        #so we are spliiting files into chunks for a multipart file upload as this is the only way we can move files
+
+        command = ["split", "-b", chunk_size, "-d", firePath, output_prefix]
+        # text is true to make sure encoding errors are in text
+        subprocess.run(command, check=True, text=True) #check is true to make sure if the process exits with a non zero exit code, an exception is raised 
+
+        # Get the list of created chunk files
+        split_files = sorted(glob.glob(f"{output_prefix}*"))
+
+        return split_files
+
+
+    def move_create_multipart_upload(self, DestPath=None, SourcePath=None, bucket_name=None, dry=True, md5sum=None):
+
+        if dry is False :
+            bucket_name = CONFIG.get('fire', 's3_bucket')
+        
+        #before using aws, check that aws is available in the environment 
+        if  "awscli" not in str(os.environ):
+            api_logger.info("AWS is not loaded, Retrieving the object can not work without loading AWS")
+            sys.exit()
+
+        command = ['aws', 's3api', 'create-multipart-upload', '--bucket', bucket_name, '--key', DestPath, '--checksum-algorithmn' "md5" ]
+
+        #to capture the output 
+        subprocess.run(command, capture_output=True, text=True, check=True)
+
+        # Parse JSON output
+        response = json.loads(result.stdout)
+
+        # Extract Upload ID
+        upload_id = response.get("UploadId")   
+
+        return upload_id
+
+
+
      
