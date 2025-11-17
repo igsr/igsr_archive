@@ -114,7 +114,7 @@ if f_obj is None:
     raise Exception(f"CHANGELOG file path: {args.CHANGELOG} is not archived in FIRE. Can't continue!")
 
 chlogl_path = f"{settingsO.get('ctree', 'temp')}/{os.path.basename(args.CHANGELOG)}"
-api.retrieve_object(fireOid=f_obj.fireOid, outfile=chlogl_path)
+api.retrieve_object(firePath=changelog_fpath, outfile=chlogl_path)
 
 ctree = CurrentTree(db=db,
                     api=api,
